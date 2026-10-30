@@ -1,0 +1,2 @@
+- '`ip -br addr show hv0` и `ip route`. Адрес сейчас из другой подсети.'
+- '`sudo ip addr flush dev hv0` и `sudo ip addr add 10.60.0.5/24 dev hv0`.'

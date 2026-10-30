@@ -1,0 +1,2 @@
+- '`sudo systemctl set-property labburn CPUQuota=25% MemoryMax=64M` применяет лимиты сразу.'
+- 'cgroup службы: `/sys/fs/cgroup/system.slice/labburn.service/cpu.stat` — поле `nr_throttled`.'

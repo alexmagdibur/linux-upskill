@@ -16,7 +16,7 @@ shell внутри изолированной Linux-песочницы (xterm.js
 | `apps/sandbox-worker` | Python, Docker SDK, Redis Streams, внутренний WS-сервер PTY (отдельная граница доверия) |
 | `apps/web` | React 18, TypeScript (strict), Vite, Tailwind 4, TanStack Query, xterm.js |
 | `packages/upskill_content` | общая схема манифеста и загрузчик контента (API и worker) |
-| `content/` | курс, 20 лабораторий (manifest, setup, checks, hints, тесты решений) |
+| `content/` | курс из 205 заданий: 162 запускаемых (75 в Docker-песочнице + 87 на учебной машине LXD) и 43 описанных |
 | `sandbox-images/ubuntu-basic` | образ песочницы (Ubuntu 24.04, закреплён по digest) |
 | `infra/` | docker compose, nginx, Prometheus, скрипты (e2e-smoke, нагрузочный тест, генератор контента) |
 
@@ -36,7 +36,7 @@ cp .env.example .env
 make setup      # venv, зависимости Python/npm, сборка образа песочницы + content/images.lock.json
 make up         # PostgreSQL + Redis в Docker (127.0.0.1:15432 и 127.0.0.1:6379)
 make migrate    # миграции Alembic
-make seed       # импорт курса и 20 лабораторий
+make seed       # импорт курса: 205 заданий (162 запускаются, 43 описаны)
 # в трёх терминалах:
 make api        # http://localhost:8000  (OpenAPI: /docs)
 make worker     # sandbox worker (единственный компонент с доступом к Docker)
@@ -96,12 +96,13 @@ python infra/scripts/e2e_smoke.py     # сквозной сценарий без
 - **API (`apps/api/tests`, PostgreSQL + Redis):** оценивание, автомат состояний, схема манифеста, регистрация/вход/refresh-ротация/CSRF,
   каталог, сессии, идемпотентность, лимиты, изоляция пользователей, XP (в т.ч. конкурентные запросы), sweeper, **WebSocket-шлюз** (ticket, Origin, владелец).
 - **Worker (`apps/sandbox-worker/tests`, Docker + Redis):** свойства изоляции на живых контейнерах, очередь/retry/DLQ, PTY-hub
-  (переподключение, Ctrl+C, лимит вывода), reconciler/TTL, и **для каждой из 20 лабораторий — «пустое состояние / неверное решение не проходят, правильное (и альтернативные) проходят»**.
+  (переподключение, Ctrl+C, лимит вывода), reconciler/TTL, и **для каждой из 75 запускаемых лабораторий — «пустое состояние / неверное решение не проходят, правильное (и альтернативные) проходят»**.
 - **Frontend:** vitest + Playwright (регистрация → каталог → запуск → терминал → проверка → XP → повторный вход, переподключение к тому же shell, изоляция пользователей, остановка, мобильная раскладка).
 
 ## Контент
 
-20 лабораторий в трёх модулях (Linux Basics — 8, Administration — 7, Incident Simulation — 5), см. раздел 14 ТЗ.
+Курс — **205 заданий** учебной программы в четырёх этапах (новичок 17, джун 44, мидл 87, синьор 57); подробности и покрытие по темам — [docs/architecture/learning-program.md](docs/architecture/learning-program.md).
+**Запускаются 162**: 75 в Docker-песочнице и **87 на учебной машине** (системный контейнер LXD с настоящим systemd на отдельной VM-хосте; сеть и «несколько узлов» — на network namespace, см. [docs/architecture/vm-labs.md](docs/architecture/vm-labs.md)). **Описаны, но не запускаются 43**: 25 с письменным результатом (проект, план, разбор — автопроверка была бы недостоверной), 9 требуют контейнерный runtime внутри машины (Docker/podman, отключено ради изоляции) и 9 не удалось воспроизвести детерминированно. **27 уроков исключены из курса**: они требуют настоящей VM со своим ядром (загрузка, ядро, LVM/RAID, блочные устройства), см. [docs/architecture/excluded-lessons.md](docs/architecture/excluded-lessons.md). Нумерация уроков сквозная, идентификаторы заданий (`ld-NNN`) стабильны.
 Формат лаборатории — `content/labs/<id>/{manifest.yaml, setup/, checks/, hints/, README.md, tests/}`. Добавление лаборатории:
 
 1. создайте каталог по образцу (или добавьте спецификацию в `infra/scripts/labgen` и выполните `python infra/scripts/labgen/generate.py`);

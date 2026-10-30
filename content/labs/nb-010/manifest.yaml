@@ -1,0 +1,62 @@
+schema_version: 1
+id: nb-010
+version: 2
+title: Начало, конец и размер файла
+mode: practice
+difficulty: beginner
+estimated_minutes: 15
+description: Выделите первые и последние строки журнала и посчитайте число строк.
+skills:
+- head
+- tail
+- wc -l
+objectives:
+- Получить первые 5 строк
+- Получить последние 5 строк
+- Посчитать строки
+task: 'В `~/data/app.log` — журнал из 40 строк.
+
+
+  1. Первые 5 строк сохраните в `~/head5.txt`.
+
+  2. Последние 5 строк — в `~/tail5.txt`.
+
+  3. Число строк (только число) — в `~/lines.txt`.
+
+  '
+lesson: 12
+stage: Этап 1. Новичок
+topic: Потоки, текст и данные
+task_type: P
+environment: C
+theory: '`head`, `tail`, `wc` позволяют смотреть часть файла и считать строки без открытия редактора.'
+prediction: Какая команда покажет последние пять строк? Сформулируй гипотезу и способ её проверить.
+criterion: Все три результата совпадают с исходным журналом.
+followups:
+  Быстрый возврат: 'linux-002: Что останется от исходного файла после `cp` и после `mv`? Ответь без справки и назови
+    наблюдение, которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: head5
+    title: 'head5.txt: первые 5 строк'
+    pass_message: Начало журнала верное
+    fail_message: В head5.txt не первые 5 строк
+  - id: tail5
+    title: 'tail5.txt: последние 5 строк'
+    pass_message: Конец журнала верный
+    fail_message: В tail5.txt не последние 5 строк
+  - id: lines
+    title: 'lines.txt: 40'
+    pass_message: Число строк верное
+    fail_message: В lines.txt неверное число строк
+reward:
+  base_xp: 50

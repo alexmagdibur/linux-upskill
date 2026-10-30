@@ -1,0 +1,68 @@
+schema_version: 1
+id: ld-029
+version: 2
+title: 'Общий каталог: setgid и default ACL для двух групп'
+mode: practice
+difficulty: middle
+estimated_minutes: 25
+description: Настройте каталог, где новые файлы наследуют группу и доступны второй группе без chmod 777.
+skills:
+- setgid
+- setfacl -d
+- getfacl
+- umask и ACL
+objectives:
+- Наследование группы через setgid
+- Доступ второй группы через default ACL
+- Закрыть остальных
+task: 'Команды `labdev` (пользователь `alice`) и `labops` (пользователь `bob`) работают в каталоге `/srv/shared`.
+  Нужно, чтобы:
+
+
+  - каталог принадлежал группе `labdev`, а новые файлы **наследовали** эту группу (**setgid**);
+
+  - участники обеих групп могли **читать и писать** любые новые файлы и каталоги в нём (**default ACL** для `labops`
+  и `labdev`);
+
+  - у остальных (пользователь `carol`) доступа **не было** вообще.
+
+
+  Проверка создаёт файл от `alice` с обычной `umask 022` и пишет в него от `bob`.
+
+  '
+lesson: 75
+stage: Этап 3. Мидл
+topic: Права и пользователи
+task_type: P
+environment: V
+theory: Setgid наследует группу каталога; default ACL задаёт права новых объектов.
+prediction: Как взаимодействует с ними umask? Сформулируй гипотезу и способ её проверить.
+criterion: вновь созданные файлы имеют ожидаемые группу и права.
+followups:
+  Быстрый возврат: 'LD-028: Почему интерактивный shell такому пользователю обычно лишний? Ответь без справки и назови
+    наблюдение, которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: group_inherit
+    title: Новые файлы наследуют группу labdev
+    pass_message: Группа наследуется
+    fail_message: Файл, созданный alice, должен принадлежать группе labdev (setgid)
+  - id: ops_can_write
+    title: bob (labops) пишет в файл alice
+    pass_message: Вторая группа имеет доступ
+    fail_message: bob не может писать в файл, созданный alice (нужен default ACL)
+  - id: others_blocked
+    title: carol не имеет доступа
+    pass_message: Остальным доступ закрыт
+    fail_message: carol может войти в каталог или читать файлы
+reward:
+  base_xp: 150

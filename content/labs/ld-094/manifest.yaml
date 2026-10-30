@@ -1,0 +1,72 @@
+schema_version: 1
+id: ld-094
+version: 2
+title: Network namespace-ы с veth и маршрутизацией через хост
+mode: practice
+difficulty: middle
+estimated_minutes: 30
+description: Постройте два изолированных узла и соедините их через основную систему как маршрутизатор.
+skills:
+- ip netns add
+- veth
+- ip_forward
+- default route
+objectives:
+- Создать два namespace
+- Соединить через veth с хостом
+- Включить forwarding и маршруты
+task: '> В учебной машине `ip netns exec` и `ip -n` недоступны (в контейнере нельзя смонтировать `/sys`). Команды
+  внутри namespace выполняйте так: `sudo nsenter --net=/run/netns/ИМЯ команда`.
+
+
+  Постройте схему: узел **`app`** (`10.70.1.2/24`) — **машина** (`10.70.1.1/24` и `10.70.2.1/24`) — узел **`db`**
+  (`10.70.2.2/24`).
+
+
+  - создайте network namespace `app` и `db`;
+
+  - соедините каждый veth-кабелем с машиной (концы на машине: `ha1` и `hd1`);
+
+  - включите пересылку на машине (`net.ipv4.ip_forward=1`);
+
+  - в каждом узле добавьте маршрут по умолчанию через машину;
+
+  - `app` должен пинговать `db` (`10.70.2.2`), и наоборот.
+
+  '
+lesson: 109
+stage: Этап 3. Мидл
+topic: Сетевые интерфейсы и маршруты
+task_type: P
+environment: N
+theory: Network namespace имеет собственные интерфейсы и routes; veth соединяет пространства.
+prediction: Кто выступает gateway? Сформулируй гипотезу и способ её проверить.
+criterion: путь и ограничение доступа подтверждены.
+followups:
+  Быстрый возврат: 'LD-093: Как испытать крупный payload? Ответь без справки и назови наблюдение, которое подтвердит
+    ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: topology
+    title: Узлы app и db с нужными адресами
+    pass_message: Топология собрана
+    fail_message: Нужны namespace app (10.70.1.2/24) и db (10.70.2.2/24), на машине 10.70.1.1/24 и 10.70.2.1/24
+  - id: forwarding
+    title: ip_forward=1
+    pass_message: Forwarding включён
+    fail_message: На машине выключен net.ipv4.ip_forward
+  - id: app_to_db
+    title: app ↔ db
+    pass_message: Узлы видят друг друга
+    fail_message: ping между app и db не проходит
+reward:
+  base_xp: 150

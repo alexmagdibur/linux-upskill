@@ -1,0 +1,3 @@
+- '`concurrent.futures.ThreadPoolExecutor(max_workers=N)` ограничивает параллелизм.'
+- '`subprocess.run([''sleep'', str(sec)], timeout=T)`: при `TimeoutExpired` логируйте `timeout` и не создавайте
+  `.done`.'

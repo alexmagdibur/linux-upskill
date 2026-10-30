@@ -1,0 +1,2 @@
+- '`ps -ef --forest` и `sudo ls -laR /usr/local/lib/.upd`; затем `ls /etc/cron.d /etc/cron.daily` и `systemctl list-timers`.'
+- Сначала `cp` артефактов в `~/evidence/`, потом `pkill -f` и удаление файла в `/etc/cron.d/`.

@@ -26,7 +26,8 @@ async def progress_overview(db: AsyncSession, user_id: uuid.UUID) -> dict[str, A
             .order_by(UserProgress.completed_at.desc().nullslast())
         )
     ).all()
-    labs_total = (await db.execute(select(func.count()).select_from(Lab).where(Lab.published.is_(True)))).scalar_one()
+    runnable = select(func.count()).select_from(Lab).where(Lab.published.is_(True), Lab.availability == "available")
+    labs_total = (await db.execute(runnable)).scalar_one()
     recent = (
         await db.execute(
             select(ValidationAttempt, LabSession)

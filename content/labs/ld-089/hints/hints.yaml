@@ -1,0 +1,2 @@
+- '`ip route get 10.50.1.2` — source IP и интерфейс; `ip route get 10.50.9.5` — шлюз (via).'
+- После `ping -c1 10.50.1.2` смотрите `ip neigh show 10.50.1.2`.

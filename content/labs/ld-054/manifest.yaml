@@ -1,0 +1,66 @@
+schema_version: 1
+id: ld-054
+version: 2
+title: 'Инцидент: два unit конфликтуют за порт (socket activation)'
+mode: incident
+difficulty: middle
+estimated_minutes: 25
+description: 'Сервис не стартует: «Address already in use». Найдите связь через socket-активацию и устраните конфликт
+  навсегда.'
+skills:
+- ss -ltnp
+- systemctl list-sockets
+- .socket units
+- disable/mask
+objectives:
+- Найти владельца порта
+- Понять роль socket-юнита
+- Устранить конфликт так, чтобы он не вернулся после reboot
+task: '**Инцидент.** `labweb.service` (нужный сервис) не запускается: порт `127.0.0.1:8081` уже занят. Кто держит
+  порт, выясните сами (`ss -ltnp`, `systemctl list-sockets`).
+
+
+  Устраните конфликт так, чтобы **после перезагрузки порт принадлежал `labweb`** (отвечает `labweb v2`). Старый
+  `legacy` больше не нужен, но удалять его файлы не обязательно — достаточно, чтобы он не включался.
+
+
+  Проверка перезагрузит машину.
+
+  '
+lesson: 95
+stage: Этап 3. Мидл
+topic: systemd
+task_type: I
+environment: V
+theory: Socket activation создаёт слушающий сокет до старта сервиса.
+prediction: Как определить, какой unit держит порт? Сформулируй гипотезу и способ её проверить.
+criterion: нужный сервис владеет портом после reboot.
+followups:
+  Быстрый возврат: 'LD-053: Почему одинаковый момент запуска всех узлов вреден? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  reboot_before_validate: true
+  checks:
+  - id: labweb_owns_port
+    title: Порт 8081 отвечает labweb v2
+    pass_message: Порт принадлежит labweb
+    fail_message: На 127.0.0.1:8081 должен отвечать labweb v2
+  - id: legacy_not_enabled
+    title: legacy.socket не включён
+    pass_message: legacy не включается при загрузке
+    fail_message: legacy.socket всё ещё включён в автозапуск (disable/mask)
+  - id: labweb_active
+    title: labweb активен после reboot
+    pass_message: labweb активен
+    fail_message: labweb не запущен после перезагрузки
+reward:
+  base_xp: 200

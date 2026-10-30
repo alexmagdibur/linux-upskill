@@ -1,0 +1,51 @@
+schema_version: 1
+id: ld-001
+version: 2
+title: Где я? Текущий каталог, HOME и путь к bash
+mode: learn
+difficulty: junior
+estimated_minutes: 10
+description: Среди одинаково названных файлов найдите нужные пути и запишите их в JSON.
+skills:
+- pwd
+- $HOME
+- command -v
+- JSON
+objectives:
+- Определить cwd, HOME и интерпретатор
+- Не перепутать декоры с настоящими путями
+task: "В `~/maze` много одинаковых имён (`bash`, `b`, …) — это ловушки.\n\n1. Перейдите в `~/maze/a/b`.\n2. Запишите\
+  \ в `~/answer.json` JSON-объект с тремя ключами:\n   - `cwd` — абсолютный путь текущего каталога;\n   - `home`\
+  \ — ваш домашний каталог;\n   - `bash` — абсолютный путь **исполняемого** `bash`, который запускается по имени.\n"
+lesson: 18
+stage: Этап 2. Джун
+topic: Терминал, shell и окружение
+task_type: L
+environment: C
+theory: У каждого процесса свой текущий каталог; `$HOME` и путь к бинарнику — другие свойства.
+prediction: Почему `cd` в дочернем процессе не меняет каталог родителя? Сформулируй гипотезу и способ её проверить.
+criterion: все пути существуют и соответствуют окружению.
+followups:
+  Быстрый возврат: 'linux-012: Почему дочерний shell видит экспортированную переменную? Ответь без справки и назови
+    наблюдение, которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: json_valid
+    title: answer.json — корректный JSON
+    pass_message: JSON корректен
+    fail_message: ~/answer.json не является корректным JSON-объектом
+  - id: paths_ok
+    title: cwd, home и bash указаны верно
+    pass_message: Пути верные
+    fail_message: Пути в answer.json неверны (cwd=~/maze/a/b, home, настоящий bash)
+reward:
+  base_xp: 100

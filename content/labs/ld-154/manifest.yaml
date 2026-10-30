@@ -1,0 +1,83 @@
+schema_version: 1
+id: ld-154
+version: 2
+title: Алерт на ошибки и latency с окном и защитой от шума
+mode: practice
+difficulty: middle
+estimated_minutes: 40
+description: 'Напишите проверку «ALERT/OK» по журналу запросов: доля ошибок и p95-задержка в скользящем окне, минимум
+  запросов.'
+skills:
+- скользящее окно
+- error rate
+- p95
+- минимальный объём выборки
+objectives:
+- Считать метрики за окно
+- Не шуметь при малой выборке
+- Игнорировать данные вне окна
+task: 'Напишите исполняемый скрипт `/usr/local/bin/lab-alert`: `lab-alert ЖУРНАЛ ТЕКУЩЕЕ_ВРЕМЯ_EPOCH`. Формат строк
+  журнала: `<epoch> <http_status> <latency_ms>`.
+
+
+  Правила:
+
+
+  - окно — последние **300 секунд**: строки с `epoch > NOW-300` и `epoch <= NOW`;
+
+  - если в окне **меньше 20** запросов — вывод `OK insufficient-data`;
+
+  - иначе `ALERT` (с причиной после слова), если доля ответов 5xx в окне **≥ 5 %** или **p95 задержки > 500 мс**
+  (p95 = элемент с индексом `ceil(0.95·n)−1` в отсортированном списке задержек); иначе `OK`;
+
+  - вывод первым словом `ALERT` или `OK`, код возврата 0.
+
+
+  Скрипт можно писать на bash, awk или Python.
+
+  '
+lesson: 132
+stage: Этап 3. Мидл
+topic: Метрики и производительность
+task_type: P
+environment: V
+theory: Алерт должен обнаруживать значимое нарушение и избегать шума.
+prediction: Почему один пик latency не равен инциденту? Сформулируй гипотезу и способ её проверить.
+criterion: тестовый сбой вызывает алерт, краткий всплеск — нет.
+followups:
+  Быстрый возврат: 'LD-153: Какие показатели отделяют нагрузку от деградации? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 45
+  exercise_timeout_seconds: 15
+  checks:
+  - id: errors_alert
+    title: Доля ошибок ≥ 5% → ALERT
+    pass_message: Алерт по ошибкам
+    fail_message: Журнал с 10% ошибок в окне должен давать ALERT
+  - id: latency_alert
+    title: p95 > 500 мс → ALERT
+    pass_message: Алерт по задержке
+    fail_message: Журнал с p95 > 500 мс должен давать ALERT
+  - id: quiet_ok
+    title: Норма → OK
+    pass_message: В норме тихо
+    fail_message: Нормальный журнал (2% ошибок, быстрые ответы) должен давать OK
+  - id: window_respected
+    title: Ошибки вне окна игнорируются
+    pass_message: Окно учитывается
+    fail_message: Ошибки старше 300 секунд не должны вызывать ALERT
+  - id: min_requests
+    title: Мало запросов → OK insufficient-data
+    pass_message: Малая выборка не шумит
+    fail_message: При менее чем 20 запросах в окне нужен OK insufficient-data
+reward:
+  base_xp: 150

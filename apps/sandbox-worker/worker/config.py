@@ -27,6 +27,12 @@ class WorkerSettings(BaseSettings):
     sandbox_max_output_bytes: int = 64 * 1024 * 1024
     sandbox_scrollback_bytes: int = 128 * 1024
 
+    # LXD-хост (VM). Если lxd_ssh_host не задан, лаборатории с runtime.type=lxd на этом worker недоступны
+    lxd_ssh_host: str | None = None
+    lxd_ssh_user: str = "upskilllab"
+    lxd_ssh_port: int = 22
+    lxd_ssh_key: str | None = None
+
     worker_host: str = "127.0.0.1"
     worker_port: int = 8100
     worker_consumer_name: str = "worker-1"

@@ -1,0 +1,3 @@
+- 'Отправьте несколько проверок: `sudo nsenter --net=/run/netns/hc nc -z -w2 10.83.0.1 8080` — у виновного правила
+  вырастет `packets`.'
+- '`sudo nft delete rule inet filter input handle N`.'

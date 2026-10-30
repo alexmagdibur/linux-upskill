@@ -1,0 +1,71 @@
+schema_version: 1
+id: ld-039
+version: 2
+title: 'Инцидент: приложение исчерпало файловые дескрипторы'
+mode: incident
+difficulty: senior
+estimated_minutes: 25
+description: Служба падает с «Too many open files». Подтвердите утечку измерениями и устраните её в коде, а не поднятием
+  лимита.
+skills:
+- /proc/PID/fd
+- LimitNOFILE
+- lsof/ls -l /proc
+- утечка дескрипторов
+objectives:
+- Измерить рост числа FD
+- Найти утечку
+- Исправить код и проверить стабильность
+task: '**Инцидент.** Служба `leaky.service` регулярно падает и перезапускается; в журнале — `Too many open files`.
+  Лимит `LimitNOFILE=128`.
+
+
+  1. Подтвердите **утечку измерениями**: число открытых дескрипторов процесса (`ls /proc/PID/fd | wc -l`) растёт
+  со временем.
+
+  2. Найдите в `/opt/lab/leaky.py` место утечки и **исправьте код** (закрывайте файл). Поднимать `LimitNOFILE` нельзя
+  (он должен остаться небольшим).
+
+  3. Перезапустите службу: число дескрипторов должно перестать расти.
+
+  '
+lesson: 152
+stage: Этап 4. Синьор
+topic: Процессы
+task_type: I
+environment: V
+theory: FD — конечный ресурс процесса; высокий лимит маскирует утечку лишь временно.
+prediction: Как отличить рост нагрузки от утечки дескрипторов? Сформулируй гипотезу и способ её проверить.
+criterion: длительный тест не растит FD без границ.
+followups:
+  Быстрый возврат: 'LD-038: Какие данные могут измениться между чтениями? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: service_running
+    title: Служба работает без падений
+    pass_message: Служба работает
+    fail_message: leaky.service не запущена или падает
+  - id: fd_stable
+    title: Число FD не растёт
+    pass_message: Дескрипторы не текут
+    fail_message: Число открытых дескрипторов продолжает расти
+  - id: limit_kept
+    title: LimitNOFILE не завышен
+    pass_message: Лимит не завышен
+    fail_message: LimitNOFILE увеличен — нужно исправить утечку, а не лимит
+  - id: clean_journal
+    title: В журнале нет свежих ошибок
+    pass_message: Журнал чистый
+    fail_message: В журнале есть свежие ошибки «Too many open files»
+reward:
+  base_xp: 250

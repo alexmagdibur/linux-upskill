@@ -1,0 +1,2 @@
+- '`cat /sys/fs/cgroup/memory.max` — предел контейнера; `grep MemTotal /proc/meminfo` — память хоста.'
+- Page cache учитывается как used, но возвращается системе при нехватке памяти — это не «утечка».

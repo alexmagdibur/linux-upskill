@@ -1,0 +1,2 @@
+- 'Все счётчики лежат в `/sys/fs/cgroup/`: `memory.max`, `memory.events`, `memory.peak`.'
+- В `memory.events` строка `oom_kill N` — сколько процессов убито за нехватку памяти.

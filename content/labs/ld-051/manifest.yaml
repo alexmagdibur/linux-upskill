@@ -1,0 +1,66 @@
+schema_version: 1
+id: ld-051
+version: 2
+title: 'Инцидент: служба в цикле перезапуска из-за WorkingDirectory'
+mode: incident
+difficulty: middle
+estimated_minutes: 20
+description: Служба бесконечно перезапускается. Найдите причину по статусу и журналу и исправьте unit.
+skills:
+- systemctl status
+- journalctl -u
+- WorkingDirectory=
+- status=200/CHDIR
+objectives:
+- Прочитать причину из status и journal
+- Исправить unit
+- Добиться стабильной работы
+task: '**Инцидент.** Служба `labapp.service` постоянно перезапускается (`systemctl status labapp` показывает счётчик
+  рестартов, `journalctl -u labapp` — причину). Приложение пишет heartbeat в `/var/lib/labapp/hb`, а сейчас этот
+  файл не обновляется.
+
+
+  Найдите причину, **исправьте unit** (не приложение) и перезапустите службу. После исправления служба должна работать
+  стабильно: без новых рестартов и ошибок в журнале.
+
+  '
+lesson: 92
+stage: Этап 3. Мидл
+topic: systemd
+task_type: I
+environment: V
+theory: '`WorkingDirectory` и переменные окружения unit не обязаны совпадать с интерактивным shell.'
+prediction: Как увидеть фактическую конфигурацию? Сформулируй гипотезу и способ её проверить.
+criterion: стабильная работа и чистый журнал.
+followups:
+  Быстрый возврат: 'LD-050: Какой сигнал нужен приложению? Ответь без справки и назови наблюдение, которое подтвердит
+    ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: service_stable
+    title: labapp активен, рестарты не растут
+    pass_message: Служба работает стабильно
+    fail_message: labapp не активен или продолжает перезапускаться
+  - id: workdir_valid
+    title: WorkingDirectory существует
+    pass_message: Рабочий каталог корректен
+    fail_message: WorkingDirectory в unit должен указывать на существующий каталог
+  - id: heartbeat_alive
+    title: heartbeat обновляется
+    pass_message: Приложение пишет heartbeat
+    fail_message: Файл /var/lib/labapp/hb не обновляется
+  - id: clean_journal
+    title: В журнале нет CHDIR за последние секунды
+    pass_message: Журнал чистый
+    fail_message: В журнале всё ещё свежие ошибки CHDIR
+reward:
+  base_xp: 200

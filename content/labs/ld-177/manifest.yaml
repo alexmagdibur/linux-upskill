@@ -1,0 +1,76 @@
+schema_version: 1
+id: ld-177
+version: 2
+title: 'Ansible inventory: группы и переменные'
+mode: practice
+difficulty: junior
+estimated_minutes: 25
+description: Соберите inventory учебных узлов с группами, вложенными группами и переменными.
+skills:
+- ansible inventory
+- group_vars
+- children
+- ansible-inventory --list
+objectives:
+- Описать группы и узлы
+- Задать переменные групп
+- Проверить командой ansible-inventory
+task: 'Создайте `~/ansible/inventory.ini` (или `inventory.yml`) для узлов: `web1`, `web2` (группа `web`), `db1`
+  (группа `db`); обе группы входят в группу `prod`.
+
+
+  Переменные (в самом файле или в `group_vars/`):
+
+
+  - группа `web`: `http_port=8080`;
+
+  - группа `db`: `db_port=5432`;
+
+  - группа `prod`: `env=prod`.
+
+
+  Для всех узлов задайте `ansible_connection=local` (учебные узлы работают локально). Проверка: `ansible-inventory
+  -i ~/ansible/inventory.ini --list` (или `.yml`).
+
+  '
+lesson: 61
+stage: Этап 2. Джун
+topic: Конфигурация парка
+task_type: P
+environment: N
+theory: Inventory описывает узлы и группы, переменные задают desired state.
+prediction: Как не применить изменение к чужому хосту? Сформулируй гипотезу и способ её проверить.
+criterion: команды адресуют только нужные узлы.
+followups:
+  Быстрый возврат: 'LD-169: Какие метаданные и контрольные суммы должны совпасть? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_timeout_seconds: 15
+  checks:
+  - id: groups_ok
+    title: Группы web, db и prod:children
+    pass_message: Группы описаны
+    fail_message: Должны быть группы web (web1, web2), db (db1), prod (web и db)
+  - id: web_vars
+    title: 'web: http_port=8080, env=prod'
+    pass_message: Переменные web верны
+    fail_message: У web1/web2 должны быть http_port=8080 и env=prod
+  - id: db_vars
+    title: 'db: db_port=5432, env=prod'
+    pass_message: Переменные db верны
+    fail_message: У db1 должны быть db_port=5432 и env=prod
+  - id: local_conn
+    title: ansible_connection=local у всех
+    pass_message: Подключение local
+    fail_message: У всех узлов должно быть ansible_connection=local
+reward:
+  base_xp: 100

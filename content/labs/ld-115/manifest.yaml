@@ -1,0 +1,63 @@
+schema_version: 1
+id: ld-115
+version: 2
+title: 'SSH не пускает: права на ~/.ssh и authorized_keys'
+mode: incident
+difficulty: middle
+estimated_minutes: 20
+description: Вход по ключу отклоняется из-за небезопасных прав. Исправьте именно права, не ослабляя StrictModes.
+skills:
+- StrictModes
+- chmod 700/600
+- journalctl -u ssh
+- authorized_keys
+objectives:
+- Найти причину по журналу sshd
+- Исправить права
+- Не отключать защитные проверки
+task: '**Инцидент.** Вход `ssh labuser@127.0.0.1` по ключу `student` отклоняется (`Permission denied (publickey)`),
+  хотя ключ в `authorized_keys` есть.
+
+
+  Найдите причину (журнал `sshd`: `Authentication refused: bad ownership or modes`) и исправьте **права** на домашний
+  каталог, `~/.ssh` и `authorized_keys` пользователя `labuser`. Опцию `StrictModes` отключать нельзя.
+
+  '
+lesson: 120
+stage: Этап 3. Мидл
+topic: SSH и TLS
+task_type: I
+environment: N
+theory: '`sshd` отвергает слишком открытые ключевые файлы и каталоги.'
+prediction: Как увидеть точную причину в логах? Сформулируй гипотезу и способ её проверить.
+criterion: ключ принимается и открытые права не остаются.
+followups:
+  Быстрый возврат: 'LD-114: Какая сторона инициирует каждое SSH-соединение при ProxyJump? Ответь без справки и назови
+    наблюдение, которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 15
+  checks:
+  - id: login_ok
+    title: Вход по ключу проходит
+    pass_message: Вход работает
+    fail_message: Вход по ключу всё ещё отклоняется
+  - id: strict_on
+    title: StrictModes включён
+    pass_message: StrictModes включён
+    fail_message: Нельзя отключать StrictModes
+  - id: perms_safe
+    title: Права безопасные
+    pass_message: Права корректны
+    fail_message: Домашний каталог, .ssh или authorized_keys имеют небезопасные права
+reward:
+  base_xp: 200

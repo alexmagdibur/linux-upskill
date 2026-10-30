@@ -1,0 +1,62 @@
+schema_version: 1
+id: ld-006
+version: 2
+title: 'Инцидент: скрипт запускает не тот python3'
+mode: incident
+difficulty: junior
+estimated_minutes: 20
+description: Из-за порядка PATH скрипт берёт чужой python3. Исправьте окружение, не удаляя ни одну версию.
+skills:
+- PATH
+- command -v
+- type -a
+- ~/.profile
+objectives:
+- Доказать, какой интерпретатор запускается
+- Исправить порядок PATH
+- Сохранить оба бинарника
+task: '**Инцидент.** `~/app/run.sh` печатает `OLD python …` и падает: вместо системного Python запускается старый
+  из `~/opt/old`.
+
+
+  Исправьте среду запуска так, чтобы скрипт использовал системный `python3` (`OK python 3.x`). **Удалять `~/opt/old/python3`
+  нельзя** — он нужен для совместимости и должен остаться доступным (в конце PATH).
+
+
+  Проверка запускает скрипт в новой login-оболочке.
+
+  '
+lesson: 23
+stage: Этап 2. Джун
+topic: Терминал, shell и окружение
+task_type: I
+environment: C
+theory: '`PATH` задаёт порядок поиска исполняемых файлов.'
+prediction: Как доказать, какой интерпретатор запускает скрипт и откуда он взят? Сформулируй гипотезу и способ её
+  проверить.
+criterion: скрипт использует нужный интерпретатор, оба бинарника остаются доступны.
+followups:
+  Быстрый возврат: 'LD-005: Какая очистка должна выполниться при любом исходе? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  checks:
+  - id: uses_system_python
+    title: Скрипт использует системный python3
+    pass_message: Скрипт использует системный Python
+    fail_message: В новой login-оболочке run.sh всё ещё берёт старый python3
+  - id: both_available
+    title: Оба бинарника сохранены
+    pass_message: Оба интерпретатора на месте
+    fail_message: ~/opt/old/python3 или системный python3 пропали
+reward:
+  base_xp: 150

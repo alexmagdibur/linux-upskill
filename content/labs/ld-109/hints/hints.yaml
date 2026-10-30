@@ -1,0 +1,2 @@
+- '`sudo sh -c ''nft list ruleset > /etc/lab/rollback.nft''`.'
+- '`sudo nft -c -f /etc/lab/new.nft` покажет строку с ошибкой (опечатка в ключевом слове).'

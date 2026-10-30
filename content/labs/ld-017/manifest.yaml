@@ -1,0 +1,51 @@
+schema_version: 1
+id: ld-017
+version: 2
+title: Поиск крупных свежих файлов без кэша
+mode: practice
+difficulty: junior
+estimated_minutes: 15
+description: Найдите файлы больше заданного размера, изменённые за последние сутки, исключив кэш.
+skills:
+- find
+- -size
+- -mtime
+- -not -path
+objectives:
+- Объединить условия find
+- Исключить каталог кэша
+task: 'В `~/tree` лежат файлы разного размера и возраста.
+
+
+  Запишите в `~/found.txt` абсолютные пути файлов, которые **одновременно**: больше 1 МБ, изменены за последние
+  сутки и **не лежат в каталоге `cache`**. По одному пути на строку.
+
+  '
+lesson: 26
+stage: Этап 2. Джун
+topic: Файлы и каталоги
+task_type: P
+environment: C
+theory: '`find` комбинирует условия по времени, размеру и пути; порядок и группировка выражений важны.'
+prediction: Что значит «изменён за сутки»? Сформулируй гипотезу и способ её проверить.
+criterion: список совпадает с состоянием дерева.
+followups:
+  Быстрый возврат: 'linux-007: Почему существование `.tar.gz` не доказывает пригодность backup? Ответь без справки
+    и назови наблюдение, которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: found
+    title: 'found.txt: нужные файлы'
+    pass_message: Список верный
+    fail_message: В found.txt не тот список файлов (проверьте размер, возраст и исключение cache)
+reward:
+  base_xp: 100

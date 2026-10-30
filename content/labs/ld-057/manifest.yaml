@@ -1,0 +1,75 @@
+schema_version: 1
+id: ld-057
+version: 2
+title: 'Журнал: первый сбой после заданного времени и boot ID'
+mode: practice
+difficulty: junior
+estimated_minutes: 20
+description: Найдите в journald первое сообщение об отказе после контрольной метки времени и сопоставьте его с идентификатором
+  загрузки.
+skills:
+- journalctl --since
+- journalctl -u
+- -o json
+- _BOOT_ID
+objectives:
+- Отфильтровать журнал по времени и юниту
+- Выбрать первую запись после метки
+- Определить boot ID
+task: 'Служба `labcrash.service` несколько раз падала и писала в журнал строки вида `CRASH: code=N`. Время контрольной
+  метки лежит в `~/cutoff.txt`.
+
+
+  Найдите **первое** сообщение `CRASH:` **после** этой метки и запишите в `~/first_failure.txt` три строки:
+
+
+  ```
+
+  unit=labcrash.service
+
+  message=<текст сообщения, например CRASH: code=7>
+
+  boot=<идентификатор загрузки (_BOOT_ID), в которую это произошло>
+
+  ```
+
+
+  Падения **до** метки — ложный след, их учитывать не нужно. Читать системный журнал нужно через `sudo`.
+
+  '
+lesson: 47
+stage: Этап 2. Джун
+topic: Журналы и время
+task_type: P
+environment: V
+theory: Journal хранит boot ID и монотонные/реальные времена.
+prediction: Как не смешать ошибки разных загрузок? Сформулируй гипотезу и способ её проверить.
+criterion: указаны точная запись и причина.
+followups:
+  Быстрый возврат: 'LD-049: Почему `start` и `enable` не одно и то же? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: unit_ok
+    title: unit=labcrash.service
+    pass_message: Юнит указан верно
+    fail_message: В first_failure.txt должна быть строка unit=labcrash.service
+  - id: message_ok
+    title: 'message: первое падение после метки'
+    pass_message: Сообщение найдено верно
+    fail_message: message не совпадает с первым CRASH после контрольной метки
+  - id: boot_ok
+    title: 'boot: текущий _BOOT_ID'
+    pass_message: boot ID указан верно
+    fail_message: boot должен совпадать с идентификатором загрузки этой записи
+reward:
+  base_xp: 100

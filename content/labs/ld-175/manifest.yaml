@@ -1,0 +1,61 @@
+schema_version: 1
+id: ld-175
+version: 2
+title: Тест восстановления после удаления тома
+mode: practice
+difficulty: senior
+estimated_minutes: 25
+description: Данные потеряны вместе с каталогом. Восстановите их из backup и проверьте контрольные суммы по манифесту.
+skills:
+- tar -xzf
+- sha256sum -c
+- манифест
+- проверка восстановления
+objectives:
+- Восстановить из архива
+- Сверить контрольные суммы
+- Убедиться в полноте
+task: '**Инцидент.** Каталог данных `/srv/vol` с приложением был очищен. Резервная копия: `/var/backups/vol/vol-backup.tar.gz`,
+  манифест контрольных сумм: `/var/backups/vol/MANIFEST.sha256` (пути относительно `/srv/vol`).
+
+
+  Восстановите данные в `/srv/vol` и убедитесь, что **все** файлы совпадают с манифестом (`sha256sum -c`). Манифест
+  и архив менять нельзя.
+
+  '
+lesson: 190
+stage: Этап 4. Синьор
+topic: Backup и восстановление
+task_type: P
+environment: N
+theory: Восстановление сервиса включает данные, конфигурацию, секреты и DNS.
+prediction: Почему один восстановленный том не завершает DR? Сформулируй гипотезу и способ её проверить.
+criterion: сервис доступен и данные валидированы.
+followups:
+  Быстрый возврат: 'LD-174: Какие условия разрешают продвижение реплики? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: files_restored
+    title: Все файлы манифеста на месте
+    pass_message: Файлы восстановлены
+    fail_message: Не все файлы из манифеста восстановлены в /srv/vol
+  - id: checksums_ok
+    title: sha256sum -c проходит
+    pass_message: Контрольные суммы сходятся
+    fail_message: Контрольные суммы не совпадают с манифестом
+  - id: backup_untouched
+    title: Архив и манифест не изменены
+    pass_message: Резервная копия цела
+    fail_message: Архив или манифест изменены
+reward:
+  base_xp: 200

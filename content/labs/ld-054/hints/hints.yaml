@@ -1,0 +1,2 @@
+- '`systemctl list-sockets` показывает `.socket`-юниты: они занимают порт до старта сервиса.'
+- Остановить мало — после reboot он вернётся. Нужно ещё `disable` (или `mask`) для `legacy.socket` и `legacy.service`.

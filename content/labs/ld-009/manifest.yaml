@@ -1,0 +1,66 @@
+schema_version: 1
+id: ld-009
+version: 2
+title: Разделение stdout и stderr с сохранением кода выхода
+mode: practice
+difficulty: junior
+estimated_minutes: 15
+description: Запустите утилиту так, чтобы поток результата и поток ошибок попали в разные файлы, а код выхода не
+  потерялся.
+skills:
+- 2>
+- '>'
+- $?
+- потоки
+objectives:
+- Разделить потоки
+- Сохранить код выхода
+task: '`~/bin/tool.sh` печатает результат в stdout, предупреждение в stderr и завершается с ненулевым кодом.
+
+
+  Запустите его **один раз** так, чтобы:
+
+
+  - stdout попал в `~/out.txt`;
+
+  - stderr — в `~/err.txt`;
+
+  - **код выхода** утилиты записан в `~/rc.txt`.
+
+  '
+lesson: 32
+stage: Этап 2. Джун
+topic: Потоки, текст и данные
+task_type: P
+environment: C
+theory: stdout и stderr — разные файловые дескрипторы; перенаправление меняет их назначение.
+prediction: Почему порядок `2>&1` и `>file` важен? Сформулируй гипотезу и способ её проверить.
+criterion: сообщения попали в правильные файлы, код совпадает с оригинальным.
+followups:
+  Быстрый возврат: 'linux-008: Почему замена по подстроке может испортить соседнее поле? Ответь без справки и назови
+    наблюдение, которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: stdout
+    title: 'out.txt: только stdout'
+    pass_message: stdout в правильном файле
+    fail_message: В out.txt должна быть только строка stdout утилиты
+  - id: stderr
+    title: 'err.txt: только stderr'
+    pass_message: stderr в правильном файле
+    fail_message: В err.txt должна быть только строка stderr утилиты
+  - id: rc
+    title: 'rc.txt: исходный код выхода'
+    pass_message: Код выхода сохранён
+    fail_message: В rc.txt должен быть код выхода утилиты (3)
+reward:
+  base_xp: 100

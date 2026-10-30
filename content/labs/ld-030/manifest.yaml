@@ -1,0 +1,75 @@
+schema_version: 1
+id: ld-030
+version: 2
+title: 'Инцидент: после chmod -R пропал доступ у части команды'
+mode: incident
+difficulty: middle
+estimated_minutes: 20
+description: После неудачного chmod -R команда потеряла доступ. Восстановите права по политике, не открывая запись
+  миру.
+skills:
+- chmod -R
+- символьные права (X)
+- группы
+- принцип наименьших привилегий
+objectives:
+- Восстановить доступ группе
+- Сохранить исполнение скриптов
+- Не открыть запись всем
+task: '**Инцидент.** Кто-то выполнил `chmod -R 700 /srv/team`, и участники группы `labdev` (`alice`, `bob`) потеряли
+  доступ к проектным файлам.
+
+
+  Восстановите права на `/srv/team` по политике:
+
+
+  - владелец `root`, группа `labdev` (уже так);
+
+  - участники `labdev` **читают и пишут** файлы и **заходят** во все каталоги, могут создавать файлы в `docs/`;
+
+  - скрипты `scripts/*.sh` **исполняемые** для группы;
+
+  - «остальные» (пользователь `carol`) — **никакого доступа**; **ничего** не должно быть доступно на запись всем
+  (`o+w`).
+
+  '
+lesson: 76
+stage: Этап 3. Мидл
+topic: Права и пользователи
+task_type: I
+environment: V
+theory: Рекурсивный chmod меняет и файлы, и каталоги, хотя нужные биты у них различаются.
+prediction: Как восстановить политику по ролям? Сформулируй гипотезу и способ её проверить.
+criterion: матрица доступа ролей проходит.
+followups:
+  Быстрый возврат: 'LD-029: Как взаимодействует с ними umask? Ответь без справки и назови наблюдение, которое подтвердит
+    ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: group_rw
+    title: alice читает/пишет файлы и создаёт файлы в docs/
+    pass_message: Группа работает с файлами
+    fail_message: alice не может читать/писать файлы или создавать файлы в docs/
+  - id: scripts_exec
+    title: Скрипты исполняемы для группы
+    pass_message: Скрипты исполняемы
+    fail_message: scripts/run.sh не запускается от имени alice
+  - id: others_closed
+    title: carol не имеет доступа
+    pass_message: Остальным доступ закрыт
+    fail_message: carol видит содержимое /srv/team
+  - id: no_world_write
+    title: Нет прав записи для всех
+    pass_message: Лишних прав нет
+    fail_message: В /srv/team есть файлы с правом записи для всех (o+w)
+reward:
+  base_xp: 200

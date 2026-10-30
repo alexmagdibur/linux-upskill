@@ -1,0 +1,79 @@
+schema_version: 1
+id: ld-049
+version: 2
+title: 'Unit для HTTP-сервиса: отдельный пользователь и автозапуск'
+mode: practice
+difficulty: junior
+estimated_minutes: 20
+description: Оформите учебный HTTP-сервер как systemd-сервис от непривилегированного пользователя, который стартует
+  при загрузке.
+skills:
+- systemd unit
+- User=
+- systemctl enable
+- useradd --system
+objectives:
+- Создать системного пользователя
+- Написать service unit
+- Включить автозапуск и пережить reboot
+task: 'Скрипт `/opt/lab/web.py` — простой HTTP-сервер на `127.0.0.1:8080` (отвечает `hello from labweb`). Сейчас
+  он нигде не запущен.
+
+
+  1. Создайте **системного пользователя** `labweb` без домашнего каталога и без входа (`/usr/sbin/nologin`).
+
+  2. Напишите unit `/etc/systemd/system/labweb.service`: запуск `python3 /opt/lab/web.py` **от имени `labweb`**,
+  политика перезапуска `on-failure`, установка в `multi-user.target`.
+
+  3. Включите сервис в автозапуск и запустите его.
+
+
+  Проверка **перезагрузит машину** и затем убедится, что сервис поднялся сам и отвечает. Права администратора —
+  через `sudo`.
+
+  '
+lesson: 46
+stage: Этап 2. Джун
+topic: systemd
+task_type: P
+environment: V
+theory: Service unit описывает процесс, identity и условия рестарта; enable — связь с target.
+prediction: Почему `start` и `enable` не одно и то же? Сформулируй гипотезу и способ её проверить.
+criterion: сервис поднимается после reboot и отвечает.
+followups:
+  Быстрый возврат: 'LD-041: На каком этапе становится доступна корневая FS? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  reboot_before_validate: true
+  checks:
+  - id: service_active
+    title: Сервис labweb активен после reboot
+    pass_message: Сервис поднялся после перезагрузки
+    fail_message: labweb не запущен после перезагрузки
+  - id: enabled_for_boot
+    title: Сервис включён в автозапуск
+    pass_message: Автозапуск включён
+    fail_message: labweb не включён в автозапуск (systemctl enable)
+  - id: runs_as_labweb
+    title: Процесс работает от labweb
+    pass_message: Процесс работает от непривилегированного пользователя
+    fail_message: Процесс сервиса должен работать от пользователя labweb, а не от root
+  - id: answers
+    title: Сервис отвечает на :8080
+    pass_message: Сервис отвечает
+    fail_message: http://127.0.0.1:8080 не отвечает hello from labweb
+  - id: restart_policy
+    title: Задана политика Restart
+    pass_message: Политика перезапуска задана
+    fail_message: В unit должна быть политика Restart=on-failure (или always)
+reward:
+  base_xp: 100

@@ -1,0 +1,63 @@
+schema_version: 1
+id: ld-026
+version: 2
+title: Зачем каталогу бит x
+mode: practice
+difficulty: junior
+estimated_minutes: 15
+description: Экспериментом покажите, что без бита x на каталоге файл внутри недоступен, даже если сам читаем.
+skills:
+- chmod
+- stat
+- права каталога
+objectives:
+- Воспроизвести Permission denied
+- Исправить правом x у каталога
+- Зафиксировать права до/после
+task: 'Каталог `~/exp/vault` имеет режим `644` и содержит читаемый файл `note.txt`.
+
+
+  1. Убедитесь, что `cat ~/exp/vault/note.txt` даёт `Permission denied`.
+
+  2. Исправьте каталог так, чтобы владелец мог в него входить (добавьте `x`).
+
+  3. Запишите в `~/exp/answer.txt` одну строку вида `before=<режим до> after=<режим после>` (из `stat -c %a`).
+
+  '
+lesson: 39
+stage: Этап 2. Джун
+topic: Права и пользователи
+task_type: P
+environment: C
+theory: У каталога `r` позволяет перечислять имена, `x` — проходить по известному имени.
+prediction: Как это отличается от прав файла? Сформулируй гипотезу и способ её проверить.
+criterion: зафиксированы права до/после и фактический доступ.
+followups:
+  Быстрый возврат: 'LD-025: Почему соседний секрет может остаться закрытым? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  checks:
+  - id: dir_has_x
+    title: У каталога появился бит x для владельца
+    pass_message: Каталог доступен для входа
+    fail_message: У каталога vault должен быть бит x для владельца
+  - id: answer
+    title: 'answer.txt: режимы до и после'
+    pass_message: Режимы зафиксированы
+    fail_message: В answer.txt должно быть before=644 и after=<текущий режим каталога>
+  - id: access_works
+    title: Файл читается
+    pass_message: Файл внутри каталога читается
+    fail_message: note.txt всё ещё недоступен
+reward:
+  base_xp: 100

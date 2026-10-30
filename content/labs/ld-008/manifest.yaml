@@ -1,0 +1,61 @@
+schema_version: 1
+id: ld-008
+version: 2
+title: 'Инцидент: «успешный» отчёт при ошибке в начале конвейера'
+mode: incident
+difficulty: middle
+estimated_minutes: 20
+description: Скрипт возвращает 0, хотя первый этап конвейера упал. Настройте обработку ошибок, чтобы сбой был виден.
+skills:
+- pipefail
+- set -o
+- коды завершения
+- конвейеры
+objectives:
+- Увидеть, почему статус конвейера — это статус последней команды
+- Сделать сбой видимым в коде выхода и в отчёте
+task: '**Инцидент.** `~/bin/report.sh` сортирует `~/in/input.txt` в `~/out/sorted.txt` и пишет `status: OK` в `~/out/status.txt`.
+  Когда входной файл пропадает, скрипт всё равно говорит «OK» и возвращает `0`.
+
+
+  Исправьте `~/bin/report.sh`:
+
+
+  - при сбое любого этапа конвейера — **ненулевой код выхода** и `status: FAILED` в `status.txt`;
+
+  - при успехе — код `0` и `status: OK`.
+
+  '
+lesson: 63
+stage: Этап 3. Мидл
+topic: Терминал, shell и окружение
+task_type: I
+environment: C
+theory: По умолчанию статус pipeline обычно отражает последний этап.
+prediction: Как `pipefail` изменяет обнаружение ошибок выше по конвейеру? Сформулируй гипотезу и способ её проверить.
+criterion: инъекция сбоя первого этапа даёт ненулевой статус.
+followups:
+  Быстрый возврат: 'LD-007: Что меняется при кавычках вокруг переменной? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  checks:
+  - id: fails_loudly
+    title: 'Сбой: код ≠ 0 и status: FAILED'
+    pass_message: Сбой виден в коде и отчёте
+    fail_message: 'При пропавшем input.txt скрипт должен вернуть ненулевой код и записать status: FAILED'
+  - id: success_ok
+    title: 'Успех: код 0 и status: OK'
+    pass_message: Успешный путь не сломан
+    fail_message: 'При наличии input.txt нужен код 0, status: OK и отсортированный результат'
+reward:
+  base_xp: 200

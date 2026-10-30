@@ -1,0 +1,70 @@
+schema_version: 1
+id: ld-129
+version: 2
+title: 'Скрипт архивации: аргументы, коды выхода, справка'
+mode: practice
+difficulty: junior
+estimated_minutes: 15
+description: Напишите скрипт с проверкой аргументов, справкой и предсказуемыми кодами завершения.
+skills:
+- bash
+- $#
+- exit-коды
+- tar
+- usage
+objectives:
+- Обработать -h и неверные вызовы
+- Сообщить об ошибке кодом возврата
+task: 'Напишите `~/bin/arch.sh`:
+
+
+  - `arch.sh -h` — печатает справку со словом `Usage` в stdout, код `0`;
+
+  - без аргументов — справка в **stderr**, код `2`;
+
+  - `arch.sh ИСТОЧНИК АРХИВ.tar.gz` — создаёт архив каталога-источника, код `0`;
+
+  - если источника нет — сообщение в stderr, код `1`, архив **не создаётся**.
+
+  '
+lesson: 44
+stage: Этап 2. Джун
+topic: Bash и Python
+task_type: P
+environment: C
+theory: 'Операционный скрипт — интерфейс: входы, выходы и ошибки должны быть определены.'
+prediction: Как вызывающий процесс узнает о неуспехе? Сформулируй гипотезу и способ её проверить.
+criterion: корректные и ошибочные вызовы обрабатываются предсказуемо.
+followups:
+  Быстрый возврат: 'LD-034: Что следует проверить после штатного завершения? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  checks:
+  - id: help_ok
+    title: '-h: Usage и код 0'
+    pass_message: Справка работает
+    fail_message: arch.sh -h должен печатать Usage и возвращать 0
+  - id: no_args
+    title: 'Без аргументов: код 2 и Usage в stderr'
+    pass_message: Вызов без аргументов обработан
+    fail_message: Без аргументов нужен код 2 и справка в stderr
+  - id: archive_made
+    title: Архив создан, код 0
+    pass_message: Архив создан
+    fail_message: Корректный вызов должен создать валидный архив и вернуть 0
+  - id: missing_src
+    title: 'Нет источника: код 1, архива нет'
+    pass_message: Ошибка источника обработана
+    fail_message: Для несуществующего источника нужен код 1 и отсутствие архива
+reward:
+  base_xp: 100

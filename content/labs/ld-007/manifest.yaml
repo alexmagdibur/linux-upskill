@@ -1,0 +1,59 @@
+schema_version: 1
+id: ld-007
+version: 2
+title: Безопасная функция перехода в каталог по имени
+mode: practice
+difficulty: middle
+estimated_minutes: 15
+description: Напишите функцию оболочки, корректно работающую с именами, содержащими пробелы, `*` и ведущий дефис.
+skills:
+- кавычки
+- cd --
+- функции bash
+- globbing
+objectives:
+- Не допустить разбиения по пробелам и раскрытия масок
+- Обработать имя с дефисом
+task: 'В `~/dirs` лежат каталоги с «неудобными» именами: `my dir`, `a*b`, `-dash`, `plain` (и похожие ловушки: `aXb`).
+
+
+  Напишите в `~/lib/safe.sh` функцию `godir ИМЯ`, которая переходит в `~/dirs/ИМЯ`. Для любого из этих имён она
+  должна попадать **ровно в нужный каталог** (без раскрытия `*`, без разбиения по пробелу).
+
+
+  Проверка выполнит `source ~/lib/safe.sh; godir "<имя>"; pwd` для каждого имени.
+
+  '
+lesson: 62
+stage: Этап 3. Мидл
+topic: Терминал, shell и окружение
+task_type: P
+environment: C
+theory: Расширение шаблонов и разбиение слов происходят до вызова команды.
+prediction: Что меняется при кавычках вокруг переменной? Сформулируй гипотезу и способ её проверить.
+criterion: произвольные допустимые имена не расширяются и не разбиваются.
+followups:
+  Быстрый возврат: 'LD-006: Как доказать, какой интерпретатор запускает скрипт и откуда он взят? Ответь без справки
+    и назови наблюдение, которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  checks:
+  - id: function_defined
+    title: Функция godir определена в ~/lib/safe.sh
+    pass_message: Функция определена
+    fail_message: В ~/lib/safe.sh должна быть функция godir
+  - id: all_names_safe
+    title: Все четыре имени обрабатываются верно
+    pass_message: Все имена обработаны верно
+    fail_message: godir ломается на пробелах, * или ведущем дефисе
+reward:
+  base_xp: 150

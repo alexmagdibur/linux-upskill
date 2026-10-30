@@ -1,0 +1,78 @@
+schema_version: 1
+id: ld-114
+version: 2
+title: Bastion-доступ к внутреннему узлу через ProxyJump
+mode: practice
+difficulty: middle
+estimated_minutes: 40
+description: 'Достучитесь до внутреннего узла, не открывая его наружу: через bastion с помощью ProxyJump.'
+skills:
+- ssh -J / ProxyJump
+- ~/.ssh/config
+- authorized_keys
+- изоляция сегментов
+objectives:
+- Понять топологию
+- Настроить ключи для bastion и внутреннего узла
+- Описать ProxyJump в ssh_config
+task: '> В учебной машине `ip netns exec` и `ip -n` недоступны (в контейнере нельзя смонтировать `/sys`). Команды
+  внутри namespace выполняйте так: `sudo nsenter --net=/run/netns/ИМЯ команда`.
+
+
+  Топология: клиент (`client`, `10.95.1.2`) → **bastion** (машина, `10.95.1.1`, sshd, пользователь `jump`) → **внутренний
+  узел** (`inner`, `10.95.2.2`, отдельный sshd, пользователь `inner`). У клиента **нет** маршрута к `10.95.2.0/24`.
+
+
+  Настройте для пользователя `student` ключи и `~/.ssh/config` так, чтобы из клиента работало:
+
+
+  ```
+
+  sudo nsenter --net=/run/netns/client runuser -u student -- ssh inner id -un
+
+  ```
+
+
+  и выводило `inner`: алиас `inner` (`HostName 10.95.2.2`, `User inner`) с `ProxyJump` через bastion (`jump@10.95.1.1`).
+  Прямой доступ клиента к внутреннему узлу открывать нельзя (маршруты не менять). Проверка: `StrictHostKeyChecking`
+  включена, ключи без пароля.
+
+  '
+lesson: 119
+stage: Этап 3. Мидл
+topic: SSH и TLS
+task_type: P
+environment: N
+theory: Bastion ограничивает прямой доступ к внутренней VM.
+prediction: Какая сторона инициирует каждое SSH-соединение при ProxyJump? Сформулируй гипотезу и способ её проверить.
+criterion: прямое соединение запрещено, маршрут через bastion работает.
+followups:
+  Быстрый возврат: 'LD-113: Что означает предупреждение о смене host key? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 20
+  checks:
+  - id: jump_works
+    title: ssh inner id -un → inner
+    pass_message: ProxyJump работает
+    fail_message: Из клиента `ssh inner id -un` не выводит inner
+  - id: no_direct_route
+    title: У клиента нет маршрута во внутреннюю сеть
+    pass_message: Внутренняя сеть не открыта
+    fail_message: Клиент получил прямой доступ к 10.95.2.0/24 (маршруты менять нельзя)
+  - id: proxyjump_config
+    title: В ssh_config ProxyJump
+    pass_message: Конфигурация использует ProxyJump
+    fail_message: В ~/.ssh/config для inner нужен ProxyJump через bastion
+reward:
+  base_xp: 150

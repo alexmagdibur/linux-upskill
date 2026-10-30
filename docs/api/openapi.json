@@ -333,7 +333,8 @@
                   "enum": [
                     "beginner",
                     "junior",
-                    "middle"
+                    "middle",
+                    "senior"
                   ],
                   "type": "string"
                 },
@@ -375,6 +376,26 @@
                 }
               ],
               "title": "Module"
+            }
+          },
+          {
+            "name": "availability",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "available",
+                    "unavailable"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Availability"
             }
           },
           {

@@ -5,3 +5,4 @@ target-version = "py312"
 select = ["E", "F", "I", "B", "UP"]
 [lint.per-file-ignores]
 "infra/scripts/labgen/*.py" = ["E501"]
+"infra/scripts/*.py" = ["E501"]

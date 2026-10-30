@@ -1,0 +1,58 @@
+schema_version: 1
+id: ld-036
+version: 2
+title: 'Инцидент: zombie-процессы в учебном супервизоре'
+mode: incident
+difficulty: middle
+estimated_minutes: 20
+description: 'Супервизор запускает детей и не вызывает wait(): остаются zombie. Исправьте обработку завершений.'
+skills:
+- ps
+- zombie
+- wait()
+- SIGCHLD
+objectives:
+- Найти родителя zombie
+- Исправить код супервизора
+- Убедиться, что zombie не остаются
+task: '**Инцидент.** `~/sup/supervisor.py` запускает 20 короткоживущих детей, но не забирает их статусы: `ps` показывает
+  множество процессов в состоянии `Z`.
+
+
+  Найдите родителя zombie (`ps -eo pid,ppid,stat,cmd | grep Z`), **исправьте код** супервизора (родитель обязан
+  забрать статусы детей: `wait()`, `poll()` или `SIGCHLD`) и перезапустите его. После этого zombie остаться не должно,
+  а супервизор должен работать.
+
+  '
+lesson: 79
+stage: Этап 3. Мидл
+topic: Процессы
+task_type: I
+environment: C
+theory: Zombie — завершённый child, чей статус ещё не прочитал parent.
+prediction: Почему сигнал zombie обычно не решает причину? Сформулируй гипотезу и способ её проверить.
+criterion: после серии запусков zombie не остаются.
+followups:
+  Быстрый возврат: 'LD-035: Почему простое `&` не всегда сохраняет процесс? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: no_zombies
+    title: Zombie-процессов нет
+    pass_message: Zombie-процессов нет
+    fail_message: В системе остаются zombie-процессы
+  - id: supervisor_alive
+    title: Исправленный супервизор работает
+    pass_message: Супервизор работает
+    fail_message: Супервизор не запущен — его нужно перезапустить после исправления
+reward:
+  base_xp: 200

@@ -1,0 +1,67 @@
+schema_version: 1
+id: ld-121
+version: 2
+title: 'Какой пакет владеет бинарником: версия и зависимости'
+mode: learn
+difficulty: junior
+estimated_minutes: 15
+description: Определите пакет, которому принадлежит файл, его версию и прямые зависимости средствами dpkg.
+skills:
+- dpkg -S
+- dpkg -s
+- dpkg-query
+- зависимости пакетов
+objectives:
+- Найти пакет по файлу
+- Узнать установленную версию
+- Выписать прямые зависимости
+task: 'Бинарник `/usr/bin/jq` установлен из пакета. Запишите в `~/pkg.txt` три строки:
+
+
+  ```
+
+  package=<имя пакета, которому принадлежит /usr/bin/jq>
+
+  version=<установленная версия пакета>
+
+  depends=<прямые зависимости (Depends) через запятую, только имена пакетов без версий и альтернатив>
+
+  ```
+
+  '
+lesson: 45
+stage: Этап 2. Джун
+topic: Пакеты и обновления
+task_type: L
+environment: V
+theory: Package DB хранит состав, владельца файлов и зависимости.
+prediction: Как отличить пакетный бинарник от файла, установленного вручную? Сформулируй гипотезу и способ её проверить.
+criterion: отчёт совпадает с package DB.
+followups:
+  Быстрый возврат: 'LD-129: Как вызывающий процесс узнает о неуспехе? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: package_ok
+    title: 'package: владелец /usr/bin/jq'
+    pass_message: Пакет определён верно
+    fail_message: package должен быть пакетом, которому принадлежит /usr/bin/jq
+  - id: version_ok
+    title: 'version: установленная версия'
+    pass_message: Версия верна
+    fail_message: version не совпадает с установленной версией пакета
+  - id: depends_ok
+    title: 'depends: прямые зависимости'
+    pass_message: Зависимости верны
+    fail_message: depends должен содержать имена пакетов из Depends (без версий)
+reward:
+  base_xp: 100

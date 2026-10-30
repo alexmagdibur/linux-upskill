@@ -1,6 +1,6 @@
 schema_version: 1
 id: incident-003
-version: 1
+version: 2
 title: Приложение слушает неправильный порт (loopback внутри sandbox)
 mode: incident
 difficulty: middle
@@ -31,6 +31,17 @@ task: '**Инцидент.** Мониторинг сообщает: `127.0.0.1:8
   Запускать приложение можно так: `python3 ~/app/server.py &`.
 
   '
+lesson: 110
+stage: Этап 3. Мидл
+topic: TCP, DNS и HTTP
+task_type: I
+environment: C
+theory: Сервис может быть жив, но слушать не тот порт; конфигурация и фактический сокет должны совпасть.
+prediction: Почему исправления конфига без restart недостаточно? Сформулируй гипотезу и способ её проверить.
+criterion: Healthcheck 8080 отвечает, конфиг верен, 9090 закрыт.
+followups:
+  Быстрый возврат: 'LD-097: Как различить bind и сетевой запрет? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
 runtime:
   type: container
   image: ubuntu-basic

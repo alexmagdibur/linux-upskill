@@ -1,0 +1,3 @@
+- 'Модули: `ansible.builtin.user`, `file`, `copy` (параметр `content:`), `systemd` (`daemon_reload`, `enabled`,
+  `state`).'
+- Не используйте `shell`/`command` для того, что умеют модули — они всегда «changed».

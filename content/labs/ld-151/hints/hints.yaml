@@ -1,0 +1,3 @@
+- 'Drop-in: `SystemCallFilter=@system-service` и `SystemCallErrorNumber=EPERM`; mount в `@system-service` не входит
+  (он в `@mount`).'
+- 'После изменений: `sudo systemctl daemon-reload && sudo systemctl restart labseccomp`.'

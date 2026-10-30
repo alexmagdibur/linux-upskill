@@ -1,0 +1,2 @@
+- '`ip -d link show hv0` и `sudo nsenter --net=/run/netns/srv ip link show sv0` — сравните mtu.'
+- '`sudo nsenter --net=/run/netns/srv ip link set sv0 mtu 1500`.'

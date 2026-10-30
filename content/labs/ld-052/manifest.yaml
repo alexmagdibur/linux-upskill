@@ -1,0 +1,78 @@
+schema_version: 1
+id: ld-052
+version: 2
+title: 'Restart и лимит повторов: лечим временный сбой, показываем постоянный'
+mode: practice
+difficulty: middle
+estimated_minutes: 25
+description: Настройте политику перезапуска так, чтобы кратковременный сбой восстанавливался, а постоянный был виден
+  оператору.
+skills:
+- Restart=
+- StartLimitBurst
+- StartLimitIntervalSec
+- systemctl is-failed
+objectives:
+- Включить автоперезапуск
+- Ограничить число повторов
+- Не скрыть постоянную ошибку
+task: 'Два сервиса:
+
+
+  - `flaky.service` падает при первых двух запусках, потом работает (временный сбой);
+
+  - `broken.service` падает **всегда** (постоянная ошибка).
+
+
+  Настройте **оба** (в unit или drop-in) так, чтобы:
+
+
+  - `Restart=on-failure` с небольшой паузой (`RestartSec=`);
+
+  - **явно** заданы `StartLimitIntervalSec=` и `StartLimitBurst=` (не больше 10 повторов);
+
+  - `flaky` в итоге **работает**, а `broken` после исчерпания лимита остаётся в состоянии **failed** (виден оператору),
+  а не перезапускается бесконечно.
+
+
+  Проверка сама сбросит состояния и запустит оба сервиса заново.
+
+  '
+lesson: 93
+stage: Этап 3. Мидл
+topic: systemd
+task_type: P
+environment: V
+theory: Автоперезапуск лечит краткий сбой, но может скрыть постоянную ошибку.
+prediction: Для чего нужны rate limits и watchdog? Сформулируй гипотезу и способ её проверить.
+criterion: временный сбой восстанавливается, постоянный виден оператору.
+followups:
+  Быстрый возврат: 'LD-051: Как увидеть фактическую конфигурацию? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 25
+  checks:
+  - id: flaky_recovers
+    title: flaky восстановился после временных сбоев
+    pass_message: Временный сбой вылечен
+    fail_message: 'flaky не работает: не заданы Restart=on-failure и лимиты'
+  - id: broken_visible
+    title: broken остановлен лимитом и в состоянии failed
+    pass_message: Постоянный сбой виден оператору
+    fail_message: broken должен оказаться в состоянии failed после исчерпания лимита повторов
+  - id: limits_explicit
+    title: StartLimit* заданы явно и ≤ 10
+    pass_message: Лимиты заданы явно
+    fail_message: В конфигурации должны быть явные StartLimitIntervalSec и StartLimitBurst (≤ 10)
+reward:
+  base_xp: 150

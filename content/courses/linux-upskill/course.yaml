@@ -1,37 +1,226 @@
 slug: linux-upskill
 title: 'Linux Upskill: от командной строки к диагностике'
-description: 'Практический курс: Learn → Practice → Incident. Реальные команды в изолированной Linux-песочнице и
-  автоматическая проверка результата.'
+description: 'Практический курс из 205 заданий: Learn → Practice → Incident. Реальные команды в изолированной песочнице,
+  независимая проверка результата; задания, требующие VM или нескольких узлов, описаны, но пока недоступны.'
 modules:
-- slug: linux-basics
-  title: Linux Basics
-  description: Файловая система, файлы, потоки, поиск, pipes, архивы и текстовые фильтры.
+- slug: stage-1-novice
+  title: Этап 1. Новичок
+  description: Терминал, файлы, справка, потоки и простые права.
   labs:
+  - nb-001
+  - nb-002
+  - nb-003
+  - nb-004
   - linux-001
+  - nb-005
+  - nb-006
+  - nb-007
+  - nb-008
+  - nb-009
   - linux-002
+  - nb-010
+  - nb-011
   - linux-003
+  - nb-012
+  - linux-012
+  - linux-009
+- slug: stage-2-junior
+  title: Этап 2. Джун
+  description: Самостоятельная работа с файлами, текстом, правами, процессами и первичной диагностикой.
+  labs:
+  - ld-001
+  - ld-002
+  - ld-003
+  - ld-004
+  - ld-005
+  - ld-006
   - linux-004
+  - linux-007
+  - ld-017
+  - ld-018
+  - ld-019
   - linux-005
   - linux-006
-  - linux-007
   - linux-008
-- slug: administration
-  title: Administration
-  description: Права доступа, группы, окружение, процессы, диск и автоматизация.
-  labs:
-  - linux-009
+  - ld-009
+  - ld-010
+  - ld-011
   - linux-010
   - linux-011
-  - linux-012
-  - linux-013
-  - linux-014
-  - linux-015
-- slug: incidents
-  title: Incident Simulation
-  description: Диагностика и устранение искусственно созданных неисправностей.
-  labs:
   - incident-001
+  - ld-025
+  - ld-026
+  - ld-027
+  - linux-013
+  - ld-033
+  - ld-034
+  - ld-129
+  - ld-121
+  - ld-049
+  - ld-057
+  - linux-014
   - incident-002
-  - incident-003
+  - ld-073
+  - ld-081
+  - ld-089
+  - ld-090
+  - ld-097
+  - ld-105
+  - ld-113
+  - ld-137
+  - ld-153
+  - ld-161
+  - ld-169
+  - ld-177
+- slug: stage-3-middle
+  title: Этап 3. Мидл
+  description: Эксплуатация сервисов, разбор сбоев, автоматизация и восстановление.
+  labs:
+  - ld-007
+  - ld-008
   - incident-004
+  - ld-020
+  - ld-021
+  - ld-022
+  - ld-023
+  - ld-012
+  - ld-013
+  - ld-014
+  - ld-015
   - incident-005
+  - ld-028
+  - ld-029
+  - ld-030
+  - ld-031
+  - ld-035
+  - ld-036
+  - ld-037
+  - ld-038
+  - linux-015
+  - ld-130
+  - ld-131
+  - ld-132
+  - ld-133
+  - ld-122
+  - ld-123
+  - ld-124
+  - ld-125
+  - ld-050
+  - ld-051
+  - ld-052
+  - ld-053
+  - ld-054
+  - ld-059
+  - ld-060
+  - ld-061
+  - ld-075
+  - ld-076
+  - ld-077
+  - ld-082
+  - ld-083
+  - ld-084
+  - ld-085
+  - ld-091
+  - ld-092
+  - ld-093
+  - ld-094
+  - incident-003
+  - ld-098
+  - ld-099
+  - ld-100
+  - ld-101
+  - ld-106
+  - ld-107
+  - ld-108
+  - ld-109
+  - ld-114
+  - ld-115
+  - ld-116
+  - ld-117
+  - ld-118
+  - ld-138
+  - ld-139
+  - ld-140
+  - ld-141
+  - ld-145
+  - ld-146
+  - ld-147
+  - ld-148
+  - ld-154
+  - ld-155
+  - ld-156
+  - ld-162
+  - ld-164
+  - ld-165
+  - ld-170
+  - ld-171
+  - ld-172
+  - ld-173
+  - ld-178
+  - ld-179
+  - ld-180
+  - ld-181
+  - ld-185
+  - ld-186
+  - ld-187
+- slug: stage-4-senior
+  title: Этап 4. Синьор
+  description: Межслойные причины, надёжные изменения, аварийное восстановление и postmortem.
+  labs:
+  - ld-024
+  - ld-016
+  - ld-032
+  - ld-039
+  - ld-040
+  - ld-134
+  - ld-135
+  - ld-136
+  - ld-126
+  - ld-127
+  - ld-128
+  - ld-046
+  - ld-055
+  - ld-056
+  - ld-063
+  - ld-064
+  - ld-080
+  - ld-086
+  - ld-088
+  - ld-095
+  - ld-096
+  - ld-102
+  - ld-103
+  - ld-104
+  - ld-110
+  - ld-111
+  - ld-112
+  - ld-119
+  - ld-120
+  - ld-142
+  - ld-143
+  - ld-144
+  - ld-149
+  - ld-150
+  - ld-151
+  - ld-152
+  - ld-158
+  - ld-160
+  - ld-166
+  - ld-168
+  - ld-174
+  - ld-175
+  - ld-176
+  - ld-182
+  - ld-183
+  - ld-184
+  - ld-188
+  - ld-190
+  - ld-192
+  - ld-193
+  - ld-194
+  - ld-195
+  - ld-196
+  - ld-197
+  - ld-198
+  - ld-199
+  - ld-200

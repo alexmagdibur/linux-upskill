@@ -1,0 +1,3 @@
+- '`ss -ltnp | grep 8081` — адрес `127.0.0.1` значит «только локально».'
+- В unit замените адрес в `ExecStart` на `10.65.0.1`, затем `sudo systemctl daemon-reload && sudo systemctl restart
+  labweb`.

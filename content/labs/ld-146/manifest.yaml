@@ -1,0 +1,69 @@
+schema_version: 1
+id: ld-146
+version: 2
+title: 'Изолированный network namespace: нет маршрутов, затем связь через veth'
+mode: practice
+difficulty: middle
+estimated_minutes: 20
+description: Создайте network namespace, покажите отсутствие маршрутов, затем соедините его с хостом парой veth.
+skills:
+- ip netns
+- nsenter
+- veth
+- ip route
+objectives:
+- Создать namespace
+- Увидеть пустую таблицу маршрутов
+- Настроить veth и проверить связь
+task: '> В учебной машине `ip netns exec` и `ip -n` недоступны (в контейнере нельзя смонтировать `/sys`). Команды
+  внутри namespace выполняйте через `nsenter --net=/run/netns/labns <команда>`.
+
+
+  1. Создайте network namespace `labns` (`ip netns add`). В нём без настройки не должно быть маршрутов и связи наружу
+  (проверьте `nsenter --net=/run/netns/labns ip route`).
+
+  2. Соедините его с основной системой парой veth: `vlab0` (основная система, `10.77.0.1/24`) ↔ `vlab1` (в `labns`,
+  `10.77.0.2/24`), поднимите интерфейсы (включая `lo` в namespace).
+
+  3. Проверьте, что `ping 10.77.0.2` из основной системы и `ping 10.77.0.1` из `labns` работают.
+
+
+  Интерфейсы и namespace должны остаться настроенными.
+
+  '
+lesson: 129
+stage: Этап 3. Мидл
+topic: Namespaces и cgroups
+task_type: P
+environment: D
+theory: Отдельный network namespace сам по себе не имеет маршрута наружу.
+prediction: Какие интерфейс и правила создают доступ? Сформулируй гипотезу и способ её проверить.
+criterion: запрет подтверждён попыткой соединения.
+followups:
+  Быстрый возврат: 'LD-145: Какие namespace различаются между хостом и контейнером? Ответь без справки и назови
+    наблюдение, которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: ns_exists
+    title: Namespace labns существует
+    pass_message: Namespace создан
+    fail_message: Нет network namespace labns
+  - id: veth_pair
+    title: veth vlab0 ↔ vlab1 с нужными адресами
+    pass_message: veth настроен
+    fail_message: Нужны vlab0 (10.77.0.1/24) в основной системе и vlab1 (10.77.0.2/24) в labns, оба UP
+  - id: ping_both
+    title: Ping в обе стороны
+    pass_message: Связь работает
+    fail_message: Ping между основной системой и labns не проходит
+reward:
+  base_xp: 150

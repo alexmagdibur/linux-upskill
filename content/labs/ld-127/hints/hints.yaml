@@ -1,0 +1,2 @@
+- '`dpkg -l ''lab*''`; `sudo apt-get remove -y --purge labdebug` и `sudo apt-get autoremove -y --purge`.'
+- 'SBOM: `dpkg-query -W -f=''${Package} ${Version}\n'' ''lab*'' | sort > ~/sbom.txt`.'

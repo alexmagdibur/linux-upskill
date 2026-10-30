@@ -1,0 +1,3 @@
+- 'Основа: `table inet filter { chain input { type filter hook input priority 0; policy drop; ... } }`.'
+- 'Правила: `iif lo accept`, `ct state established,related accept`, `ip saddr 10.81.1.0/24 tcp dport 22 accept`
+  и т. д. Применить: `sudo nft -f /etc/nftables.conf`.'

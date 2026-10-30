@@ -1,0 +1,71 @@
+schema_version: 1
+id: ld-101
+version: 2
+title: 'Локальный DNS: A, AAAA, CNAME и отрицательный ответ'
+mode: practice
+difficulty: middle
+estimated_minutes: 25
+description: Настройте локальный DNS-сервер (dnsmasq) с записями A/AAAA/CNAME и ответом NXDOMAIN для запрещённого
+  имени.
+skills:
+- dnsmasq
+- dig
+- host-record
+- cname
+- NXDOMAIN
+objectives:
+- Описать записи в dnsmasq
+- Проверить dig-ом
+- Получить NXDOMAIN
+task: 'Локальный `dnsmasq` слушает `127.0.0.1:5353` (общие настройки — `/etc/dnsmasq.d/00-base.conf`, не меняйте
+  их). Добавьте файл `/etc/dnsmasq.d/10-lab.conf`, чтобы:
+
+
+  - `web.lab.test` → A `10.20.0.10` и AAAA `fd00::10`;
+
+  - `www.lab.test` → CNAME на `web.lab.test`;
+
+  - `blocked.lab.test` → **NXDOMAIN**.
+
+
+  Затем перезапустите службу: `sudo systemctl restart dnsmasq`. Проверка: `dig @127.0.0.1 -p 5353 web.lab.test`.
+
+  '
+lesson: 114
+stage: Этап 3. Мидл
+topic: TCP, DNS и HTTP
+task_type: P
+environment: N
+theory: A и AAAA сопоставляют имя с адресами; CNAME задаёт alias; negative caching тоже имеет TTL.
+prediction: Что должен вернуть resolver? Сформулируй гипотезу и способ её проверить.
+criterion: ответы и TTL соответствуют зоне.
+followups:
+  Быстрый возврат: 'LD-100: Какие логи разделяют DNS, connect и timeout? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 15
+  checks:
+  - id: a_aaaa
+    title: 'web: A и AAAA'
+    pass_message: A и AAAA возвращаются
+    fail_message: web.lab.test должен отдавать A 10.20.0.10 и AAAA fd00::10
+  - id: cname_ok
+    title: www → CNAME web
+    pass_message: CNAME работает
+    fail_message: www.lab.test должен быть CNAME на web.lab.test
+  - id: nxdomain_ok
+    title: blocked → NXDOMAIN
+    pass_message: Отрицательный ответ получен
+    fail_message: blocked.lab.test должен отвечать NXDOMAIN
+reward:
+  base_xp: 150

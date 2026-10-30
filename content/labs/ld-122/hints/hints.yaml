@@ -1,0 +1,3 @@
+- '`gpg --dearmor` превращает ASCII-ключ в бинарный keyring: `sudo gpg --dearmor -o /etc/apt/keyrings/labrepo.gpg
+  /srv/repo/key.asc`.'
+- 'Строка источника: `deb [signed-by=/etc/apt/keyrings/labrepo.gpg] file:/srv/repo ./`.'

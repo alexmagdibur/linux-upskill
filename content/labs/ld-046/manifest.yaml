@@ -1,0 +1,60 @@
+schema_version: 1
+id: ld-046
+version: 2
+title: 'Скорость загрузки: найти и устранить задержку через systemd-analyze'
+mode: practice
+difficulty: senior
+estimated_minutes: 25
+description: 'Сравните время загрузки до и после правки: найдите службу, которая тормозит старт, и уберите блокировку.'
+skills:
+- systemd-analyze
+- blame
+- critical-chain
+- Type=oneshot
+objectives:
+- Найти виновника по blame/critical-chain
+- Не блокировать загрузку
+- Подтвердить результат после reboot
+task: 'Загрузка машины стала медленной. Найдите по `systemd-analyze blame` / `critical-chain` службу, которая замедляет
+  старт, и устраните задержку **без потери функции**: служба `labslow.service` должна по-прежнему выполнять свою
+  задачу (создать `/run/labslow.done`), но **не блокировать** завершение загрузки.
+
+
+  Проверка перезагрузит машину и измерит время запуска пользовательского пространства.
+
+  '
+lesson: 160
+stage: Этап 4. Синьор
+topic: Загрузка и ядро
+task_type: P
+environment: V
+theory: Критический путь загрузки зависит от цепочки зависимостей, а не просто суммы времени всех units.
+prediction: Как измерить эффект изменения? Сформулируй гипотезу и способ её проверить.
+criterion: изменение сокращает измеренное время и не ломает зависимости.
+followups:
+  Быстрый возврат: 'LD-045: Почему модуль в root FS может не помочь загрузке? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 60
+  exercise_script: checks/exercise.sh
+  reboot_before_validate: true
+  exercise_timeout_seconds: 15
+  checks:
+  - id: boot_fast
+    title: Загрузка не ждёт labslow
+    pass_message: Загрузка ускорена
+    fail_message: Время userspace-загрузки всё ещё превышает 14 секунд
+  - id: function_kept
+    title: labslow выполняет задачу
+    pass_message: Функция сохранена
+    fail_message: labslow не создал /run/labslow.done (задача потеряна)
+reward:
+  base_xp: 200

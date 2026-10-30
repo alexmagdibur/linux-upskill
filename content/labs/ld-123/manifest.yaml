@@ -1,0 +1,68 @@
+schema_version: 1
+id: ld-123
+version: 2
+title: 'Инцидент: обновление библиотеки сломало приложение'
+mode: incident
+difficulty: middle
+estimated_minutes: 25
+description: После обновления пакета приложение падает. Верните рабочую версию и закрепите её, чтобы обновление
+  не повторилось.
+skills:
+- apt-get install pkg=ver
+- apt-mark hold
+- dpkg -l
+- journalctl -u
+objectives:
+- Связать сбой с обновлением
+- Откатить версию
+- Закрепить версию (hold)
+task: '**Инцидент.** Служба `labapp.service` перестала работать после обновления библиотеки `labfmt` до версии 2.0
+  (в ней убрана функция `render`).
+
+
+  1. Найдите причину в журнале (`journalctl -u labapp`).
+
+  2. Откатите `labfmt` до версии **1.0** из локального репозитория (`/srv/repo`, он уже подключён).
+
+  3. **Закрепите** версию (`apt-mark hold`), чтобы следующее обновление её не тронуло, и убедитесь, что служба снова
+  работает.
+
+  '
+lesson: 88
+stage: Этап 3. Мидл
+topic: Пакеты и обновления
+task_type: I
+environment: V
+theory: Зависимости могут быть ABI-несовместимыми при обновлении.
+prediction: Как связать регрессию с конкретной версией библиотеки? Сформулируй гипотезу и способ её проверить.
+criterion: сервис работает, причина документирована.
+followups:
+  Быстрый возврат: 'LD-122: Как подтвердить происхождение пакета? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 15
+  checks:
+  - id: version_rolled_back
+    title: labfmt версии 1.0
+    pass_message: Версия откачена
+    fail_message: Установлена не версия 1.0 пакета labfmt
+  - id: held
+    title: Версия закреплена
+    pass_message: Версия закреплена
+    fail_message: Пакет labfmt не закреплён (apt-mark hold)
+  - id: service_ok
+    title: labapp работает
+    pass_message: Служба работает
+    fail_message: labapp не работает
+reward:
+  base_xp: 200

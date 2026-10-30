@@ -1,0 +1,3 @@
+- '`sudo useradd --system --no-create-home --shell /usr/sbin/nologin labweb`.'
+- 'Нужные секции unit: `[Unit]`, `[Service]` (User=, ExecStart=, Restart=) и `[Install]` (WantedBy=multi-user.target).'
+- 'После создания файла: `sudo systemctl daemon-reload && sudo systemctl enable --now labweb`.'

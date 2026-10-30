@@ -1,0 +1,3 @@
+- '`systemd-analyze blame | head` и `systemd-analyze critical-chain`.'
+- 'Служба `Type=oneshot` с `sleep 15` блокирует `multi-user.target`. Отвяжите: запуск в фоне (`Type=simple`/`exec`)
+  или `Before=` убрать — главное, чтобы цель не ждала завершения.'

@@ -1,0 +1,74 @@
+schema_version: 1
+id: ld-059
+version: 2
+title: Persistent journal с разумным лимитом места
+mode: practice
+difficulty: middle
+estimated_minutes: 20
+description: Включите постоянное хранение журнала и ограничьте его размер, чтобы записи переживали перезагрузку.
+skills:
+- journald.conf
+- Storage=persistent
+- SystemMaxUse
+- journalctl --list-boots
+objectives:
+- Включить persistent storage
+- Задать дисковый бюджет
+- Подтвердить сохранение после reboot
+task: 'Сейчас журнал хранится только в памяти и пропадает при перезагрузке (задано `Storage=volatile`).
+
+
+  Настройте journald так, чтобы:
+
+
+  - журнал **сохранялся на диск** (`Storage=persistent`);
+
+  - занимал **не больше 100 МБ** (`SystemMaxUse=`, укажите разумное значение, например `50M`);
+
+  - конфигурация лежала в drop-in `/etc/systemd/journald.conf.d/` (с номером больше, чем у существующего `00-lab.conf`);
+
+  - изменения вступили в силу (перезапустите `systemd-journald`).
+
+
+  Проверка запишет метку в журнал, **перезагрузит машину** и проверит, что метка видна в предыдущей загрузке.
+
+  '
+lesson: 96
+stage: Этап 3. Мидл
+topic: Журналы и время
+task_type: P
+environment: V
+theory: Persistent journal требует дискового бюджета и политики ротации.
+prediction: Что останется доступным после reboot? Сформулируй гипотезу и способ её проверить.
+criterion: записи переживают reboot и не превышают лимит.
+followups:
+  Быстрый возврат: 'LD-058: Какие записи указывают на victim и предел памяти? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  reboot_before_validate: true
+  exercise_timeout_seconds: 20
+  checks:
+  - id: storage_persistent
+    title: Storage=persistent и каталог журнала есть
+    pass_message: Журнал хранится на диске
+    fail_message: Нужны Storage=persistent и каталог /var/log/journal
+  - id: size_limited
+    title: SystemMaxUse ≤ 100M
+    pass_message: Размер журнала ограничен
+    fail_message: Задайте SystemMaxUse не больше 100M
+  - id: survives_reboot
+    title: Метка из прошлой загрузки видна
+    pass_message: Записи пережили перезагрузку
+    fail_message: Записи прошлой загрузки не сохранились (проверьте, что journald перезапущен)
+reward:
+  base_xp: 150

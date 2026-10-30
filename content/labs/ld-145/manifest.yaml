@@ -1,0 +1,70 @@
+schema_version: 1
+id: ld-145
+version: 2
+title: 'Namespaces: сравнить PID, mount, network и user namespace'
+mode: learn
+difficulty: middle
+estimated_minutes: 15
+description: Сравните идентификаторы namespace процесса в изоляции и в основной системе.
+skills:
+- /proc/PID/ns
+- unshare
+- readlink
+- inode namespace
+objectives:
+- Читать inode namespace
+- Создать изолированные namespace
+- Сопоставить различия
+task: 'Запишите в `~/ns.txt` четыре строки в формате `<тип>=<одинаковы|различаются>`: сравнение namespace обычной
+  оболочки и процесса, запущенного через `unshare` (**с** новыми pid, mount, net и user namespace: `unshare --fork
+  --pid --mount-proc --mount --net --user --map-root-user`).
+
+
+  ```
+
+  pid=...
+
+  mnt=...
+
+  net=...
+
+  user=...
+
+  ```
+
+
+  Идентификаторы читаются из `/proc/<PID>/ns/*` (`readlink`).
+
+  '
+lesson: 128
+stage: Этап 3. Мидл
+topic: Namespaces и cgroups
+task_type: L
+environment: D
+theory: Namespaces изолируют видимость ресурсов, но процессы используют общее ядро.
+prediction: Какие namespace различаются между хостом и контейнером? Сформулируй гипотезу и способ её проверить.
+criterion: отчёт привязан к реальным inode namespace.
+followups:
+  Быстрый возврат: 'LD-141: Какие данные относятся к persistent volume? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: all_four
+    title: Четыре строки с допустимыми значениями
+    pass_message: Формат верный
+    fail_message: Нужны строки pid=, mnt=, net=, user= со значениями одинаковы|различаются
+  - id: values_right
+    title: Значения соответствуют реальности
+    pass_message: Значения верны
+    fail_message: Значения не совпадают с реальным сравнением (в изоляции все четыре должны различаться)
+reward:
+  base_xp: 150

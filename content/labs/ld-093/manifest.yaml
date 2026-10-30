@@ -1,0 +1,61 @@
+schema_version: 1
+id: ld-093
+version: 2
+title: 'Соединение зависает на больших пакетах: MTU'
+mode: incident
+difficulty: middle
+estimated_minutes: 20
+description: Малые пакеты проходят, а большие нет. Найдите звено с меньшим MTU и устраните несоответствие.
+skills:
+- ip link mtu
+- ping -M do
+- tracepath
+- PMTU
+objectives:
+- Подтвердить проблему ping с DF
+- Найти узкое звено
+- Выровнять MTU
+task: '> В учебной машине `ip netns exec` и `ip -n` недоступны (в контейнере нельзя смонтировать `/sys`). Команды
+  внутри namespace выполняйте так: `sudo nsenter --net=/run/netns/ИМЯ команда`.
+
+
+  Узел `srv` (`10.64.0.2`) подключён к машине (`10.64.0.1`). `ping 10.64.0.2` работает, но пакеты побольше (`ping
+  -M do -s 1400 10.64.0.2`) пропадают.
+
+
+  Найдите звено с меньшим MTU и выровняйте MTU по обе стороны так, чтобы `ping -M do -s 1400 10.64.0.2` проходил.
+  MTU обоих концов кабеля должен быть **одинаковым**.
+
+  '
+lesson: 108
+stage: Этап 3. Мидл
+topic: Сетевые интерфейсы и маршруты
+task_type: I
+environment: N
+theory: MTU влияет на максимальный размер пакета; маленький ping не выявляет PMTU black hole.
+prediction: Как испытать крупный payload? Сформулируй гипотезу и способ её проверить.
+criterion: большой запрос проходит, маленький не был единственным тестом.
+followups:
+  Быстрый возврат: 'LD-092: Где проходит граница изоляции? Ответь без справки и назови наблюдение, которое подтвердит
+    ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: big_ping
+    title: ping -M do -s 1400 проходит
+    pass_message: Большие пакеты проходят
+    fail_message: Пакеты 1400 байт с DF не проходят
+  - id: mtu_equal
+    title: MTU обоих концов одинаков
+    pass_message: MTU выровнен
+    fail_message: MTU на концах кабеля различается
+reward:
+  base_xp: 200

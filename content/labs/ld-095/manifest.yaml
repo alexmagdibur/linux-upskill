@@ -1,0 +1,73 @@
+schema_version: 1
+id: ld-095
+version: 2
+title: 'Асимметричная маршрутизация: ответы приходят не оттуда'
+mode: incident
+difficulty: senior
+estimated_minutes: 35
+description: Запрос и ответ идут разными путями, и строгий reverse path filter отбрасывает ответы. Найдите причину
+  по счётчикам и устраните.
+skills:
+- rp_filter
+- nstat IPReversePathFilter
+- ip route get
+- tcpdump
+objectives:
+- Увидеть, что ответ приходит на другой интерфейс
+- Найти отбрасывание по счётчику
+- Исправить фильтр обратного пути
+task: '> В учебной машине `ip netns exec` и `ip -n` недоступны (в контейнере нельзя смонтировать `/sys`). Команды
+  внутри namespace выполняйте так: `sudo nsenter --net=/run/netns/ИМЯ команда`.
+
+
+  Узел `peer` соединён с машиной двумя кабелями: сеть A (`10.91.0.0/24`, машина `10.91.0.1`, узел `10.91.0.2`) и
+  сеть B (`10.92.0.0/24`, машина `10.92.0.1`, узел `10.92.0.2`). Сервис на машине слушает порт 8080.
+
+
+  Из узла `peer` запрос с адреса `10.92.0.2` на `10.91.0.1:8080` уходит через сеть A, а ответ машина отправляет
+  в сеть B (так устроены маршруты) — ответ приходит на другой интерфейс узла и **отбрасывается** (`rp_filter`).
+
+
+  Проверьте: `sudo nsenter --net=/run/netns/peer curl --http0.9 --interface 10.92.0.2 -m 3 http://10.91.0.1:8080/`
+  (сервис отвечает без HTTP-заголовков, поэтому нужен ключ `--http0.9`) зависает. Найдите причину (`nstat -az IPReversePathFilter`
+  внутри `peer`) и устраните её в узле `peer` **без изменения маршрутов** (loose-режим `rp_filter=2` на интерфейсах
+  узла).
+
+  '
+lesson: 168
+stage: Этап 4. Синьор
+topic: Сетевые интерфейсы и маршруты
+task_type: I
+environment: N
+theory: Policy routing выбирает таблицу по правилам, а ответ может уйти иным путём.
+prediction: Как показать асимметрию трассами? Сформулируй гипотезу и способ её проверить.
+criterion: сервис стабилен при повторных запросах.
+followups:
+  Быстрый возврат: 'LD-094: Кто выступает gateway? Ответь без справки и назови наблюдение, которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 15
+  checks:
+  - id: request_works
+    title: Запрос с 10.92.0.2 проходит
+    pass_message: Асимметричный путь работает
+    fail_message: curl с 10.92.0.2 на 10.91.0.1:8080 не получает ответ
+  - id: routes_unchanged
+    title: Маршруты не менялись
+    pass_message: Маршруты не тронуты
+    fail_message: 'Маршруты машины и узла не должны меняться: исправляется фильтр обратного пути'
+  - id: rp_loose
+    title: rp_filter в узле не strict
+    pass_message: Фильтр ослаблен
+    fail_message: В узле peer rp_filter остаётся строгим (1) на интерфейсе сети B
+reward:
+  base_xp: 250

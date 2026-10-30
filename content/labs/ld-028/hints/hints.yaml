@@ -1,0 +1,3 @@
+- '`sudo useradd --system --no-create-home --shell /usr/sbin/nologin labsvc`.'
+- 'Каталог и конфиг: владелец root, группа labsvc, режимы 750/640; каталог data — владелец labsvc.'
+- 'Не используйте `chmod -R 777`: секрет станет доступен всем.'

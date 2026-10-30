@@ -1,0 +1,62 @@
+schema_version: 1
+id: ld-125
+version: 2
+title: Сборка из исходников в отдельный prefix
+mode: practice
+difficulty: middle
+estimated_minutes: 20
+description: Соберите программу из исходников и установите её в собственный prefix, не затрагивая файлы пакетного
+  менеджера.
+skills:
+- make
+- PREFIX
+- PATH
+- dpkg -S
+objectives:
+- Собрать из исходников
+- Установить в /opt/labtool
+- Не касаться /usr
+task: 'Исходники утилиты лежат в `/usr/local/src/hello-lab` (Makefile поддерживает `PREFIX`). Соберите и установите
+  её в **`/opt/hello-lab`** (бинарник `/opt/hello-lab/bin/hello-lab`).
+
+
+  Требования: не копировать файлы в `/usr` и `/usr/local`; добавьте `/opt/hello-lab/bin` в `PATH` для всех пользователей
+  через `/etc/profile.d/hello-lab.sh`, чтобы команда `hello-lab` запускалась в новой login-оболочке.
+
+  '
+lesson: 90
+stage: Этап 3. Мидл
+topic: Пакеты и обновления
+task_type: P
+environment: V
+theory: Отдельный installation prefix ограничивает влияние на системные файлы.
+prediction: Как гарантировать полное удаление собранного пакета? Сформулируй гипотезу и способ её проверить.
+criterion: установка и удаление полностью обратимы.
+followups:
+  Быстрый возврат: 'LD-124: Какие элементы остаются изменчивыми даже при одинаковом source? Ответь без справки и
+    назови наблюдение, которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: installed_prefix
+    title: Бинарник в /opt/hello-lab/bin
+    pass_message: Установлено в свой prefix
+    fail_message: Нет исполняемого /opt/hello-lab/bin/hello-lab, который печатает приветствие
+  - id: usr_clean
+    title: В /usr нет hello-lab
+    pass_message: Системные каталоги не тронуты
+    fail_message: hello-lab найден в /usr или /usr/local
+  - id: on_path
+    title: hello-lab в PATH login-оболочки
+    pass_message: PATH настроен
+    fail_message: В новой login-оболочке команда hello-lab не находится
+reward:
+  base_xp: 150

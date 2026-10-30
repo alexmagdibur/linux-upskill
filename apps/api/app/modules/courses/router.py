@@ -51,7 +51,7 @@ async def course_modules(course_id: str, db: DbDep, user: CurrentUser) -> dict[s
     out = []
     for m in modules:
         items, _total = await labs_service.list_labs(
-            db, user.id, mode=None, difficulty=None, completed=None, module=m.slug, limit=100, offset=0
+            db, user.id, mode=None, difficulty=None, completed=None, module=m.slug, limit=500, offset=0
         )
         out.append({"id": m.slug, "uuid": str(m.id), "title": m.title, "description": m.description, "labs": items})
     return {"course": {"id": course.slug, "title": course.title}, "items": out}

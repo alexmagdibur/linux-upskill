@@ -1,0 +1,60 @@
+schema_version: 1
+id: ld-132
+version: 2
+title: Блокировка для cron/timer-задачи
+mode: practice
+difficulty: middle
+estimated_minutes: 15
+description: 'Добавьте lock: две параллельные копии не работают одновременно, а блокировка не «залипает» после SIGTERM.'
+skills:
+- flock
+- lock-файлы
+- trap
+- stale lock
+objectives:
+- Не допустить двойного выполнения
+- Освобождать lock при завершении
+task: '`~/bin/work.sh` выполняет работу ~2 секунды и дописывает `ran` в файл `$COUNTER`.
+
+
+  Напишите обёртку `~/bin/job_locked.sh`, которая запускает `work.sh` под блокировкой:
+
+
+  - если задача уже выполняется — **сразу выходит** (код 0), не выполняя работу второй раз;
+
+  - если выполняющуюся задачу убили (SIGTERM группе процессов), **блокировка не остаётся** и следующий запуск работает.
+
+  '
+lesson: 85
+stage: Этап 3. Мидл
+topic: Bash и Python
+task_type: P
+environment: C
+theory: Lock предотвращает перекрывающиеся запуски, но должен освобождаться при завершении.
+prediction: Как избежать вечного stale lock? Сформулируй гипотезу и способ её проверить.
+criterion: два параллельных запуска не выполняют работу дважды.
+followups:
+  Быстрый возврат: 'LD-131: Какие preconditions проверяются до мутации? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  checks:
+  - id: no_double_run
+    title: 'Две параллельные копии: работа выполнена один раз'
+    pass_message: Двойной запуск исключён
+    fail_message: При двух параллельных запусках работа выполнилась не один раз
+  - id: no_stale_lock
+    title: После SIGTERM блокировка не залипла
+    pass_message: Блокировка снимается
+    fail_message: После убитой задачи следующий запуск не смог выполнить работу (залипший lock)
+reward:
+  base_xp: 150

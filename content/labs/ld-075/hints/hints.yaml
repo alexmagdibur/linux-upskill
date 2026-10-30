@@ -1,0 +1,2 @@
+- '`findmnt -o TARGET,FSTYPE,OPTIONS /srv/data` — смотрите опцию `ro`.'
+- '`sudo mount -o remount,rw /srv/data`.'

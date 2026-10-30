@@ -1,0 +1,2 @@
+- 'Секции timer: `[Unit]`, `[Timer]` (OnCalendar, Persistent, RandomizedDelaySec), `[Install]` (WantedBy=timers.target).'
+- '`sudo systemctl enable --now labbackup.timer`, затем `systemctl list-timers labbackup.timer`.'

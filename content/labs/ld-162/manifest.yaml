@@ -1,0 +1,72 @@
+schema_version: 1
+id: ld-162
+version: 2
+title: 'SSH baseline: ключи, минимальный доступ, журналирование'
+mode: practice
+difficulty: middle
+estimated_minutes: 20
+description: Приведите конфигурацию sshd к безопасной базовой линии и проверьте её через sshd -T.
+skills:
+- sshd_config.d
+- sshd -T
+- PasswordAuthentication
+- AllowUsers
+- LogLevel
+objectives:
+- Отключить пароли и вход root
+- Ограничить пользователей
+- Включить журналирование
+task: 'Настройте безопасный базовый уровень `sshd` (лучше drop-in в `/etc/ssh/sshd_config.d/`):
+
+
+  - `PasswordAuthentication no`, `PermitRootLogin no`, `PubkeyAuthentication yes`;
+
+  - `AllowUsers student`;
+
+  - `MaxAuthTries` не более 3, `LogLevel VERBOSE`, `X11Forwarding no`;
+
+  - конфигурация должна проходить `sshd -t`.
+
+
+  Эффективные значения проверяются командой `sshd -T`.
+
+  '
+lesson: 135
+stage: Этап 3. Мидл
+topic: Безопасность
+task_type: P
+environment: V
+theory: SSH baseline уменьшает площадь входа, но не должен лишать аварийного доступа.
+prediction: Как испытать доступ до закрытия старого? Сформулируй гипотезу и способ её проверить.
+criterion: разрешённый вход работает, запрещённые варианты отклоняются.
+followups:
+  Быстрый возврат: 'LD-161: Как узнать владельца? Ответь без справки и назови наблюдение, которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: auth_hardened
+    title: Пароли и root отключены, ключи включены
+    pass_message: Аутентификация ужесточена
+    fail_message: Нужны passwordauthentication no, permitrootlogin no, pubkeyauthentication yes
+  - id: access_limited
+    title: AllowUsers student, MaxAuthTries ≤ 3
+    pass_message: Доступ ограничен
+    fail_message: Нужны allowusers student и maxauthtries ≤ 3
+  - id: logging
+    title: LogLevel VERBOSE, X11 выключен
+    pass_message: Журналирование настроено
+    fail_message: Нужны loglevel VERBOSE и x11forwarding no
+  - id: syntax_ok
+    title: sshd -t проходит
+    pass_message: Конфигурация валидна
+    fail_message: sshd -t сообщает об ошибке
+reward:
+  base_xp: 150

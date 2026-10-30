@@ -1,0 +1,77 @@
+schema_version: 1
+id: ld-165
+version: 2
+title: Секреты в аргументах процесса, окружении и правах файлов
+mode: practice
+difficulty: middle
+estimated_minutes: 25
+description: Уберите пароль из командной строки процесса, из unit-файла и защитите хранилище секретов.
+skills:
+- EnvironmentFile=
+- ps -eo args
+- systemctl show
+- права 0600
+objectives:
+- Найти утечки секрета
+- Перенести секрет в файл с правами 0600
+- Сохранить работоспособность службы
+task: '`labsecret.service` запускается с паролем в командной строке (`--password=...`) и в `Environment=` прямо
+  в unit-файле. Эти места читаются любым пользователем (`ps`, `systemctl show`).
+
+
+  Исправьте так, чтобы:
+
+
+  - пароль **не** встречался в аргументах процесса и в unit-файлах (`/etc/systemd/system`);
+
+  - пароль лежал в `/etc/lab/secrets.env` (`DB_PASSWORD=...`), владелец `root`, права **0600** (не шире 0640), и
+  подключался через `EnvironmentFile=`;
+
+  - служба **работает** и приложение подтверждает вход (в `/var/lib/lab/auth.log` появляется `auth ok`).
+
+
+  Проверка перезапустит службу.
+
+  '
+lesson: 137
+stage: Этап 3. Мидл
+topic: Безопасность
+task_type: P
+environment: V
+theory: Секреты в argv/env и логах могут читать другие компоненты с соответствующими правами.
+prediction: Где хранить и как передать секрет? Сформулируй гипотезу и способ её проверить.
+criterion: секрет не доступен постороннему пользователю/в журнале.
+followups:
+  Быстрый возврат: 'LD-164: Как защитить сам baseline? Ответь без справки и назови наблюдение, которое подтвердит
+    ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 20
+  checks:
+  - id: not_in_args
+    title: Пароля нет в аргументах процессов
+    pass_message: Пароль не виден в ps
+    fail_message: Пароль виден в аргументах процессов (ps)
+  - id: not_in_units
+    title: Пароля нет в unit-файлах и в show
+    pass_message: Пароль не в unit-файлах
+    fail_message: Пароль остался в unit-файле или в Environment службы
+  - id: secrets_file_safe
+    title: 'secrets.env: root, 0600/0640'
+    pass_message: Файл секретов защищён
+    fail_message: Нужен /etc/lab/secrets.env с владельцем root и правами не шире 0640
+  - id: service_auth_ok
+    title: Служба работает, вход подтверждён
+    pass_message: Служба работает с новым способом передачи
+    fail_message: Служба не работает или не подтверждает вход (auth ok)
+reward:
+  base_xp: 150

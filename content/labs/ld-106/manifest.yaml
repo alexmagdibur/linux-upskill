@@ -1,0 +1,70 @@
+schema_version: 1
+id: ld-106
+version: 2
+title: 'Stateful-правило: почему ответы не возвращаются'
+mode: practice
+difficulty: middle
+estimated_minutes: 20
+description: Входящая политика drop блокирует ответы на исходящие соединения. Добавьте правило для established/related
+  и объясните причину.
+skills:
+- conntrack
+- ct state
+- established,related
+- ответный трафик
+objectives:
+- Увидеть, что ответы отбрасываются
+- Добавить stateful-правило
+- Объяснить причину письменно
+task: '> В учебной машине `ip netns exec` и `ip -n` недоступны (в контейнере нельзя смонтировать `/sys`). Команды
+  внутри namespace выполняйте так: `sudo nsenter --net=/run/netns/ИМЯ команда`.
+
+
+  Машина обращается к серверу в узле `srv` (`10.82.0.2:8000`), но `curl http://10.82.0.2:8000/` зависает: ответы
+  блокирует входящая политика `drop`.
+
+
+  1. Добавьте в цепочку `inet filter input` правило `ct state established,related accept` (политика drop остаётся;
+  в **закрытый** порт 9999 соединения извне по-прежнему не пускаются).
+
+  2. В `~/why.txt` одной-двумя фразами объясните причину (упомяните слова `established` и `conntrack`).
+
+  '
+lesson: 115
+stage: Этап 3. Мидл
+topic: Firewall и NAT
+task_type: P
+environment: N
+theory: Conntrack различает новое и established соединение.
+prediction: Почему ответный пакет допускается без широкого входящего правила? Сформулируй гипотезу и способ её проверить.
+criterion: новые запрещённые соединения блокируются.
+followups:
+  Быстрый возврат: 'LD-105: Как проверить запреты столь же тщательно, как разрешения? Ответь без справки и назови
+    наблюдение, которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 15
+  checks:
+  - id: outbound_works
+    title: curl к srv работает
+    pass_message: Ответы возвращаются
+    fail_message: Машина не получает ответ от 10.82.0.2:8000
+  - id: still_closed
+    title: Порт 9999 закрыт извне, политика drop
+    pass_message: Входящие по-прежнему закрыты
+    fail_message: Новые входящие соединения (порт 9999) не должны пускаться; политика должна остаться drop
+  - id: explained
+    title: 'why.txt: established и conntrack'
+    pass_message: Причина объяснена
+    fail_message: В why.txt нужно объяснение со словами established и conntrack
+reward:
+  base_xp: 150

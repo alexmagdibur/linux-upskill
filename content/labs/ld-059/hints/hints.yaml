@@ -1,0 +1,2 @@
+- 'Создайте `/etc/systemd/journald.conf.d/50-persistent.conf` с секцией `[Journal]`: `Storage=persistent` и `SystemMaxUse=50M`.'
+- 'Конфигурация с большим номером переопределяет меньший. После правки: `sudo systemctl restart systemd-journald`.'

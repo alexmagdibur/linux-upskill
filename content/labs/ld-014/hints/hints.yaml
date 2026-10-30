@@ -1,0 +1,3 @@
+- 'Запустите скрипт двумя способами и сравните: `LC_ALL=C bash report.sh | md5sum` и `LC_ALL=C.UTF-8 bash report.sh
+  | md5sum`.'
+- 'Зафиксируйте локаль первой строкой скрипта: `export LC_ALL=...`.'

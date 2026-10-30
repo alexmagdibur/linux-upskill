@@ -1,0 +1,64 @@
+schema_version: 1
+id: ld-156
+version: 2
+title: 'strace: на каком системном вызове завис процесс'
+mode: practice
+difficulty: middle
+estimated_minutes: 20
+description: Диагностируйте зависший процесс по strace и устраните причину.
+skills:
+- strace -p
+- strace -f
+- FIFO
+- ожидание ввода-вывода
+objectives:
+- Подключиться к процессу
+- Увидеть системный вызов, на котором он ждёт
+- Устранить причину
+task: 'Служба `labhang.service` «жива», но ничего не делает. Подключитесь к её процессу (`sudo strace -p PID`),
+  найдите системный вызов, на котором она ждёт, и **устраните причину** (не убивая процесс: он должен продолжить
+  работу и записать `/var/lib/labapp/hang-done`).
+
+
+  В `~/syscall.txt` запишите одну строку — имя системного вызова, на котором ждёт процесс (например, `read` или
+  `connect`).
+
+  '
+lesson: 134
+stage: Этап 3. Мидл
+topic: Метрики и производительность
+task_type: P
+environment: V
+theory: '`strace` показывает syscalls и их задержку, но добавляет overhead.'
+prediction: Как получить достаточно данных без долгой трассировки? Сформулируй гипотезу и способ её проверить.
+criterion: гипотеза подтверждена trace и исправлением.
+followups:
+  Быстрый возврат: 'LD-155: Почему высокий load не обязательно означает CPU saturation? Ответь без справки и назови
+    наблюдение, которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 15
+  checks:
+  - id: syscall_named
+    title: Системный вызов указан верно
+    pass_message: Системный вызов определён
+    fail_message: В syscall.txt нужно имя вызова, на котором ждёт процесс (openat или read для FIFO)
+  - id: unblocked
+    title: Процесс продолжил работу
+    pass_message: Причина устранена
+    fail_message: 'Файл hang-done не создан: процесс всё ещё ждёт'
+  - id: same_process
+    title: Процесс не перезапускали
+    pass_message: Процесс не перезапускали
+    fail_message: Процесс был перезапущен вместо диагностики
+reward:
+  base_xp: 150

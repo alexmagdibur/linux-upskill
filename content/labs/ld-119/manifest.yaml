@@ -1,0 +1,63 @@
+schema_version: 1
+id: ld-119
+version: 2
+title: 'Ротация сертификата: неполная цепочка ломает часть клиентов'
+mode: incident
+difficulty: senior
+estimated_minutes: 30
+description: После ротации сервер отдаёт только листовой сертификат. Клиенты с одним корневым CA не могут построить
+  цепочку.
+skills:
+- fullchain
+- openssl s_client
+- intermediate CA
+- ssl_certificate
+objectives:
+- Увидеть ошибку построения цепочки
+- Собрать fullchain
+- Подтвердить проверкой клиента
+task: 'После ротации nginx отдаёт только листовой сертификат (`/etc/lab/tls/leaf.crt`). Клиент, доверяющий только
+  корню (`/etc/lab/ca/root.crt`), получает `unable to get local issuer certificate`.
+
+
+  Исправьте так, чтобы сервер отдавал **полную цепочку** (лист + промежуточный `/etc/lab/ca/inter.crt`) и проверка
+  клиента проходила:
+
+
+  `openssl s_client -connect 127.0.0.1:443 -servername app.lab.test -CAfile /etc/lab/ca/root.crt -verify_return_error`
+
+  '
+lesson: 176
+stage: Этап 4. Синьор
+topic: SSH и TLS
+task_type: I
+environment: N
+theory: При нескольких backend ошибка одного сертификата выглядит случайной.
+prediction: Как идентифицировать конкретный узел? Сформулируй гипотезу и способ её проверить.
+criterion: все backend одинаково проходят handshake.
+followups:
+  Быстрый возврат: 'LD-118: Где должны выставляться secure cookies? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 15
+  checks:
+  - id: chain_verifies
+    title: Цепочка проверяется от корня
+    pass_message: Цепочка полная
+    fail_message: openssl s_client не может построить цепочку до корня
+  - id: served_chain_len
+    title: Сервер отдаёт ≥ 2 сертификата
+    pass_message: Отдаётся лист и промежуточный
+    fail_message: Сервер отдаёт только один сертификат
+reward:
+  base_xp: 250

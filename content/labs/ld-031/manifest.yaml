@@ -1,0 +1,66 @@
+schema_version: 1
+id: ld-031
+version: 2
+title: 'sudo: оператору можно только перезапускать одну службу'
+mode: practice
+difficulty: middle
+estimated_minutes: 20
+description: Дайте пользователю право перезапускать одну учебную службу и ничего больше.
+skills:
+- sudoers.d
+- visudo
+- NOPASSWD
+- ограничение команд
+objectives:
+- Описать точную команду в sudoers
+- Не выдать общий root
+- Проверить синтаксис и права файла
+task: 'Пользователь `oper` должен уметь выполнять **без пароля** ровно одну команду: `sudo systemctl restart labsvc.service`.
+  Остальное (`restart other.service`, `stop labsvc.service`, `id` и т. д.) должно быть **запрещено**.
+
+
+  Создайте файл в `/etc/sudoers.d/` (например, `oper`) с правами `0440`, синтаксис должен проходить `visudo -c`.
+  Используйте полный путь к `systemctl` и точные аргументы.
+
+  '
+lesson: 77
+stage: Этап 3. Мидл
+topic: Права и пользователи
+task_type: P
+environment: V
+theory: sudoers сопоставляет пользователя, хост и конкретную команду.
+prediction: Почему разрешение запуска произвольного редактора может быть опаснее, чем кажется? Сформулируй гипотезу
+  и способ её проверить.
+criterion: разрешённая команда проходит, произвольный shell и другие службы запрещены.
+followups:
+  Быстрый возврат: 'LD-030: Как восстановить политику по ролям? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: can_restart
+    title: oper перезапускает labsvc без пароля
+    pass_message: Нужная команда разрешена
+    fail_message: oper не может выполнить sudo systemctl restart labsvc.service
+  - id: others_denied
+    title: Остальные команды запрещены
+    pass_message: Остальное запрещено
+    fail_message: oper может выполнить лишние команды (other.service, stop, id)
+  - id: syntax_perms
+    title: visudo -c проходит, права 0440
+    pass_message: Синтаксис и права верны
+    fail_message: sudoers содержит ошибки или файл не 0440
+  - id: no_blanket_all
+    title: Нет общего «ALL»
+    pass_message: Нет общего доступа
+    fail_message: 'В sudo -l для oper не должно быть NOPASSWD: ALL'
+reward:
+  base_xp: 150

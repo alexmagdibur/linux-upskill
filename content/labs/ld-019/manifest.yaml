@@ -1,0 +1,60 @@
+schema_version: 1
+id: ld-019
+version: 2
+title: 'Инцидент: приложение читает старый конфиг через неверную ссылку'
+mode: incident
+difficulty: junior
+estimated_minutes: 20
+description: Относительная ссылка указывает на старую конфигурацию. Исправьте ссылку, не копируя конфиг.
+skills:
+- ln -sfn
+- readlink -f
+- относительные ссылки
+objectives:
+- Найти цель ссылки
+- Перенаправить её на новую версию
+- Не копировать файл
+task: '**Инцидент.** После релиза `~/app/run.sh` печатает `LEVEL=old`, хотя новая конфигурация лежит в `~/app/releases/v2/app.conf`.
+
+
+  `~/app/config` — символическая ссылка (смотрите `ls -l`). Направьте её на новую конфигурацию (относительным путём).
+  **Копировать файл нельзя.**
+
+  '
+lesson: 28
+stage: Этап 2. Джун
+topic: Файлы и каталоги
+task_type: I
+environment: C
+theory: Относительная symlink разрешается относительно каталога самой ссылки.
+prediction: Почему перенос ссылки может изменить её цель? Сформулируй гипотезу и способ её проверить.
+criterion: ссылка указывает на нужный файл и приложение видит новое значение.
+followups:
+  Быстрый возврат: 'LD-018: Что останется после удаления одного имени каждого вида? Ответь без справки и назови
+    наблюдение, которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  checks:
+  - id: points_to_v2
+    title: config ведёт на releases/v2/app.conf
+    pass_message: Ссылка указывает на новую конфигурацию
+    fail_message: config должен быть символической ссылкой на releases/v2/app.conf
+  - id: app_sees_new
+    title: Приложение видит LEVEL=new
+    pass_message: Приложение читает новую конфигурацию
+    fail_message: run.sh всё ещё не видит новое значение
+  - id: no_copy
+    title: Файлы конфигурации не подменены
+    pass_message: Файлы конфигурации целы
+    fail_message: Содержимое old/ или v2/ изменено
+reward:
+  base_xp: 150

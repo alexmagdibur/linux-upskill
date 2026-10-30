@@ -1,0 +1,57 @@
+schema_version: 1
+id: ld-021
+version: 2
+title: Контрольные суммы SHA-256 и обнаружение подмены
+mode: practice
+difficulty: middle
+estimated_minutes: 15
+description: Посчитайте SHA-256 для набора артефактов и найдите среди «полученных» файл, изменённый при передаче.
+skills:
+- sha256sum
+- sha256sum -c
+- целостность
+objectives:
+- Составить файл контрольных сумм
+- Проверить полученные файлы
+- Найти изменённый артефакт
+task: 'Каталог `~/release` содержит артефакты `*.bin`, а `~/received` — их копии после «передачи» (один файл изменился).
+
+
+  1. Создайте `~/release/SHA256SUMS` с суммами всех `*.bin` из `~/release` (формат `sha256sum`).
+
+  2. Проверьте `~/received` по этому файлу и запишите **имена повреждённых** артефактов (по одному на строку) в
+  `~/bad.txt`.
+
+  '
+lesson: 66
+stage: Этап 3. Мидл
+topic: Файлы и каталоги
+task_type: P
+environment: C
+theory: Хэш выявляет изменение данных, но сам список хэшей тоже требует доверия.
+prediction: Что именно доказывает успешная проверка SHA-256? Сформулируй гипотезу и способ её проверить.
+criterion: модифицированный артефакт обнаруживается.
+followups:
+  Быстрый возврат: 'LD-020: Какие свойства нужно сравнить кроме байтов? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: sums_file
+    title: SHA256SUMS содержит верные суммы
+    pass_message: Файл сумм верный
+    fail_message: ~/release/SHA256SUMS отсутствует или суммы неверны
+  - id: bad_found
+    title: 'bad.txt: повреждённый артефакт'
+    pass_message: Повреждённый файл найден
+    fail_message: В bad.txt должен быть ровно тот артефакт, который изменился
+reward:
+  base_xp: 150

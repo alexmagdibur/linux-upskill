@@ -1,0 +1,51 @@
+schema_version: 1
+id: nb-006
+version: 2
+title: Создание каталогов
+mode: practice
+difficulty: beginner
+estimated_minutes: 15
+description: Создайте дерево каталогов одной командой, не трогая соседние данные.
+skills:
+- mkdir -p
+objectives:
+- Создать вложенный путь без ручного создания каждого уровня
+- Сохранить существующие данные
+task: 'В `~/practice` уже есть данные. Создайте дерево `~/practice/project/docs` **одной командой**.
+
+
+  Существующие файлы (`~/practice/keep.txt`, `~/practice/project/old.txt`) должны остаться на месте.
+
+  '
+lesson: 7
+stage: Этап 1. Новичок
+topic: Файлы и каталоги
+task_type: P
+environment: C
+theory: '`mkdir` создаёт каталог; `-p` создаёт недостающих родителей. Наличие файла с тем же именем вызывает ошибку.'
+prediction: Что произойдёт при повторном создании пути? Сформулируй гипотезу и способ её проверить.
+criterion: Все уровни существуют, соседние данные сохранены.
+followups:
+  Быстрый возврат: 'NB-005: Как найти в `man` опцию для показа скрытых файлов? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: tree
+    title: Создан ~/practice/project/docs
+    pass_message: Дерево создано
+    fail_message: Каталог ~/practice/project/docs не найден
+  - id: data_intact
+    title: Соседние данные сохранены
+    pass_message: Данные сохранены
+    fail_message: Файлы keep.txt и project/old.txt удалены или изменены
+reward:
+  base_xp: 50

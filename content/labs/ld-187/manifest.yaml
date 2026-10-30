@@ -1,0 +1,34 @@
+schema_version: 1
+id: ld-187
+version: 1
+title: 'Сложные инциденты: На одном узле intermittent DNS failure'
+mode: incident
+difficulty: middle
+estimated_minutes: 20
+description: На одном узле intermittent DNS failure
+skills:
+- Сложные инциденты
+objectives:
+- повторный тест устойчив.
+task: '**Задание.** На одном узле intermittent DNS failure. Сравните resolver, search domains, TTL и сетевой путь.
+
+
+  **Критерий успеха.** повторный тест устойчив.
+
+  '
+lesson: 148
+stage: Этап 3. Мидл
+topic: Сложные инциденты
+task_type: I
+environment: N
+theory: Intermittent DNS может зависеть от конкретного resolver/узла/cache.
+prediction: Как привязать ошибку к одному пути? Сформулируй гипотезу и способ её проверить.
+criterion: повторный тест устойчив.
+followups:
+  Быстрый возврат: 'LD-186: Какие измерения разделяют эти причины? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+availability: requires_cluster
+unavailable_reason: 'Сценарий этого задания (поведение узлов под нагрузкой) не удалось воспроизвести на учебной
+  машине детерминированно: проверка была бы нестабильной. Запуск отключён; описание и критерий сохранены.'
+reward:
+  base_xp: 200

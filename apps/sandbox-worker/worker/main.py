@@ -20,6 +20,7 @@ from .config import WorkerSettings, get_settings
 from .jobs import JobConsumer
 from .logging_setup import setup_logging
 from .runtime.base import RuntimeAdapter, RuntimeError_
+from .runtime.router import RuntimeRouter
 from .service import WorkerService, runtime_ref_for
 from .terminal.hub import TerminalHub
 
@@ -28,12 +29,21 @@ log = logging.getLogger("worker.main")
 ACTIVE_RUNTIMES = Gauge("upskill_worker_runtimes", "Количество управляемых контейнеров")
 
 
-def build_adapter(settings: WorkerSettings) -> RuntimeAdapter | None:
+def build_adapter(settings: WorkerSettings) -> RuntimeRouter | None:
+    if settings.sandbox_runtime == "disabled":
+        return None  # SANDBOX_RUNTIME=disabled — песочницы выключены
+    adapters: dict[str, RuntimeAdapter] = {}
     if settings.sandbox_runtime == "docker":
         from .runtime.docker import DockerAdapter
 
-        return DockerAdapter()
-    return None  # SANDBOX_RUNTIME=disabled — песочницы выключены
+        adapters["container"] = DockerAdapter()
+    if settings.lxd_ssh_host:
+        from .runtime.lxd import LXDAdapter
+
+        adapters["lxd"] = LXDAdapter(
+            settings.lxd_ssh_host, settings.lxd_ssh_user, settings.lxd_ssh_key, settings.lxd_ssh_port
+        )
+    return RuntimeRouter(adapters) if adapters else None
 
 
 def create_app(settings: WorkerSettings | None = None) -> FastAPI:

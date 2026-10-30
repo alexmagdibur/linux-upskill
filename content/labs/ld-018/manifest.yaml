@@ -1,0 +1,64 @@
+schema_version: 1
+id: ld-018
+version: 2
+title: Символическая и жёсткая ссылки
+mode: practice
+difficulty: junior
+estimated_minutes: 15
+description: Отличите symlink от hardlink и докажите, что остаётся после удаления исходного имени.
+skills:
+- ln
+- ln -s
+- stat
+- inode
+objectives:
+- Создать обе ссылки
+- Зафиксировать inode
+- Увидеть последствия удаления
+task: 'В `~/links` лежит `orig.txt`.
+
+
+  1. Создайте жёсткую ссылку `hard` и символическую ссылку `soft` на `orig.txt` (в том же каталоге, `soft` — относительная).
+
+  2. Запомните номер inode `orig.txt` (`stat -c %i`), затем **удалите** `orig.txt`.
+
+  3. В `~/links/report.txt` запишите номер inode и по одной фразе о том, что стало с `hard` и с `soft` (используйте
+  слова `hard` и `soft`).
+
+  '
+lesson: 27
+stage: Этап 2. Джун
+topic: Файлы и каталоги
+task_type: P
+environment: C
+theory: Hardlink разделяет inode, symlink хранит путь.
+prediction: Что останется после удаления одного имени каждого вида? Сформулируй гипотезу и способ её проверить.
+criterion: отчёт содержит inode и наблюдаемый результат.
+followups:
+  Быстрый возврат: 'LD-017: Что значит «изменён за сутки»? Ответь без справки и назови наблюдение, которое подтвердит
+    ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: hard_survives
+    title: hard сохранила данные (тот же inode)
+    pass_message: Жёсткая ссылка пережила удаление
+    fail_message: hard должна быть жёсткой ссылкой на исходный inode с содержимым data
+  - id: soft_dangles
+    title: soft стала «битой»
+    pass_message: Символическая ссылка стала битой
+    fail_message: soft должна быть относительной ссылкой на orig.txt и после удаления оригинала — битой
+  - id: report
+    title: 'Отчёт: inode, hard, soft'
+    pass_message: Отчёт содержит inode и выводы
+    fail_message: В report.txt нужны номер inode и слова hard и soft
+reward:
+  base_xp: 100

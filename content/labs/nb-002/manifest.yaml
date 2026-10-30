@@ -1,0 +1,56 @@
+schema_version: 1
+id: nb-002
+version: 2
+title: 'Просмотр каталога: обычные и скрытые записи'
+mode: practice
+difficulty: beginner
+estimated_minutes: 15
+description: Разделите содержимое каталога на обычные и скрытые записи и сохраните имена в два файла.
+skills:
+- ls
+- ls -A
+- скрытые файлы
+objectives:
+- Увидеть скрытые записи
+- Разделить списки без лишних элементов
+task: 'В каталоге `~/tree` есть обычные и скрытые (начинаются с точки) записи.
+
+
+  1. Имена **обычных** записей сохраните в `~/visible.txt`, по одному на строку.
+
+  2. Имена **скрытых** записей — в `~/hidden.txt` (без `.` и `..`).
+
+  '
+lesson: 2
+stage: Этап 1. Новичок
+topic: Терминал, shell и окружение
+task_type: P
+environment: C
+theory: '`ls` перечисляет имена, а `ls -a` показывает также скрытые записи. Содержимое файла и список имён — разные
+  данные.'
+prediction: Как отличить скрытый файл от отсутствующего? Сформулируй гипотезу и способ её проверить.
+criterion: Списки совпадают с исходным деревом и не содержат лишних записей.
+followups:
+  Быстрый возврат: 'NB-001: Что выведет `pwd` после открытия нового терминала? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: visible
+    title: 'visible.txt: обычные записи'
+    pass_message: Список обычных записей верный
+    fail_message: В visible.txt должны быть ровно обычные записи ~/tree
+  - id: hidden
+    title: 'hidden.txt: скрытые записи'
+    pass_message: Список скрытых записей верный
+    fail_message: В hidden.txt должны быть ровно скрытые записи ~/tree
+reward:
+  base_xp: 50

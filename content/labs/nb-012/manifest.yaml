@@ -1,0 +1,56 @@
+schema_version: 1
+id: nb-012
+version: 2
+title: Код завершения и простая диагностика
+mode: practice
+difficulty: beginner
+estimated_minutes: 15
+description: Выполните успешную и ошибочную команду, запишите коды завершения и объясните причину ошибки.
+skills:
+- $?
+- коды завершения
+- ls
+objectives:
+- Прочитать код последней команды
+- Объяснить причину ошибки
+task: '1. Выполните `ls ~/lab` (успешно) и сразу запишите код завершения (`$?`).
+
+  2. Выполните `ls ~/lab/missing` (ошибка) и запишите её код.
+
+  3. Запишите в `~/codes.txt` две строки: `ok=<код первой команды>` и `fail=<код второй>`.
+
+  4. В `~/why.txt` объясните причину ошибки одной фразой (должно быть понятно, что файла не существует).
+
+  '
+lesson: 15
+stage: Этап 1. Новичок
+topic: Терминал, shell и окружение
+task_type: P
+environment: C
+theory: Код выхода 0 обычно означает успех, ненулевой код — ошибку; текст на экране сам по себе не доказывает успех.
+prediction: Как проверить статус последней команды? Сформулируй гипотезу и способ её проверить.
+criterion: Коды соответствуют фактическим результатам, объяснение верно.
+followups:
+  Быстрый возврат: 'NB-005: Как найти в `man` опцию для показа скрытых файлов? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: codes
+    title: 'codes.txt: ok=0 и fail=2'
+    pass_message: Коды верные
+    fail_message: В codes.txt должны быть строки ok=0 и fail=2
+  - id: why
+    title: 'why.txt: причина ошибки'
+    pass_message: Причина объяснена
+    fail_message: В why.txt должно быть сказано, что файла не существует (No such file / не существует)
+reward:
+  base_xp: 50

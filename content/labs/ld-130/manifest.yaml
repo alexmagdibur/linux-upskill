@@ -1,0 +1,69 @@
+schema_version: 1
+id: ld-130
+version: 2
+title: Идемпотентный скрипт подготовки
+mode: practice
+difficulty: middle
+estimated_minutes: 15
+description: 'Сделайте скрипт идемпотентным: повторный запуск не создаёт дублей и не портит данные.'
+skills:
+- идемпотентность
+- grep -qx
+- mkdir -p
+- безопасные повторы
+objectives:
+- Проверять состояние перед изменением
+- Получать одинаковый результат при повторном запуске
+task: 'Напишите `~/bin/provision.sh`, который готовит `~/srv/app`:
+
+
+  - создаёт каталог `~/srv/app`, если его нет;
+
+  - гарантирует, что в `~/srv/app/app.conf` есть **ровно одна** строка `port=8080`;
+
+  - гарантирует, что в `~/srv/app/users.txt` есть строки `alice` и `bob` **по одному разу**;
+
+  - не трогает существующие данные (`~/srv/app/data.txt`).
+
+
+  Проверка запустит скрипт дважды: состояние после первого и второго запусков должно совпасть, оба кода выхода —
+  `0`.
+
+  '
+lesson: 83
+stage: Этап 3. Мидл
+topic: Bash и Python
+task_type: P
+environment: C
+theory: Идемпотентность означает, что повторение операции сохраняет требуемое состояние.
+prediction: Что должно остаться неизменным при втором запуске? Сформулируй гипотезу и способ её проверить.
+criterion: два запуска дают одинаковое состояние.
+followups:
+  Быстрый возврат: 'linux-015: Как отличить созданный файл архива от успешного backup? Ответь без справки и назови
+    наблюдение, которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  checks:
+  - id: exit_codes
+    title: Оба запуска завершились с кодом 0
+    pass_message: Оба запуска успешны
+    fail_message: Каждый запуск provision.sh должен завершаться кодом 0
+  - id: same_state
+    title: Состояние после двух запусков одинаково
+    pass_message: Повторный запуск не меняет состояние
+    fail_message: Повторный запуск изменил состояние (дубли строк)
+  - id: content_ok
+    title: Конфиг, пользователи и data.txt верны
+    pass_message: Содержимое верное
+    fail_message: 'Нужно: одна строка port=8080, alice и bob по разу, data.txt не тронут'
+reward:
+  base_xp: 150

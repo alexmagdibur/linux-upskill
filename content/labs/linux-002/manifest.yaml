@@ -1,6 +1,6 @@
 schema_version: 1
 id: linux-002
-version: 1
+version: 2
 title: Создание и удаление файлов
 mode: learn
 difficulty: beginner
@@ -28,6 +28,17 @@ task: 'В каталоге `~/workspace` лежат рабочие файлы.
   4. Переименуйте `~/workspace/old_notes.txt` в `notes.txt`.
 
   '
+lesson: 11
+stage: Этап 1. Новичок
+topic: Файлы и каталоги
+task_type: L
+environment: C
+theory: '`mkdir`, `touch`, `cp`, `mv`, `rm` меняют дерево имён разными способами; копия и перенос имеют разный итог.'
+prediction: Что останется от исходного файла после `cp` и после `mv`? Сформулируй гипотезу и способ её проверить.
+criterion: Итоговое дерево соответствует условиям; контрольный файл цел.
+followups:
+  Быстрый возврат: 'NB-009: Какие имена выберет `*.log` в текущем каталоге? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
 runtime:
   type: container
   image: ubuntu-basic

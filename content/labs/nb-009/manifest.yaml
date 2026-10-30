@@ -1,0 +1,56 @@
+schema_version: 1
+id: nb-009
+version: 2
+title: Безопасное удаление
+mode: practice
+difficulty: beginner
+estimated_minutes: 15
+description: Удалите только временные .log, сохранив контрольные файлы.
+skills:
+- rm
+- маски *.log
+- ls перед rm
+objectives:
+- Проверить, что выберет маска
+- Удалить ровно разрешённые файлы
+task: 'В `~/logs` лежат файлы разных типов.
+
+
+  Удалите **только файлы `*.log`**. Остальные (в том числе `c.log.bak`, `keep.txt`, `readme.md`) должны остаться.
+
+
+  Совет: сначала выполните `ls *.log`, чтобы увидеть, что выберет маска.
+
+  '
+lesson: 10
+stage: Этап 1. Новичок
+topic: Файлы и каталоги
+task_type: P
+environment: C
+theory: '`rm` удаляет имена без корзины; шаблон shell раскрывается до вызова команды. Сначала просматривай совпадения.'
+prediction: Какие имена выберет `*.log` в текущем каталоге? Сформулируй гипотезу и способ её проверить.
+criterion: Удалены ровно разрешённые файлы.
+followups:
+  Быстрый возврат: 'NB-008: Какая операция оставит исходник на месте? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: logs_removed
+    title: '*.log удалены'
+    pass_message: Логи удалены
+    fail_message: В ~/logs остались файлы *.log
+  - id: others_kept
+    title: Остальные файлы на месте
+    pass_message: Остальные файлы сохранены
+    fail_message: Удалены файлы, которые удалять было нельзя
+reward:
+  base_xp: 50

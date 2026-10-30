@@ -1,0 +1,3 @@
+- '`systemctl status labapp` и `journalctl -u labapp -n 20`: ищите код вида `status=200/CHDIR`.'
+- '`WorkingDirectory=` указывает на несуществующий каталог. Приложения лежат в `/opt/labapp/releases/1`.'
+- 'После правки unit: `sudo systemctl daemon-reload && sudo systemctl restart labapp`.'

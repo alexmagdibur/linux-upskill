@@ -48,6 +48,9 @@ async def reconcile_once(adapter: RuntimeAdapter, api: ApiClient, hub: TerminalH
             await api.mark_runtime_missing(session_id)
             missing += 1
 
+    gc = getattr(adapter, "gc", None)
+    if gc is not None:
+        await gc()  # осиротевшие учебные сети LXD
     if removed_expired or removed_orphans or missing:
         log.info(
             "reconcile",

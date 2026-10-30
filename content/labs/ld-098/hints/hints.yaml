@@ -1,0 +1,3 @@
+- 'Захват нужен с правами root: `sudo tcpdump -i lo -nn port 8099 -w ~/hs.pcap &`, потом `nc`, затем `sudo pkill
+  tcpdump`.'
+- 'Читать дамп: `tcpdump -nn -r ~/hs.pcap` — флаги `[S]`, `[S.]`, `[.]`, `[F.]`.'

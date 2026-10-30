@@ -1,0 +1,65 @@
+schema_version: 1
+id: ld-122
+version: 2
+title: 'Подписанный APT-репозиторий: подключить и установить пакет'
+mode: practice
+difficulty: middle
+estimated_minutes: 20
+description: Подключите учебный репозиторий с проверкой подписи (signed-by) и установите из него пакет, не отключая
+  проверку.
+skills:
+- apt sources
+- signed-by
+- gpg --dearmor
+- apt-cache policy
+objectives:
+- Импортировать ключ в keyring
+- Описать источник с signed-by
+- Установить пакет из репозитория
+task: 'В `/srv/repo` лежит учебный APT-репозиторий (плоский формат, с подписанным `InRelease`). Открытый ключ —
+  `/srv/repo/key.asc`. Интернета нет, штатные источники отключены.
+
+
+  1. Преобразуйте ключ в формат keyring и положите его в `/etc/apt/keyrings/labrepo.gpg`.
+
+  2. Добавьте источник `/etc/apt/sources.list.d/labrepo.list` с `signed-by=` (**без** `trusted=yes` и `allow-insecure`).
+
+  3. Обновите списки и установите пакет `labtool`.
+
+  '
+lesson: 87
+stage: Этап 3. Мидл
+topic: Пакеты и обновления
+task_type: P
+environment: V
+theory: Доверие к репозиторию опирается на подписи и ключи, а не только HTTPS.
+prediction: Как подтвердить происхождение пакета? Сформулируй гипотезу и способ её проверить.
+criterion: источник и подпись подтверждены.
+followups:
+  Быстрый возврат: 'LD-121: Как отличить пакетный бинарник от файла, установленного вручную? Ответь без справки
+    и назови наблюдение, которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: installed
+    title: labtool установлен
+    pass_message: Пакет установлен
+    fail_message: Пакет labtool не установлен
+  - id: signed_source
+    title: Источник с signed-by и ключом
+    pass_message: Источник подписан
+    fail_message: Источник должен использовать signed-by=/etc/apt/keyrings/labrepo.gpg без trusted=yes
+  - id: from_repo
+    title: Кандидат из file:/srv/repo
+    pass_message: Пакет из учебного репозитория
+    fail_message: apt-cache policy labtool не показывает file:/srv/repo
+reward:
+  base_xp: 150

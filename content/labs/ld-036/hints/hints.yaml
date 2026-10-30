@@ -1,0 +1,2 @@
+- Zombie — завершившийся ребёнок, чей статус родитель ещё не прочитал. Сигнал «убить zombie» не поможет.
+- В Python достаточно `subprocess.Popen(...).wait()` или `signal.signal(signal.SIGCHLD, signal.SIG_IGN)`.

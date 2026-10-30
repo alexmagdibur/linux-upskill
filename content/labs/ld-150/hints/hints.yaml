@@ -1,0 +1,2 @@
+- '`grep Cap /proc/$(systemctl show -p MainPID --value labcap)/status` и `capsh --decode=МАСКА`.'
+- '`CapabilityBoundingSet=CAP_NET_BIND_SERVICE` + `AmbientCapabilities=CAP_NET_BIND_SERVICE` в drop-in.'

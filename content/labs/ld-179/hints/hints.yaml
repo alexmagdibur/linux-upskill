@@ -1,0 +1,2 @@
+- '`ansible.builtin.template` с `notify: restart labsvc2`; `handlers: - name: restart labsvc2` с модулем `systemd`.'
+- 'Шаблон: `port={{ app_port }}`; переменная по умолчанию — `vars:` в play.'

@@ -1,0 +1,2 @@
+- '`cat /etc/cron.d/labjob` и `systemctl list-timers labjob.timer` покажут оба триггера.'
+- 'Простейшее решение — удалить cron-файл или отключить timer. Журнал: `sort -u -o /var/lib/lab/ledger.txt /var/lib/lab/ledger.txt`.'

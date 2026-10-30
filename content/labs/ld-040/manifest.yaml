@@ -1,0 +1,77 @@
+schema_version: 1
+id: ld-040
+version: 2
+title: RSS, VSZ и page cache на живом процессе
+mode: practice
+difficulty: senior
+estimated_minutes: 20
+description: Измерьте на работающем процессе виртуальную и резидентную память и покажите роль page cache.
+skills:
+- ps -o rss,vsz
+- /proc/PID/status
+- /proc/meminfo
+- page cache
+objectives:
+- Снять RSS и VSZ процесса
+- Увидеть, что VSZ ≫ RSS
+- Понять, где живёт page cache
+task: 'Служба `labmem.service` держит в памяти ~60 МБ данных, резервирует ещё 300 МБ **не трогая** их и один раз
+  прочитала 40 МБ файла (он остался в page cache).
+
+
+  Запишите в `~/mem_report.txt` (значения — из системы, в КБ):
+
+
+  ```
+
+  rss_kb=<VmRSS процесса labmem>
+
+  vsz_kb=<VmSize процесса labmem>
+
+  cached_kb=<Cached из /proc/meminfo>
+
+  note=<1–2 фразы: почему VSZ много больше RSS и как с этим связан page cache (используйте слово cache)>
+
+  ```
+
+  '
+lesson: 153
+stage: Этап 4. Синьор
+topic: Процессы
+task_type: C
+environment: V
+theory: VSZ — адресное пространство, RSS — резидентные страницы, cache может делиться процессами.
+prediction: Почему сумма RSS вводит в заблуждение? Сформулируй гипотезу и способ её проверить.
+criterion: наблюдения и вывод согласованы с `/proc`.
+followups:
+  Быстрый возврат: 'LD-039: Как отличить рост нагрузки от утечки дескрипторов? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: rss_ok
+    title: rss_kb ≈ VmRSS процесса
+    pass_message: RSS измерен верно
+    fail_message: rss_kb должен совпасть с VmRSS процесса labmem (±20%)
+  - id: vsz_ok
+    title: vsz_kb ≈ VmSize процесса
+    pass_message: VSZ измерен верно
+    fail_message: vsz_kb должен совпасть с VmSize процесса labmem (±10%) и быть заметно больше RSS
+  - id: cached_ok
+    title: 'cached_kb: Cached из meminfo'
+    pass_message: Cached указан
+    fail_message: cached_kb должен быть значением Cached из /proc/meminfo (не менее 20000 КБ)
+  - id: note_ok
+    title: note про cache
+    pass_message: Объяснение есть
+    fail_message: В note нужно объяснение, упоминающее cache
+reward:
+  base_xp: 250

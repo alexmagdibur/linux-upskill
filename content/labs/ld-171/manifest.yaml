@@ -1,0 +1,70 @@
+schema_version: 1
+id: ld-171
+version: 2
+title: Backup «успешен», но важных файлов в нём нет
+mode: incident
+difficulty: middle
+estimated_minutes: 25
+description: Резервная копия создаётся без ошибок, но в архиве нет нужных данных из-за неверных путей и исключений.
+skills:
+- tar --exclude
+- tar -tzf
+- проверка содержимого backup
+- пути
+objectives:
+- Проверить содержимое архива, а не только код возврата
+- Найти ошибку в скрипте
+- Исправить и убедиться
+task: '**Инцидент.** Скрипт `/usr/local/bin/lab-backup2.sh` отрабатывает с кодом 0 и создаёт `/var/backups/labapp2/latest.tar.gz`,
+  но при восстановлении выясняется, что в нём нет базы и загрузок пользователей.
+
+
+  Критичные данные: `/var/lib/labapp2/db/main.db`, `/var/lib/labapp2/uploads/*`, `/etc/labapp2/app.conf`.
+
+
+  Исправьте скрипт так, чтобы архив содержал **все три** группы файлов (при этом временные файлы `*.tmp` в архив
+  попадать не должны), и **проверьте содержимое** `tar -tzf`. Проверка запустит скрипт сама.
+
+  '
+lesson: 139
+stage: Этап 3. Мидл
+topic: Backup и восстановление
+task_type: I
+environment: V
+theory: Backup mountpoint может существовать без примонтированного тома.
+prediction: Как проверить полноту архива перед словом «успешно»? Сформулируй гипотезу и способ её проверить.
+criterion: restore содержит все обязательные данные.
+followups:
+  Быстрый возврат: 'LD-170: Как проверить retention policy? Ответь без справки и назови наблюдение, которое подтвердит
+    ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 20
+  checks:
+  - id: db_included
+    title: В архиве main.db
+    pass_message: База в архиве
+    fail_message: В архиве нет базы /var/lib/labapp2/db/main.db
+  - id: uploads_included
+    title: В архиве uploads
+    pass_message: Загрузки в архиве
+    fail_message: В архиве нет загрузок пользователей
+  - id: config_included
+    title: В архиве app.conf
+    pass_message: Конфиг в архиве
+    fail_message: В архиве нет /etc/labapp2/app.conf
+  - id: tmp_excluded
+    title: Временных файлов нет
+    pass_message: Временные файлы исключены
+    fail_message: В архиве не должно быть *.tmp
+reward:
+  base_xp: 200

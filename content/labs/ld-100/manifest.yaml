@@ -1,0 +1,62 @@
+schema_version: 1
+id: ld-100
+version: 2
+title: 'HTTP 502 при живом backend: где ломается цепочка'
+mode: incident
+difficulty: middle
+estimated_minutes: 25
+description: Прокси отвечает 502, хотя backend жив. Разделите ошибки DNS, connect, timeout и ответа upstream и исправьте
+  причину.
+skills:
+- nginx error.log
+- 502 vs 504
+- proxy_pass
+- ss -ltnp
+objectives:
+- Прочитать причину в error.log
+- Отличить connect refused от timeout
+- Исправить адрес upstream
+task: '**Инцидент.** `curl http://127.0.0.1:8088/` отвечает `502 Bad Gateway`, хотя backend (`labapi`) жив и отвечает
+  на `127.0.0.1:9000`.
+
+
+  1. По `/var/log/nginx/error.log` определите категорию ошибки и запишите в `~/cause.txt` одно слово: `dns`, `refused`,
+  `timeout` или `upstream-response`.
+
+  2. Исправьте конфигурацию прокси, чтобы `curl http://127.0.0.1:8088/` возвращал `api-ok`.
+
+  '
+lesson: 113
+stage: Этап 3. Мидл
+topic: TCP, DNS и HTTP
+task_type: I
+environment: N
+theory: 502 означает проблему на пути proxy→upstream, но вариантов несколько.
+prediction: Какие логи разделяют DNS, connect и timeout? Сформулируй гипотезу и способ её проверить.
+criterion: найдена фактическая причина и proxy отвечает 200.
+followups:
+  Быстрый возврат: 'LD-099: Где именно находится старое значение? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 15
+  checks:
+  - id: cause_ok
+    title: 'cause.txt: refused'
+    pass_message: Категория определена
+    fail_message: В cause.txt должно быть слово refused
+  - id: proxy_ok
+    title: Прокси возвращает api-ok
+    pass_message: Прокси работает
+    fail_message: curl http://127.0.0.1:8088/ не возвращает api-ok
+reward:
+  base_xp: 200

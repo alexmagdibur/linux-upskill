@@ -25,13 +25,22 @@ from app.modules.labs.models import Lab, LabVersion
 def public_json(lab: LoadedLab) -> dict[str, object]:
     m = lab.manifest
     return {
+        "lesson": m.lesson,
+        "stage": m.stage,
+        "topic": m.topic,
+        "theory": m.theory,
+        "prediction": m.prediction,
+        "criterion": m.criterion,
+        "followups": m.followups,
+        "availability": m.availability,
+        "unavailable_reason": m.unavailable_reason,
         "objectives": m.objectives,
         "skills": m.skills,
         "task": m.task,
         "hints": m.hints,
         "base_xp": m.reward.base_xp,
-        "timeout_seconds": m.runtime.timeout_seconds,
-        "checks": [c.model_dump() for c in m.validation.checks],
+        "timeout_seconds": m.runtime.timeout_seconds if m.runtime else 0,
+        "checks": [c.model_dump() for c in m.validation.checks] if m.validation else [],
     }
 
 
@@ -62,9 +71,12 @@ async def seed(db: AsyncSession, content_dir: Path, allow_mutation: bool = False
             lab_pos += 1
             loaded = load_lab(content_dir / "labs" / lab_slug)
             m = loaded.manifest
-            image = images.get(m.runtime.image)
-            if image is None:
-                raise ContentError(f"{lab_slug}: образ {m.runtime.image} отсутствует в images.lock.json")
+            if m.runtime is None:  # недоступная лаборатория: исполняемой части нет
+                image = {"id": "n/a"}
+            else:
+                image = images.get(m.runtime.image)
+                if image is None:
+                    raise ContentError(f"{lab_slug}: образ {m.runtime.image} отсутствует в images.lock.json")
             lab = (await db.execute(select(Lab).where(Lab.slug == lab_slug))).scalar_one_or_none()
             if lab is None:
                 lab = Lab(module_id=module.id, slug=lab_slug, title=m.title, mode=m.mode, difficulty=m.difficulty,
@@ -73,6 +85,8 @@ async def seed(db: AsyncSession, content_dir: Path, allow_mutation: bool = False
             lab.module_id, lab.title, lab.description = module.id, m.title, m.description
             lab.mode, lab.difficulty, lab.estimated_minutes = m.mode, m.difficulty, m.estimated_minutes
             lab.position, lab.published = lab_pos, True
+            lab.lesson_number, lab.topic, lab.task_type = m.lesson, m.topic, m.task_type
+            lab.environment, lab.availability, lab.unavailable_reason = m.environment, m.availability, m.unavailable_reason
             await db.flush()
             stats["labs"] += 1
 
@@ -95,6 +109,16 @@ async def seed(db: AsyncSession, content_dir: Path, allow_mutation: bool = False
                 stats["versions_created"] += 1
             else:
                 stats["versions_unchanged"] += 1
+    # задания, исключённые из курса, снимаем с публикации (история попыток и XP сохраняются)
+    in_course = {slug for m in course_spec.modules for slug in m.labs}
+    for gone in (await db.execute(select(Lab).where(Lab.published.is_(True), Lab.slug.not_in(in_course)))).scalars():
+        gone.published = False
+        stats["unpublished"] = stats.get("unpublished", 0) + 1
+    # модули, исчезнувшие из course.yaml и оставшиеся без лабораторий, убираем
+    keep = {m.slug for m in course_spec.modules}
+    for stale in (await db.execute(select(Module).where(Module.course_id == course.id))).scalars():
+        if stale.slug not in keep and not (await db.execute(select(Lab.id).where(Lab.module_id == stale.id).limit(1))).first():
+            await db.delete(stale)
     await db.commit()
     return stats
 

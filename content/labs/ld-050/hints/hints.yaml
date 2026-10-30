@@ -1,0 +1,2 @@
+- '`sudo systemctl cat labapp labdata` покажет оба unit. `After=` задаёт порядок, `Requires=` — зависимость.'
+- 'Drop-in: `sudo systemctl edit labapp` и добавить секцию `[Unit]` с `After=labdata.service` и `Requires=labdata.service`.'

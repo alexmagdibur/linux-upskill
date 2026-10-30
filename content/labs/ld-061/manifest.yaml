@@ -1,0 +1,69 @@
+schema_version: 1
+id: ld-061
+version: 2
+title: logrotate для приложения с открытым файловым дескриптором
+mode: practice
+difficulty: middle
+estimated_minutes: 25
+description: Настройте ротацию лога так, чтобы приложение, держащее файл открытым, не терялось и продолжало писать
+  в новый файл.
+skills:
+- logrotate
+- postrotate
+- SIGHUP
+- открытый FD
+objectives:
+- Понять, что rename не меняет открытый дескриптор
+- Сообщить приложению о ротации
+- Не потерять записи
+task: 'Служба `lablogger.service` непрерывно пишет в `/var/log/lab/app.log` строки `line N` и держит файл **открытым**.
+  При получении `SIGHUP` она **переоткрывает** лог.
+
+
+  Напишите `/etc/logrotate.d/lablogger`: ротировать `/var/log/lab/app.log` (`rotate 3`, без сжатия), а после ротации
+  **сообщать службе о смене файла** (`postrotate` с отправкой `SIGHUP`, например `systemctl kill -s HUP lablogger`).
+  Вариант `copytruncate` **не годится**: он может терять записи.
+
+
+  Проверка выполнит `logrotate -f` под нагрузкой и убедится, что: ротированный файл появился, **новый `app.log`
+  растёт**, а нумерация `line N` по всем файлам **непрерывна** (ничего не потеряно).
+
+  '
+lesson: 98
+stage: Этап 3. Мидл
+topic: Журналы и время
+task_type: P
+environment: V
+theory: Процесс пишет через открытый FD, а rename лог-файла не меняет этот FD.
+prediction: Как правильно сообщить приложению о ротации? Сформулируй гипотезу и способ её проверить.
+criterion: записи не теряются и место возвращается.
+followups:
+  Быстрый возврат: 'LD-060: Как восстановить место, не удалив нужные доказательства? Ответь без справки и назови
+    наблюдение, которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 25
+  checks:
+  - id: rotated
+    title: Появился ротированный файл
+    pass_message: Ротация выполнена
+    fail_message: После logrotate нет ротированного файла app.log.1
+  - id: new_log_grows
+    title: Новый app.log продолжает расти
+    pass_message: Приложение пишет в новый файл
+    fail_message: 'Новый app.log не растёт: приложение пишет в ротированный файл (нужен postrotate с SIGHUP)'
+  - id: no_lost_lines
+    title: Нумерация записей непрерывна
+    pass_message: Записи не потеряны
+    fail_message: В логах пропущены записи (copytruncate теряет данные)
+reward:
+  base_xp: 150

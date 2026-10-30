@@ -1,0 +1,66 @@
+schema_version: 1
+id: ld-083
+version: 2
+title: Ограничение CPU и RAM службы через cgroup и измерение throttling
+mode: practice
+difficulty: middle
+estimated_minutes: 20
+description: Ограничьте службу по CPU и памяти средствами systemd и докажите по cpu.stat, что ограничение работает.
+skills:
+- CPUQuota
+- MemoryMax
+- cgroup v2
+- cpu.stat
+objectives:
+- Выставить лимиты через systemd
+- Найти cgroup службы
+- Прочитать nr_throttled
+task: 'Служба `labburn.service` крутит бесконечный цикл и занимает целое ядро. Ограничьте её:
+
+
+  - `CPUQuota=25%`;
+
+  - `MemoryMax=64M`.
+
+
+  Затем **измерьте throttling**: запишите в `~/throttle.txt` строку `nr_throttled=<число>` — значение из `cpu.stat`
+  cgroup этой службы (оно должно быть больше нуля: служба упирается в квоту).
+
+  '
+lesson: 103
+stage: Этап 3. Мидл
+topic: Память и CPU
+task_type: P
+environment: V
+theory: Cgroup v2 ограничивает и учитывает ресурсы группы процессов.
+prediction: Как CPU throttling отличается от высокой утилизации? Сформулируй гипотезу и способ её проверить.
+criterion: нагрузка ограничена и сервис сохраняет работоспособность.
+followups:
+  Быстрый возврат: 'LD-082: Какие counters это подтвердят? Ответь без справки и назови наблюдение, которое подтвердит
+    ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_timeout_seconds: 15
+  checks:
+  - id: limits_set
+    title: CPUQuota=25%, MemoryMax=64M
+    pass_message: Лимиты заданы
+    fail_message: Нужны CPUQuota=25% и MemoryMax=64M у labburn
+  - id: really_throttled
+    title: Служба реально упирается в квоту
+    pass_message: Квота действует
+    fail_message: 'В cpu.stat службы nr_throttled не растёт: ограничение не действует'
+  - id: report_ok
+    title: 'throttle.txt: измеренное значение'
+    pass_message: Измерение записано
+    fail_message: В throttle.txt нужна строка nr_throttled=<число > 0, не больше текущего значения>
+reward:
+  base_xp: 150

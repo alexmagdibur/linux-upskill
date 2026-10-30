@@ -1,0 +1,65 @@
+schema_version: 1
+id: ld-127
+version: 2
+title: 'SBOM: список пакетов и удаление ненужных runtime-зависимостей'
+mode: practice
+difficulty: senior
+estimated_minutes: 25
+description: Сформируйте перечень установленных пакетов приложения и уберите из рабочей системы отладочные зависимости.
+skills:
+- dpkg-query
+- apt-get remove/autoremove
+- SBOM
+- минимальный runtime
+objectives:
+- Составить список пакетов с версиями
+- Определить ненужные для работы пакеты
+- Удалить их вместе с зависимостями
+task: 'В системе установлены пакеты приложения: `labapp` (зависит от `labfmt`) и отладочные `labdebug` (зависит
+  от `labgdb-tools`). Политика `/etc/lab/runtime-policy` разрешает в рабочей системе только `labapp` и `labfmt`
+  из семейства `lab*`.
+
+
+  1. Удалите всё лишнее из семейства `lab*` (включая автоматически установленную зависимость `labgdb-tools`), не
+  затронув `labapp` и `labfmt`.
+
+  2. После очистки составьте SBOM `~/sbom.txt`: по строке `имя версия` для каждого установленного пакета семейства
+  `lab*`, отсортировано по имени.
+
+  '
+lesson: 158
+stage: Этап 4. Синьор
+topic: Пакеты и обновления
+task_type: P
+environment: V
+theory: SBOM фиксирует компоненты, но минимизация runtime снижает лишние зависимости.
+prediction: Как доказать, что пакет не используется? Сформулируй гипотезу и способ её проверить.
+criterion: минимальный образ/VM работает после удаления лишнего.
+followups:
+  Быстрый возврат: 'LD-126: Какие preflight/окно/rollback нужны критичной службе? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: extras_removed
+    title: labdebug и labgdb-tools удалены
+    pass_message: Лишнее удалено
+    fail_message: Пакеты labdebug и labgdb-tools должны быть удалены
+  - id: required_kept
+    title: labapp и labfmt на месте
+    pass_message: Нужное сохранено
+    fail_message: labapp и labfmt должны остаться установленными
+  - id: sbom_ok
+    title: sbom.txt соответствует системе
+    pass_message: SBOM корректен
+    fail_message: sbom.txt должен совпадать со списком установленных lab*-пакетов (имя версия, по алфавиту)
+reward:
+  base_xp: 200

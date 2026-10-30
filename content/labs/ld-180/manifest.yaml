@@ -1,0 +1,66 @@
+schema_version: 1
+id: ld-180
+version: 2
+title: 'Дрейф конфигурации одного узла: найти и устранить'
+mode: incident
+difficulty: middle
+estimated_minutes: 30
+description: Один из трёх узлов отличается по конфигурации. Найдите его в режиме проверки и приведите к эталону
+  без лишних изменений.
+skills:
+- ansible --check --diff
+- дрейф конфигурации
+- template
+- идемпотентность
+objectives:
+- Выявить расхождение без изменений
+- Устранить дрейф playbook-ом
+- Подтвердить changed=0
+task: 'Три узла (`n1`, `n2`, `n3`) хранят конфигурацию в `/etc/lab/n1.conf`, `/etc/lab/n2.conf`, `/etc/lab/n3.conf`.
+  Эталон описан playbook-ом `~/ansible/fleet.yml` (шаблон `templates/node.conf.j2`) — **менять playbook нельзя**.
+
+
+  1. В режиме проверки (`ansible-playbook ... --check --diff`) найдите узел, конфигурация которого разошлась, и
+  запишите его имя в `~/drift.txt` (`n1`, `n2` или `n3`).
+
+  2. Устраните дрейф запуском playbook-а (от root, `-i localhost, -c local`). Повторный запуск должен дать `changed=0`.
+
+  '
+lesson: 144
+stage: Этап 3. Мидл
+topic: Конфигурация парка
+task_type: I
+environment: N
+theory: Configuration drift — расхождение факта и desired state.
+prediction: Как отличить санкционированное исключение от случайной ручной правки? Сформулируй гипотезу и способ
+  её проверить.
+criterion: оба узла проходят одинаковый тест.
+followups:
+  Быстрый возврат: 'LD-179: Как не применить синтаксически плохой конфиг? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 45
+  exercise_timeout_seconds: 20
+  checks:
+  - id: drifted_named
+    title: 'drift.txt: узел с дрейфом'
+    pass_message: Дрейф найден
+    fail_message: В drift.txt должно быть имя узла с расхождением
+  - id: fleet_converged
+    title: Все конфиги совпадают с эталоном
+    pass_message: Дрейф устранён
+    fail_message: Конфигурация узлов всё ещё расходится с эталоном
+  - id: playbook_untouched
+    title: Playbook не изменён
+    pass_message: Playbook не менялся
+    fail_message: Playbook fleet.yml или шаблон изменены
+reward:
+  base_xp: 200

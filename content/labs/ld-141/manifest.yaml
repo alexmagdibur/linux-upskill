@@ -1,0 +1,35 @@
+schema_version: 1
+id: ld-141
+version: 1
+title: 'Контейнеры: После рестарта контейнера пропадают данные'
+mode: incident
+difficulty: middle
+estimated_minutes: 20
+description: После рестарта контейнера пропадают данные
+skills:
+- Контейнеры
+objectives:
+- данные переживают пересоздание.
+task: '**Задание.** После рестарта контейнера пропадают данные. Разделите ephemeral state и persistent volume.
+
+
+  **Критерий успеха.** данные переживают пересоздание.
+
+  '
+lesson: 127
+stage: Этап 3. Мидл
+topic: Контейнеры
+task_type: I
+environment: D
+theory: Writable layer контейнера исчезает при пересоздании.
+prediction: Какие данные относятся к persistent volume? Сформулируй гипотезу и способ её проверить.
+criterion: данные переживают пересоздание.
+followups:
+  Быстрый возврат: 'LD-140: Почему проверка одного PID недостаточна? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+availability: requires_vm_container_runtime
+unavailable_reason: Задание требует контейнерный runtime (Docker/podman) внутри учебной машины. Для этого нужно
+  включить вложенные контейнеры (security.nesting), что ослабляет изоляцию, поэтому по умолчанию это отключено.
+  Описание и критерий сохранены.
+reward:
+  base_xp: 200

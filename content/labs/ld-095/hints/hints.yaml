@@ -1,0 +1,2 @@
+- '`sudo nsenter --net=/run/netns/peer nstat -az IPReversePathFilter` — счётчик растёт при каждой попытке.'
+- '`sudo nsenter --net=/run/netns/peer sysctl -w net.ipv4.conf.all.rp_filter=2 net.ipv4.conf.p_b.rp_filter=2 net.ipv4.conf.p_a.rp_filter=2`.'

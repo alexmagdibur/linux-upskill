@@ -1,0 +1,68 @@
+schema_version: 1
+id: ld-060
+version: 2
+title: 'Инцидент: логи перестали записываться — раздел заполнен'
+mode: incident
+difficulty: middle
+estimated_minutes: 25
+description: Приложение не может писать журнал из-за заполненного раздела. Освободите место и настройте ротацию,
+  чтобы это не повторилось.
+skills:
+- df
+- du
+- logrotate
+- освобождение места
+objectives:
+- Найти, что занимает раздел
+- Освободить место, не удаляя текущий лог
+- Настроить logrotate
+task: '**Инцидент.** Служба `labapp-log.service` пишет журнал в `/var/log/labapp/app.log`, но записи перестали появляться
+  — раздел `/var/log/labapp` заполнен.
+
+
+  1. Найдите, что занимает место, и освободите его, **не удаляя** текущий `app.log` (в нём нужные записи).
+
+  2. Настройте ротацию `/etc/logrotate.d/labapp` (ротация по размеру или по дням, `rotate`, `compress`), которая
+  проходит проверку `logrotate -d`.
+
+
+  Результат: записи снова появляются, свободно не менее 1 МБ.
+
+  '
+lesson: 97
+stage: Этап 3. Мидл
+topic: Журналы и время
+task_type: I
+environment: V
+theory: Заполненная FS может остановить запись логов, лишив диагностики.
+prediction: Как восстановить место, не удалив нужные доказательства? Сформулируй гипотезу и способ её проверить.
+criterion: новые события сохраняются, диск ниже порога.
+followups:
+  Быстрый возврат: 'LD-059: Что останется доступным после reboot? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_timeout_seconds: 15
+  checks:
+  - id: logging_again
+    title: Новые записи появляются
+    pass_message: Журнал снова пишется
+    fail_message: В app.log нет свежих записей
+  - id: space_free
+    title: Свободно ≥ 1 МБ, app.log сохранён
+    pass_message: Место освобождено
+    fail_message: Свободно менее 1 МБ или app.log удалён
+  - id: rotation_configured
+    title: logrotate настроен и валиден
+    pass_message: Ротация настроена
+    fail_message: Нужен /etc/logrotate.d/labapp с rotate, compress и size/daily/weekly (проходит logrotate -d)
+reward:
+  base_xp: 200

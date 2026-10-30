@@ -1,0 +1,2 @@
+- '`readlink /proc/self/ns/pid` — `pid:[inode]`; сравните inode.'
+- '`unshare --fork --pid --mount-proc --mount --net --user --map-root-user readlink /proc/self/ns/net`.'

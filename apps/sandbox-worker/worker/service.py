@@ -50,10 +50,11 @@ class WorkerService:
             raise RuntimeError_("LAB_VERSION_UNAVAILABLE")
         return lab
 
-    def _image(self, logical: str) -> ImageRef:
+    def _image(self, logical: str, runtime_type: str = "container") -> ImageRef:
         lock = load_image_lock(self.settings.content_dir)
         entry = lock.get(logical)
-        if not entry:
+        kind = "lxd" if entry and entry.get("runtime") == "lxd" else "container"
+        if not entry or kind != runtime_type:  # образ другого runtime подсунуть нельзя
             raise RuntimeError_("IMAGE_NOT_ALLOWED")
         return ImageRef(entry["tag"], entry["id"])
 
@@ -61,7 +62,9 @@ class WorkerService:
     async def provision(self, job: dict[str, Any]) -> None:
         session_id = job["session_id"]
         lab = self._load(job["lab_slug"], int(job["version"]), job["content_hash"])
-        image = self._image(lab.manifest.runtime.image)
+        runtime = lab.manifest.runtime
+        assert runtime is not None
+        image = self._image(runtime.image, runtime.type)
         s = self.settings
         limits = ResourceLimits(
             cpu=s.sandbox_cpu_limit,
@@ -72,9 +75,11 @@ class WorkerService:
             ttl_seconds=min(int(job.get("ttl_seconds", s.sandbox_ttl_seconds)), lab.manifest.runtime.timeout_seconds),
         )
         async with self._slots:
-            ref = await self.adapter.create(
-                session_id, image, limits, lab.manifest.runtime.writable_dirs, lab.setup_script, 30
-            )
+            adapter = self.adapter.for_type(runtime.type) if hasattr(self.adapter, "for_type") else self.adapter
+            setup_timeout = 90 if runtime.type == "lxd" else 30  # машины с systemd готовятся дольше контейнера
+            ref = await adapter.create(session_id, image, limits, runtime.writable_dirs, lab.setup_script, setup_timeout)
+            if hasattr(self.adapter, "remember"):
+                self.adapter.remember(ref, adapter)
         accepted = await self.api.provisioned(session_id, ref)
         if not accepted:
             await self.destroy({"session_id": session_id})

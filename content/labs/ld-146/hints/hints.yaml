@@ -1,0 +1,4 @@
+- '`sudo ip netns add labns`; `sudo ip link add vlab0 type veth peer name vlab1`; `sudo ip link set vlab1 netns
+  labns`.'
+- 'Внутри namespace: `sudo nsenter --net=/run/netns/labns ip addr add 10.77.0.2/24 dev vlab1` и `... ip link set
+  vlab1 up`.'

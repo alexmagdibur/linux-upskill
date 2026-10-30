@@ -1,0 +1,53 @@
+schema_version: 1
+id: ld-033
+version: 2
+title: PID по сокету, а не по имени
+mode: practice
+difficulty: junior
+estimated_minutes: 15
+description: Среди одинаково называющихся процессов найдите тот, который слушает заданный порт.
+skills:
+- ss -ltnp
+- pgrep -f
+- /proc
+objectives:
+- Найти процесс по порту
+- Не выбрать одноимённый процесс
+task: 'Запущены три одинаковых по имени сервиса `python3 svc.py` на портах 9101, 9102 и 9103 (loopback).
+
+
+  Найдите PID процесса, который **слушает порт 9102**, и запишите его в `~/pid.txt`. Процессы не завершайте.
+
+  '
+lesson: 42
+stage: Этап 2. Джун
+topic: Процессы
+task_type: P
+environment: C
+theory: Имя процесса не уникально; PID связывают с сокетом, командной строкой и владельцем.
+prediction: Как избежать выбора одноимённого процесса? Сформулируй гипотезу и способ её проверить.
+criterion: выбран верный PID среди одноимённых процессов.
+followups:
+  Быстрый возврат: 'linux-013: Почему сначала проверяют процесс и пробуют SIGTERM? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: right_pid
+    title: 'pid.txt: PID сервиса на порту 9102'
+    pass_message: PID определён верно
+    fail_message: В pid.txt не PID процесса, слушающего порт 9102
+  - id: all_alive
+    title: Все три сервиса работают
+    pass_message: Сервисы не затронуты
+    fail_message: Один из сервисов остановлен — завершать процессы не нужно
+reward:
+  base_xp: 100

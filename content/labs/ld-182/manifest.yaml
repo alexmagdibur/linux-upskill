@@ -1,0 +1,75 @@
+schema_version: 1
+id: ld-182
+version: 2
+title: Rolling update трёх узлов с health gate и serial
+mode: practice
+difficulty: senior
+estimated_minutes: 45
+description: Обновите три узла по одному, дожидаясь здоровья каждого перед следующим, чтобы сервис не терял ёмкость.
+skills:
+- ansible serial
+- health gate
+- uri/wait_for
+- rolling update
+objectives:
+- Обновлять по одному узлу
+- Ждать успешный health-check
+- Сохранять минимум двух здоровых узлов
+task: 'Три узла `n1`..`n3` (службы `labnode@1..3`, порты 8101..8103, версия в `/etc/labnode/<N>.version`, health
+  — `GET /health`, здоров только через ~3 секунды после старта) работают на версии `v1`. Inventory — `~/ansible/nodes.ini`
+  (переменная `node_id`).
+
+
+  Напишите `~/ansible/rolling.yml`, который обновляет узлы до версии из переменной `new_version` (по умолчанию `v2`):
+
+
+  - обновление по **одному** узлу (`serial: 1`);
+
+  - запись версии в `/etc/labnode/<node_id>.version` и перезапуск `labnode@<node_id>`;
+
+  - **health gate**: после перезапуска ждать успешного `GET http://127.0.0.1:810<node_id>/health` (`uri` с `until`/`retries`
+  или `wait_for`), только потом переходить к следующему узлу.
+
+
+  Проверка запустит playbook (`ansible-playbook -i nodes.ini rolling.yml`), параллельно следя, чтобы одновременно
+  были здоровы не менее **двух** узлов, и убедится, что все три узла на `v2`.
+
+  '
+lesson: 192
+stage: Этап 4. Синьор
+topic: Конфигурация парка
+task_type: P
+environment: N
+theory: Rolling update держит часть узлов доступными и проверяет здоровье после каждого шага.
+prediction: Какой сигнал останавливает rollout? Сформулируй гипотезу и способ её проверить.
+criterion: при дефекте rollout останавливается после canary.
+followups:
+  Быстрый возврат: 'LD-181: Как проверить это тестовым маркером? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 60
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 60
+  checks:
+  - id: all_updated
+    title: Все узлы на v2
+    pass_message: Обновлены все узлы
+    fail_message: Не все узлы обновлены до v2
+  - id: capacity_kept
+    title: Всегда ≥ 2 здоровых узла
+    pass_message: Ёмкость сохранялась
+    fail_message: 'Во время обновления здоровых узлов было меньше двух (нужны serial: 1 и health gate)'
+  - id: serial_defined
+    title: serial и health-check в playbook
+    pass_message: serial и health gate на месте
+    fail_message: 'В playbook нужны serial: 1 и проверка /health'
+reward:
+  base_xp: 200

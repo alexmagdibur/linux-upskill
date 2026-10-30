@@ -1,0 +1,58 @@
+schema_version: 1
+id: nb-007
+version: 2
+title: Создание и чтение файла
+mode: practice
+difficulty: beginner
+estimated_minutes: 15
+description: Создайте пустой файл и файл с заданной строкой, затем прочитайте оба.
+skills:
+- touch
+- echo
+- cat
+objectives:
+- Отличить пустой файл от отсутствующего
+- Записать точную строку
+task: 'В каталоге `~/notes`:
+
+
+  1. Создайте **пустой** файл `notes.txt`.
+
+  2. Создайте файл `message.txt` со строкой `Hello, Linux!`.
+
+  3. Прочитайте оба файла (`cat`, `ls -l`) и убедитесь, что размеры — 0 и 14 байт.
+
+  '
+lesson: 8
+stage: Этап 1. Новичок
+topic: Файлы и каталоги
+task_type: P
+environment: C
+theory: '`touch` создаёт пустой файл или обновляет время, а `cat` выводит содержимое. Пустой файл и отсутствующий
+  файл различаются.'
+prediction: Как отличить нулевой размер от отсутствия файла? Сформулируй гипотезу и способ её проверить.
+criterion: Первый существует и пуст, второй содержит точную строку.
+followups:
+  Быстрый возврат: 'NB-006: Что произойдёт при повторном создании пути? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: empty_file
+    title: notes.txt пуст
+    pass_message: notes.txt существует и пуст
+    fail_message: notes.txt должен существовать и быть пустым
+  - id: message
+    title: 'message.txt: Hello, Linux!'
+    pass_message: message.txt содержит нужную строку
+    fail_message: message.txt должен содержать ровно строку Hello, Linux!
+reward:
+  base_xp: 50

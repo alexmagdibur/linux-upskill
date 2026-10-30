@@ -1,0 +1,76 @@
+schema_version: 1
+id: ld-179
+version: 2
+title: 'Ansible: template конфига, handler restart и проверка синтаксиса'
+mode: practice
+difficulty: middle
+estimated_minutes: 40
+description: Шаблон конфига с переменной, handler перезапуска только при изменении и синтаксическая проверка перед
+  применением.
+skills:
+- template
+- handlers
+- notify
+- --syntax-check
+- --check --diff
+objectives:
+- Разместить конфиг из шаблона
+- Перезапускать службу только при изменении
+- Проверять playbook до запуска
+task: 'Служба `labsvc2.service` читает порт из `/etc/labsvc2/app.conf` (`port=<N>`) при старте. Напишите `~/ansible/app.yml`
+  (localhost, local), который:
+
+
+  - рендерит `/etc/labsvc2/app.conf` из шаблона `~/ansible/templates/app.conf.j2` с переменной `app_port` (по умолчанию
+  `8071`);
+
+  - использует **handler** `restart labsvc2` (уведомляется только при изменении конфигурации);
+
+  - проходит `ansible-playbook --syntax-check`.
+
+
+  Проверка запустит playbook, затем с `-e app_port=8072` (служба должна перезапуститься и слушать новый порт), затем
+  ещё раз с `8072` (**без** перезапуска).
+
+  '
+lesson: 143
+stage: Этап 3. Мидл
+topic: Конфигурация парка
+task_type: P
+environment: N
+theory: Template, validation и handler отделяют изменение файла от рестарта.
+prediction: Как не применить синтаксически плохой конфиг? Сформулируй гипотезу и способ её проверить.
+criterion: плохой шаблон не останавливает рабочий сервис.
+followups:
+  Быстрый возврат: 'LD-178: Почему ноль изменений во втором прогоне важен? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 45
+  exercise_timeout_seconds: 40
+  checks:
+  - id: syntax_ok
+    title: --syntax-check проходит
+    pass_message: Синтаксис валиден
+    fail_message: ansible-playbook --syntax-check сообщает об ошибке
+  - id: renders_port
+    title: Конфиг и порт из app_port
+    pass_message: Шаблон работает
+    fail_message: Служба должна слушать порт из app_port (8071 по умолчанию, 8072 при переопределении)
+  - id: restart_on_change
+    title: Смена порта → перезапуск
+    pass_message: Handler срабатывает при изменении
+    fail_message: При смене app_port служба не перезапустилась
+  - id: no_restart_same
+    title: Повтор без изменений → без перезапуска
+    pass_message: Лишних перезапусков нет
+    fail_message: Handler перезапустил службу без изменения конфигурации
+reward:
+  base_xp: 150

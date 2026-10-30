@@ -1,0 +1,2 @@
+- '`host-record=web.lab.test,10.20.0.10,fd00::10`, `cname=www.lab.test,web.lab.test`.'
+- 'NXDOMAIN для имени: `address=/blocked.lab.test/` (пустой адрес); проверка конфигурации — `dnsmasq --test`.'

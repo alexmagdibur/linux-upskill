@@ -1,0 +1,68 @@
+schema_version: 1
+id: ld-103
+version: 2
+title: 'HTTP keep-alive: соединения до backend за прокси'
+mode: practice
+difficulty: senior
+estimated_minutes: 30
+description: Сравните число соединений до backend с повторным использованием соединений и без него и настройте keepalive
+  в nginx.
+skills:
+- nginx upstream keepalive
+- proxy_http_version 1.1
+- Connection
+- число соединений
+objectives:
+- Измерить число соединений до backend
+- Включить keep-alive к upstream
+- Подтвердить измерением
+task: 'nginx (`127.0.0.1:8095`) проксирует на backend (`127.0.0.1:9200`), который считает принятые TCP-соединения
+  (`curl http://127.0.0.1:9200/count`).
+
+
+  Сейчас каждый запрос через прокси открывает **новое** соединение до backend. Настройте `/etc/nginx/conf.d/ka.conf`
+  так, чтобы соединения переиспользовались: блок `upstream` с `keepalive`, `proxy_http_version 1.1` и очищенный
+  заголовок `Connection`.
+
+
+  Проверка: после 20 запросов через прокси backend должен принять **не более 3** новых соединений.
+
+  '
+lesson: 171
+stage: Этап 4. Синьор
+topic: TCP, DNS и HTTP
+task_type: P
+environment: N
+theory: Keep-alive снижает handshake cost, но держит ресурсы.
+prediction: Как выбрать timeout по трафику и лимитам? Сформулируй гипотезу и способ её проверить.
+criterion: измерены соединения и latency, выбран режим.
+followups:
+  Быстрый возврат: 'LD-102: Как connection reuse меняет профиль? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 15
+  checks:
+  - id: reuse_works
+    title: 20 запросов → ≤ 3 новых соединений
+    pass_message: Соединения переиспользуются
+    fail_message: 20 запросов через прокси создали больше 3 соединений до backend
+  - id: proxy_works
+    title: Прокси отвечает
+    pass_message: Прокси работает
+    fail_message: Прокси на 8095 не возвращает ответ backend
+  - id: upstream_keepalive
+    title: В конфиге keepalive и HTTP/1.1
+    pass_message: Настройки заданы
+    fail_message: В конфиге нужны upstream keepalive и proxy_http_version 1.1
+reward:
+  base_xp: 200

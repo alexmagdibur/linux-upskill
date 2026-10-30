@@ -1,0 +1,2 @@
+- '`cat leaf.crt inter.crt > fullchain.crt` и укажите fullchain в `ssl_certificate`.'
+- 'Порядок важен: сначала лист, затем промежуточный.'

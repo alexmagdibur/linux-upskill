@@ -1,0 +1,69 @@
+schema_version: 1
+id: ld-053
+version: 2
+title: Timer с догоном пропущенного запуска и разбросом времени
+mode: practice
+difficulty: middle
+estimated_minutes: 20
+description: Запускайте задачу по расписанию через systemd timer с Persistent= и RandomizedDelaySec=.
+skills:
+- systemd timer
+- OnCalendar=
+- Persistent=
+- RandomizedDelaySec=
+objectives:
+- Написать timer к существующему service
+- Не терять запуск при выключенной машине
+- Разнести запуски по времени
+task: '`labbackup.service` (oneshot) выполняет резервное копирование. Создайте для него **timer** `/etc/systemd/system/labbackup.timer`:
+
+
+  - запуск **ежедневно в 03:00** (`OnCalendar=`);
+
+  - `Persistent=true` — пропущенный запуск догоняется после включения машины;
+
+  - `RandomizedDelaySec=` больше нуля (разброс);
+
+  - установка в `timers.target`, включите и запустите timer.
+
+
+  Проверка перезагрузит машину и убедится, что timer активен и расписание видно (`systemctl list-timers`).
+
+  '
+lesson: 94
+stage: Этап 3. Мидл
+topic: systemd
+task_type: P
+environment: V
+theory: Timer может учитывать пропущенный запуск и вводить jitter.
+prediction: Почему одинаковый момент запуска всех узлов вреден? Сформулируй гипотезу и способ её проверить.
+criterion: план виден, единичный reboot не теряет запуск.
+followups:
+  Быстрый возврат: 'LD-052: Для чего нужны rate limits и watchdog? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  reboot_before_validate: true
+  checks:
+  - id: timer_active
+    title: Timer активен и включён
+    pass_message: Timer активен после reboot
+    fail_message: labbackup.timer не включён или не активен после перезагрузки
+  - id: persistent_random
+    title: Persistent=yes и RandomizedDelaySec > 0
+    pass_message: Догон и разброс настроены
+    fail_message: Нужны Persistent=true и RandomizedDelaySec больше нуля
+  - id: schedule_visible
+    title: Расписание 03:00 видно, unit валиден
+    pass_message: Расписание задано
+    fail_message: У timer нет ближайшего запуска или unit не проходит systemd-analyze verify
+reward:
+  base_xp: 150

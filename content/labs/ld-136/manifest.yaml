@@ -1,0 +1,74 @@
+schema_version: 1
+id: ld-136
+version: 2
+title: 'Массовое изменение конфигураций: план, валидация, canary, rollback'
+mode: practice
+difficulty: senior
+estimated_minutes: 30
+description: Автоматизируйте раскатку конфигурации на парк узлов с проверкой, canary и откатом.
+skills:
+- canary
+- rollback
+- валидация конфигурации
+- безопасная раскатка
+objectives:
+- Валидировать до изменений
+- Раскатывать начиная с canary
+- Откатывать всё при сбое
+task: 'В `~/fleet/hosts/h1…h6/app.conf` — конфигурации шести «хостов». Напишите `~/bin/rollout.sh НОВЫЙ_КОНФИГ`:
+
+
+  1. **План:** выведите список хостов (в stdout).
+
+  2. **Валидация до изменений:** `~/bin/validate_conf.sh` — если новый конфиг некорректен, **ничего не менять**,
+  код `1`.
+
+  3. **Canary и раскатка:** по очереди `h1` (canary), затем остальные; после каждого хоста — `validate_conf.sh`
+  на его `app.conf` и `~/bin/healthcheck.sh ДИР_ХОСТА`.
+
+  4. **Откат:** при сбое проверки на любом хосте вернуть **все** уже изменённые хосты к прежним конфигам, код `1`.
+
+
+  Каталог парка можно переопределить переменной `FLEET` (по умолчанию `~/fleet/hosts`).
+
+  '
+lesson: 156
+stage: Этап 4. Синьор
+topic: Bash и Python
+task_type: C
+environment: C
+theory: Массовая автоматизация увеличивает blast radius.
+prediction: Зачем нужны план, canary, проверка и остановка на ошибке? Сформулируй гипотезу и способ её проверить.
+criterion: некорректная конфигурация блокирует массовый rollout.
+followups:
+  Быстрый возврат: 'LD-135: Что проверит тест? Ответь без справки и назови наблюдение, которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  checks:
+  - id: good_rollout
+    title: Корректный конфиг применён ко всем хостам
+    pass_message: Корректная раскатка прошла
+    fail_message: Корректный конфиг должен оказаться на всех шести хостах (код 0)
+  - id: invalid_blocked
+    title: Некорректный конфиг блокирует раскатку
+    pass_message: Некорректный конфиг заблокирован
+    fail_message: Некорректный конфиг не должен менять ни один хост (код ≠ 0)
+  - id: rollback_on_failure
+    title: Сбой health-check откатывает всё
+    pass_message: Сбой привёл к полному откату
+    fail_message: При сбое health-check все хосты должны вернуться к прежней конфигурации (код ≠ 0)
+  - id: canary_failure
+    title: Сбой canary не затрагивает остальных
+    pass_message: Сбой canary остановил раскатку
+    fail_message: При сбое на h1 остальные хосты не должны измениться
+reward:
+  base_xp: 250

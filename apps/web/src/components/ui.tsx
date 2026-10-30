@@ -56,9 +56,20 @@ export function ModeBadge({ mode }: { mode: Mode }) {
   return <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${MODE_STYLE[mode]}`}>{MODE_LABEL[mode]}</span>;
 }
 
-const DIFF_LABEL: Record<Difficulty, string> = { beginner: "Начальный", junior: "Junior", middle: "Middle" };
+const DIFF_LABEL: Record<Difficulty, string> = { beginner: "Начальный", junior: "Junior", middle: "Middle", senior: "Senior" };
 export function DifficultyBadge({ difficulty }: { difficulty: Difficulty }) {
   return <span className="rounded-full bg-slate-800 px-2.5 py-0.5 text-xs text-slate-300">{DIFF_LABEL[difficulty]}</span>;
+}
+
+export const ENV_LABEL: Record<string, string> = {
+  V: "Нужна учебная VM",
+  N: "Нужно несколько узлов",
+  D: "Нужна VM с контейнерами",
+};
+
+export function EnvBadge({ environment }: { environment: string | null }) {
+  if (!environment || environment === "C") return null;
+  return <span className="rounded-full bg-amber-900/50 px-2.5 py-0.5 text-xs text-amber-200">{ENV_LABEL[environment] ?? "Нужна VM"}</span>;
 }
 
 export const STATUS_LABEL: Record<SessionStatus, string> = {

@@ -1,0 +1,74 @@
+schema_version: 1
+id: ld-099
+version: 2
+title: 'Имя резолвится в старый адрес: TTL и кэш'
+mode: incident
+difficulty: middle
+estimated_minutes: 30
+description: После смены записи клиенты получают старый адрес. Найдите, где держится кэш, и исправьте так, чтобы
+  изменения доходили быстро.
+skills:
+- dig +ttl
+- dnsmasq cache
+- min-cache-ttl
+- local-ttl
+objectives:
+- Проследить ответ по цепочке resolver → upstream
+- Найти источник завышенного TTL
+- Сбросить кэш и поправить TTL
+task: 'Запись `app.lab.test` перенесли на новый адрес `10.20.0.55`, но клиенты, ходящие через кэширующий резолвер
+  (`127.0.0.1:5353`), всё ещё получают старый `10.20.0.5`.
+
+
+  Цепочка: клиент → **кэширующий dnsmasq** (`127.0.0.1:5353`, конфиг `/etc/dnsmasq-cache.conf`, служба `dnsmasq-cache`)
+  → **авторитетный dnsmasq** (`127.0.0.2:5300`, конфиг `/etc/dnsmasq-auth.conf`, служба `dnsmasq-auth`; он уже отдаёт
+  новый адрес).
+
+
+  Найдите источник проблемы (`dig +ttl`, сравните ответы обоих серверов) и исправьте:
+
+
+  - кэширующий резолвер должен отдавать новый адрес (сбросьте кэш);
+
+  - завышенные TTL больше не должны удерживать старые данные: в конфигах не должно остаться `min-cache-ttl`/`local-ttl`
+  больше 60 секунд.
+
+  '
+lesson: 112
+stage: Этап 3. Мидл
+topic: TCP, DNS и HTTP
+task_type: I
+environment: N
+theory: DNS-ответ зависит от resolver, authoritative server и cache TTL.
+prediction: Где именно находится старое значение? Сформулируй гипотезу и способ её проверить.
+criterion: обе VM получают ожидаемый адрес.
+followups:
+  Быстрый возврат: 'LD-098: Какие пакеты отличают отказ приложения от отказа транспорта? Ответь без справки и назови
+    наблюдение, которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 15
+  checks:
+  - id: new_answer
+    title: Резолвер отдаёт 10.20.0.55
+    pass_message: Резолвер отдаёт актуальный адрес
+    fail_message: Кэширующий резолвер всё ещё отдаёт старый адрес
+  - id: ttl_sane
+    title: TTL в конфигах ≤ 60 с
+    pass_message: TTL приведены в порядок
+    fail_message: min-cache-ttl/local-ttl в конфигурации больше 60 секунд
+  - id: ttl_in_answer
+    title: TTL в ответе ≤ 60
+    pass_message: В ответе небольшой TTL
+    fail_message: TTL ответа резолвера больше 60 секунд
+reward:
+  base_xp: 200

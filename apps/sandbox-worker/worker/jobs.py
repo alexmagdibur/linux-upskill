@@ -19,7 +19,7 @@ log = logging.getLogger("worker.queue")
 STREAM = "upskill:jobs"
 DLQ = "upskill:jobs:dead"
 GROUP = "workers"
-JOB_TIMEOUT = {"provision": 90, "validate": 60, "destroy": 30}
+JOB_TIMEOUT = {"provision": 150, "validate": 120, "destroy": 30}
 # ошибки, при которых повтор бессмысленен
 PERMANENT = {"BAD_LAB", "CONTENT_INVALID", "LAB_VERSION_UNAVAILABLE", "IMAGE_NOT_ALLOWED", "IMAGE_MISSING", "IMAGE_MISMATCH"}
 

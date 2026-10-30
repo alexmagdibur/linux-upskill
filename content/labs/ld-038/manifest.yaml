@@ -1,0 +1,75 @@
+schema_version: 1
+id: ld-038
+version: 2
+title: Что знает /proc о процессе
+mode: practice
+difficulty: middle
+estimated_minutes: 15
+description: Определите cwd, окружение, открытые файлы, лимиты и cgroup процесса по /proc/<pid>.
+skills:
+- /proc/PID
+- readlink
+- environ
+- limits
+- cgroup
+objectives:
+- Читать состояние процесса из /proc
+- Составить отчёт по контрольному процессу
+task: 'Запущен контрольный процесс `probe.py`. Найдите его PID и запишите в `~/proc_report.txt` пять строк:
+
+
+  ```
+
+  cwd=<рабочий каталог процесса>
+
+  token=<значение переменной PROBE_TOKEN из его окружения>
+
+  open_file=<путь файла held.txt, который он держит открытым>
+
+  nofile_soft=<мягкий лимит открытых файлов (Max open files)>
+
+  cgroup=<содержимое /proc/PID/cgroup>
+
+  ```
+
+  '
+lesson: 81
+stage: Этап 3. Мидл
+topic: Процессы
+task_type: P
+environment: C
+theory: '`/proc/<pid>` показывает представление ядра о процессе, но часть полей зависит от прав.'
+prediction: Какие данные могут измениться между чтениями? Сформулируй гипотезу и способ её проверить.
+criterion: отчёт совпадает с контрольным процессом.
+followups:
+  Быстрый возврат: 'LD-037: Что делать по истечении deadline? Ответь без справки и назови наблюдение, которое подтвердит
+    ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: cwd
+    title: cwd процесса
+    pass_message: cwd указан верно
+    fail_message: cwd должен быть ~/probe_dir
+  - id: token
+    title: PROBE_TOKEN из окружения
+    pass_message: Переменная окружения прочитана
+    fail_message: token должен быть значением PROBE_TOKEN процесса
+  - id: open_file
+    title: Открытый файл held.txt
+    pass_message: Открытый файл найден
+    fail_message: open_file должен быть путём held.txt, открытого процессом
+  - id: limits_cgroup
+    title: nofile_soft и cgroup
+    pass_message: Лимит и cgroup указаны верно
+    fail_message: nofile_soft и cgroup должны совпадать с /proc/PID/limits и /proc/PID/cgroup
+reward:
+  base_xp: 150

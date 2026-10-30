@@ -1,0 +1,35 @@
+schema_version: 1
+id: ld-140
+version: 1
+title: 'Контейнеры: Добавьте healthcheck, лимиты CPU/RAM/PIDs и read-only rootfs с отдельным writable mount'
+mode: practice
+difficulty: middle
+estimated_minutes: 15
+description: Добавьте healthcheck, лимиты CPU/RAM/PIDs и read-only rootfs с отдельным writable mount
+skills:
+- Контейнеры
+objectives:
+- сервис работает, лимиты видны в inspect/cgroup.
+task: '**Задание.** Добавьте healthcheck, лимиты CPU/RAM/PIDs и read-only rootfs с отдельным writable mount.
+
+
+  **Критерий успеха.** сервис работает, лимиты видны в inspect/cgroup.
+
+  '
+lesson: 126
+stage: Этап 3. Мидл
+topic: Контейнеры
+task_type: P
+environment: D
+theory: Healthcheck отражает работу приложения, а ресурсы ограничивает cgroup.
+prediction: Почему проверка одного PID недостаточна? Сформулируй гипотезу и способ её проверить.
+criterion: сервис работает, лимиты видны в inspect/cgroup.
+followups:
+  Быстрый возврат: 'LD-139: Какие два места нужно проверить? Ответь без справки и назови наблюдение, которое подтвердит
+    ответ.'
+availability: requires_vm_container_runtime
+unavailable_reason: Задание требует контейнерный runtime (Docker/podman) внутри учебной машины. Для этого нужно
+  включить вложенные контейнеры (security.nesting), что ослабляет изоляцию, поэтому по умолчанию это отключено.
+  Описание и критерий сохранены.
+reward:
+  base_xp: 150

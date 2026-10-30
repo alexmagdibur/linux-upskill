@@ -1,5 +1,6 @@
 export type Mode = "learn" | "practice" | "incident";
-export type Difficulty = "beginner" | "junior" | "middle";
+export type Difficulty = "beginner" | "junior" | "middle" | "senior";
+export type Availability = "available" | "requires_vm" | "requires_cluster" | "requires_vm_container_runtime" | "manual_review";
 
 export type SessionStatus =
   | "CREATED"
@@ -35,6 +36,12 @@ export interface LabSummary {
   completed: boolean;
   best_score: number | null;
   attempts_count: number;
+  lesson: number | null;
+  topic: string | null;
+  task_type: "L" | "P" | "I" | "C" | null;
+  environment: "C" | "V" | "N" | "D" | null;
+  availability: Availability;
+  unavailable_reason: string | null;
 }
 
 export interface LabCard extends LabSummary {
@@ -43,6 +50,12 @@ export interface LabCard extends LabSummary {
   hints_total: number;
   checks: string[];
   version: number;
+  stage: string | null;
+  theory: string | null;
+  prediction: string | null;
+  criterion: string | null;
+  followups: Record<string, string>;
+  task: string;
 }
 
 export interface LabList {
@@ -74,6 +87,9 @@ export interface SessionView {
   error_code: string | null;
   lab: { id: string; title: string; mode: Mode; difficulty: Difficulty; estimated_minutes: number; base_xp: number };
   task: string;
+  theory: string | null;
+  prediction: string | null;
+  criterion: string | null;
   objectives: string[];
   checks: string[];
   hints_total: number;

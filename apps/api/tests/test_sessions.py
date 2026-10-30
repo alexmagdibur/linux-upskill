@@ -302,3 +302,45 @@ async def test_sandbox_disabled_mode_returns_503(make_account) -> None:
             await c.post("/api/v1/auth/login", json={"email": "d@example.com", "password": PASSWORD})
             r = await c.post("/api/v1/labs/linux-001/sessions", headers={"X-CSRF-Token": c.cookies["upskill_csrf"]})
     assert r.status_code == 503 and r.json()["error"]["code"] == "SANDBOX_DISABLED"
+
+
+def _expected_counts() -> tuple[int, int]:
+    from upskill_content import load_lab
+
+    root = make_settings().content_dir / "labs"
+    avail = sum(1 for d in root.iterdir() if load_lab(d).manifest.availability == "available")
+    return avail, len(list(root.iterdir())) - avail
+
+
+async def test_program_catalog_lists_all_lessons_and_marks_unavailable(make_account) -> None:
+    a: Account = await make_account()
+    mods = (await a.get("/api/v1/courses/linux-upskill/modules")).json()["items"]
+    assert [m["id"] for m in mods] == ["stage-1-novice", "stage-2-junior", "stage-3-middle", "stage-4-senior"]
+    labs = [lab for m in mods for lab in m["labs"]]
+    avail, blocked = _expected_counts()
+    assert len(labs) == avail + blocked
+    assert sum(1 for lab in labs if lab["availability"] == "available") == avail
+    assert [lab["lesson"] for lab in labs] == sorted(lab["lesson"] for lab in labs)
+    listing = (await a.get("/api/v1/labs?availability=available&limit=100")).json()
+    assert listing["total"] == avail
+    assert (await a.get("/api/v1/labs?availability=unavailable&limit=100")).json()["total"] == blocked
+
+
+async def test_unavailable_lab_is_described_but_cannot_be_started(make_account) -> None:
+    a: Account = await make_account()
+    blocked = next(lab for lab in (await a.get("/api/v1/labs?availability=unavailable&limit=5")).json()["items"])
+    card = (await a.get(f"/api/v1/labs/{blocked['id']}")).json()
+    assert card["availability"] != "available" and card["unavailable_reason"] and card["criterion"] and card["task"]
+    r = await a.post(f"/api/v1/labs/{blocked['id']}/sessions")
+    assert r.status_code == 409 and r.json()["error"]["code"] == "LAB_UNAVAILABLE"
+    assert (await sql("SELECT count(*) FROM lab_sessions"))[0][0] == 0
+
+
+async def test_lab_card_exposes_methodology_but_no_internals(make_account) -> None:
+    a: Account = await make_account()
+    card = (await a.get("/api/v1/labs/nb-001")).json()
+    assert card["lesson"] == 1 and card["task_type"] == "P" and card["theory"] and card["prediction"] and card["criterion"]
+    assert "validate.sh" not in str(card) and "prepare.sh" not in str(card)
+    sid = (await start(a, "nb-001"))["session_id"]
+    view = (await a.get(f"/api/v1/sessions/{sid}")).json()
+    assert view["theory"] and view["prediction"] and view["criterion"]

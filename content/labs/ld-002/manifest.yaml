@@ -1,0 +1,54 @@
+schema_version: 1
+id: ld-002
+version: 2
+title: Относительные пути и соседний процесс
+mode: practice
+difficulty: junior
+estimated_minutes: 15
+description: Создайте каталог в проекте через относительные пути, не затронув процесс в соседнем каталоге.
+skills:
+- cd
+- mkdir -p
+- относительные пути
+objectives:
+- Создать reports/today в нужном проекте
+- Не вмешиваться в соседние процессы и файлы
+task: 'Есть два каталога: проект `~/work/proj` и соседний `~/work/other` (там работает фоновый процесс и лежат файлы).
+
+
+  Перейдите в проект и создайте `reports/today` **внутри `~/work/proj`**. Соседний каталог, его файлы и процесс
+  трогать нельзя.
+
+  '
+lesson: 19
+stage: Этап 2. Джун
+topic: Терминал, shell и окружение
+task_type: P
+environment: C
+theory: Относительный путь вычисляется от cwd вызывающего процесса, абсолютный — от корня.
+prediction: Как проверить путь до создания каталога? Сформулируй гипотезу и способ её проверить.
+criterion: каталог находится в заданном проекте, соседние файлы целы.
+followups:
+  Быстрый возврат: 'LD-001: Почему `cd` в дочернем процессе не меняет каталог родителя? Ответь без справки и назови
+    наблюдение, которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: created
+    title: Создан ~/work/proj/reports/today
+    pass_message: Каталог создан в проекте
+    fail_message: Каталог ~/work/proj/reports/today не найден
+  - id: neighbors_intact
+    title: Соседние файлы и процесс целы
+    pass_message: Соседний процесс и файлы целы
+    fail_message: Соседний каталог изменён или его процесс остановлен
+reward:
+  base_xp: 100

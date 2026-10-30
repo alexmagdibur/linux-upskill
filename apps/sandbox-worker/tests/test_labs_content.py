@@ -15,7 +15,10 @@ from worker.validation.runner import run_checks
 
 from .conftest import CONTENT, run_as_student
 
-LAB_DIRS = sorted(p for p in (CONTENT / "labs").iterdir() if p.is_dir())
+ALL_DIRS = sorted(p for p in (CONTENT / "labs").iterdir() if p.is_dir())
+_MANIFESTS = {p: load_lab(p).manifest for p in ALL_DIRS}
+LAB_DIRS = [p for p in ALL_DIRS if _MANIFESTS[p].runtime is not None and _MANIFESTS[p].runtime.type == "container"]  # Docker-песочницы
+LXD_COUNT = sum(1 for m in _MANIFESTS.values() if m.runtime is not None and m.runtime.type == "lxd")  # учебные машины (test_lxd_labs.py)
 
 
 def passed(lab: LoadedLab, results: dict[str, bool]) -> bool:
@@ -40,12 +43,26 @@ async def attempt(adapter: DockerAdapter, image: ImageRef, lab: LoadedLab, scrip
         await adapter.destroy(ref)
 
 
-def test_catalog_has_20_labs_in_three_modules() -> None:
+def test_catalog_covers_the_whole_program() -> None:
     course = load_course(CONTENT)
-    assert [m.slug for m in course.modules] == ["linux-basics", "administration", "incidents"]
-    assert [len(m.labs) for m in course.modules] == [8, 7, 5]
-    on_disk = {p.name for p in LAB_DIRS}
-    assert on_disk == {lab for m in course.modules for lab in m.labs} and len(on_disk) == 20
+    assert [m.slug for m in course.modules] == ["stage-1-novice", "stage-2-junior", "stage-3-middle", "stage-4-senior"]
+    assert [len(m.labs) for m in course.modules] == [17, 44, 87, 57]
+    on_disk = {p.name for p in ALL_DIRS}
+    assert on_disk == {lab for m in course.modules for lab in m.labs} and len(on_disk) == len(ALL_DIRS)
+    assert len(LAB_DIRS) == 75  # 20 из MVP + 55 новых контейнерных заданий
+    assert LXD_COUNT >= 1
+
+
+def test_unavailable_labs_are_described_but_not_runnable() -> None:
+    blocked = [p for p in ALL_DIRS if _MANIFESTS[p].availability != "available"]
+    assert len(blocked) == len(ALL_DIRS) - len(LAB_DIRS) - LXD_COUNT  # остальное — описанные, но не запускаемые
+    for d in blocked:
+        lab = load_lab(d)
+        m = lab.manifest
+        assert m.availability in ("requires_vm", "requires_cluster", "requires_vm_container_runtime", "manual_review") and m.unavailable_reason
+        assert m.runtime is None and m.validation is None and not lab.setup_script and not lab.validate_script
+        assert m.criterion and m.theory and m.environment in ("V", "N", "D")
+        assert not (d / "setup").exists() and not (d / "checks").exists()
 
 
 def test_all_manifests_valid_and_use_allowlisted_images() -> None:
@@ -54,8 +71,8 @@ def test_all_manifests_valid_and_use_allowlisted_images() -> None:
         lab = load_lab(d)  # строгая схема, 1–3 подсказки, существующие скрипты
         assert lab.manifest.runtime.image in images
         assert (d / "tests" / "solution.sh").is_file() and (d / "tests" / "wrong.sh").is_file(), d.name
-        ids = [c.id for c in lab.manifest.validation.checks]
-        assert all(f"chk {i} " in lab.validate_script.decode() or f"chk {i}\t" in lab.validate_script.decode() or i in lab.validate_script.decode() for i in ids)
+        text = lab.validate_script.decode()
+        assert all(c.id in text for c in lab.manifest.validation.checks), d.name
 
 
 @pytest.mark.parametrize("lab_dir", LAB_DIRS, ids=lambda p: p.name)

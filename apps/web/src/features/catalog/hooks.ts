@@ -7,6 +7,7 @@ export interface LabFilters {
   mode?: string;
   difficulty?: string;
   completed?: string; // "true" | "false" | ""
+  availability?: string; // "available" | "unavailable" | ""
 }
 
 export function useLabs(filters: LabFilters) {

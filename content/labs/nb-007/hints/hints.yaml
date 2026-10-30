@@ -1,0 +1,2 @@
+- '`touch notes.txt` создаёт пустой файл.'
+- '`echo ''Hello, Linux!'' > message.txt` создаёт файл со строкой.'

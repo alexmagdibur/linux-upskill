@@ -1,0 +1,65 @@
+schema_version: 1
+id: ld-188
+version: 2
+title: Сервис падает после ротации TLS только за балансировщиком
+mode: incident
+difficulty: senior
+estimated_minutes: 35
+description: 'Один из backend-ов продолжает отдавать старый сертификат: за round-robin ошибка проявляется через
+  раз.'
+skills:
+- openssl s_client
+- балансировщик L4
+- ротация сертификатов
+- поиск проблемного backend
+objectives:
+- Проверить каждый backend отдельно
+- Найти узел со старым сертификатом
+- Применить новый сертификат
+task: 'Клиент ходит на `https://app.lab.test:8443` (L4-балансировщик `lab-lb`, round-robin на два backend-а: `127.0.0.1:9301`
+  и `127.0.0.1:9302`). После ротации сертификата запросы через раз завершаются ошибкой проверки (`curl --cacert
+  /etc/lab/ca/ca.crt --resolve app.lab.test:8443:127.0.0.1 https://app.lab.test:8443/`).
+
+
+  Новый сертификат лежит в `/etc/lab/tls/new.crt` (ключ `new.key`), старый — `/etc/lab/tls/old.crt`. Backend читает
+  сертификат при старте (службы `labtls@1`, `labtls@2`, конфиг — `/etc/lab/tls/labtls-N.env`).
+
+
+  Проверьте каждый backend отдельно, найдите тот, что отдаёт старый сертификат, и устраните (обе службы должны использовать
+  новый). Проверка сделает 10 запросов через балансировщик — все должны проходить.
+
+  '
+lesson: 195
+stage: Этап 4. Синьор
+topic: Сложные инциденты
+task_type: I
+environment: N
+theory: Балансировщик смешивает успешные и ошибочные backend, поэтому проблема кажется случайной.
+prediction: Как отметить запросы конкретным upstream? Сформулируй гипотезу и способ её проверить.
+criterion: все узлы проходят TLS-тест.
+followups:
+  Быстрый возврат: 'LD-187: Как привязать ошибку к одному пути? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 20
+  checks:
+  - id: all_requests_ok
+    title: 10 запросов через LB проходят
+    pass_message: Балансировщик отдаёт валидный сертификат
+    fail_message: Часть запросов через балансировщик не проходит проверку сертификата
+  - id: both_new
+    title: Оба backend-а с новым сертификатом
+    pass_message: Оба backend-а обновлены
+    fail_message: Один из backend-ов всё ещё отдаёт старый сертификат
+reward:
+  base_xp: 250

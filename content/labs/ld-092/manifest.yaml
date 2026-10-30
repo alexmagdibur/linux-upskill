@@ -1,0 +1,65 @@
+schema_version: 1
+id: ld-092
+version: 2
+title: 'Виртуальный bridge: соединить два узла в один L2-сегмент'
+mode: practice
+difficulty: middle
+estimated_minutes: 20
+description: Создайте bridge и подключите к нему два узла так, чтобы они увидели друг друга без маршрутизации.
+skills:
+- ip link add type bridge
+- ip link set master
+- L2-сегмент
+- ping
+objectives:
+- Создать bridge
+- Подключить порты
+- Проверить связность на втором уровне
+task: '> В учебной машине `ip netns exec` и `ip -n` недоступны (в контейнере нельзя смонтировать `/sys`). Команды
+  внутри namespace выполняйте так: `sudo nsenter --net=/run/netns/ИМЯ команда`.
+
+
+  Два узла `a` (`10.63.0.1/24`) и `b` (`10.63.0.2/24`) уже настроены, их кабели (veth) подключены к машине концами
+  `ha` и `hb`, но не соединены между собой.
+
+
+  Создайте bridge `labbr0`, добавьте в него `ha` и `hb`, поднимите все интерфейсы так, чтобы `a` пинговал `b`. Адрес
+  на bridge назначать не нужно.
+
+  '
+lesson: 107
+stage: Этап 3. Мидл
+topic: Сетевые интерфейсы и маршруты
+task_type: P
+environment: N
+theory: Bridge соединяет канальные сегменты, VLAN размечает отдельные L2-домены.
+prediction: Где проходит граница изоляции? Сформулируй гипотезу и способ её проверить.
+criterion: разрешённые пары общаются, изоляция соблюдена.
+followups:
+  Быстрый возврат: 'LD-091: Какие обе стороны проверить? Ответь без справки и назови наблюдение, которое подтвердит
+    ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: bridge_ports
+    title: labbr0 с портами ha и hb
+    pass_message: Bridge собран
+    fail_message: Нужен bridge labbr0 с портами ha и hb
+  - id: ports_up
+    title: bridge и порты UP
+    pass_message: Интерфейсы подняты
+    fail_message: Bridge и порты должны быть в состоянии UP
+  - id: a_pings_b
+    title: a → b проходит
+    pass_message: Узлы видят друг друга
+    fail_message: ping из a в b не проходит
+reward:
+  base_xp: 150

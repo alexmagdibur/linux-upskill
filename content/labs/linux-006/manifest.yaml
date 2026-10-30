@@ -1,6 +1,6 @@
 schema_version: 1
 id: linux-006
-version: 1
+version: 2
 title: Pipes и перенаправление вывода
 mode: practice
 difficulty: junior
@@ -29,6 +29,17 @@ task: 'В `~/data/access.log` строки вида `IP МЕТОД ПУТЬ СТ
   4. Выполните `ls /nonexistent` так, чтобы **сообщение об ошибке** попало в файл `~/err.txt`.
 
   '
+lesson: 30
+stage: Этап 2. Джун
+topic: Потоки, текст и данные
+task_type: P
+environment: C
+theory: Pipeline передаёт stdout одного процесса другому; stderr остаётся отдельным потоком.
+prediction: Куда попадёт ошибка первой команды в конвейере? Сформулируй гипотезу и способ её проверить.
+criterion: Данные и ошибки разделены; результат верен.
+followups:
+  Быстрый возврат: 'linux-005: Как отличить совпадение строки от количества уникальных запросов? Ответь без справки
+    и назови наблюдение, которое подтвердит ответ.'
 runtime:
   type: container
   image: ubuntu-basic

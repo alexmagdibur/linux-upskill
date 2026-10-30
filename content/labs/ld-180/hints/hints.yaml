@@ -1,0 +1,3 @@
+- '`sudo ansible-playbook -i localhost, -c local ~/ansible/fleet.yml --check --diff` покажет diff для узла, который
+  изменится.'
+- Затем тот же запуск без `--check`.

@@ -1,0 +1,35 @@
+schema_version: 1
+id: ld-149
+version: 1
+title: 'Namespaces и cgroups: Сравните rootless и обычный runtime для заданного сервиса'
+mode: practice
+difficulty: senior
+estimated_minutes: 15
+description: Сравните rootless и обычный runtime для заданного сервиса
+skills:
+- Namespaces и cgroups
+objectives:
+- перечислены реальные ограничения и тесты доступа.
+task: '**Задание.** Сравните rootless и обычный runtime для заданного сервиса.
+
+
+  **Критерий успеха.** перечислены реальные ограничения и тесты доступа.
+
+  '
+lesson: 181
+stage: Этап 4. Синьор
+topic: Namespaces и cgroups
+task_type: P
+environment: D
+theory: Rootless runtime уменьшает привилегии daemon, но имеет функциональные ограничения.
+prediction: Какие из них важны именно этому сервису? Сформулируй гипотезу и способ её проверить.
+criterion: перечислены реальные ограничения и тесты доступа.
+followups:
+  Быстрый возврат: 'LD-148: Почему `chmod 777` — плохое исправление volume permissions? Ответь без справки и назови
+    наблюдение, которое подтвердит ответ.'
+availability: requires_vm_container_runtime
+unavailable_reason: Задание требует контейнерный runtime (Docker/podman) внутри учебной машины. Для этого нужно
+  включить вложенные контейнеры (security.nesting), что ослабляет изоляцию, поэтому по умолчанию это отключено.
+  Описание и критерий сохранены.
+reward:
+  base_xp: 200

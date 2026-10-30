@@ -1,0 +1,56 @@
+schema_version: 1
+id: ld-020
+version: 2
+title: Копирование дерева с сохранением метаданных
+mode: practice
+difficulty: middle
+estimated_minutes: 15
+description: Скопируйте дерево, сохранив времена, права и символические ссылки, и сравните источник с копией.
+skills:
+- cp -a
+- stat
+- find -printf
+- tar-конвейер
+objectives:
+- Сохранить mtime, права и ссылки
+- Сравнить не только байты
+task: 'В `~/src` лежит дерево: файлы с разными правами и временами, символическая ссылка и пустой каталог.
+
+
+  Создайте точную копию в `~/dst` так, чтобы совпали **содержимое, права, времена изменения и символические ссылки**
+  (без разыменования).
+
+  '
+lesson: 65
+stage: Этап 3. Мидл
+topic: Файлы и каталоги
+task_type: P
+environment: C
+theory: Копирование данных и копирование метаданных — разные гарантии.
+prediction: Какие свойства нужно сравнить кроме байтов? Сформулируй гипотезу и способ её проверить.
+criterion: метаданные и содержимое совпадают.
+followups:
+  Быстрый возврат: 'incident-004: Как узнать фактический путь, по которому оно ищет конфиг? Ответь без справки и
+    назови наблюдение, которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  checks:
+  - id: metadata
+    title: Права, времена и ссылки совпадают
+    pass_message: Метаданные совпали
+    fail_message: Права, времена изменения или ссылки в ~/dst отличаются от ~/src
+  - id: content
+    title: Содержимое совпадает
+    pass_message: Содержимое совпало
+    fail_message: Содержимое файлов отличается
+reward:
+  base_xp: 150

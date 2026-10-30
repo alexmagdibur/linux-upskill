@@ -1,0 +1,57 @@
+schema_version: 1
+id: ld-025
+version: 2
+title: Чтение отчёта для группы при закрытом ключе
+mode: practice
+difficulty: junior
+estimated_minutes: 15
+description: Дайте группе devs читать отчёт, оставив ключ в том же каталоге закрытым.
+skills:
+- chgrp
+- chmod
+- права группы
+objectives:
+- Выдать группе минимально необходимый доступ
+- Сохранить секрет закрытым
+task: 'В `~/secure` лежат `report.txt` и `key.pem` (оба `600`, каталог `700`).
+
+
+  Дайте **группе `devs`** право **читать `report.txt`** (для этого группа должна «заходить» в каталог). Файл `key.pem`
+  должен остаться закрытым: никакого доступа ни группе, ни остальным.
+
+
+  Проверка читает файлы от имени другого пользователя из группы `devs`.
+
+  '
+lesson: 38
+stage: Этап 2. Джун
+topic: Права и пользователи
+task_type: P
+environment: C
+theory: Доступ определяется UID, GID и mode bits на файле и каталогах пути.
+prediction: Почему соседний секрет может остаться закрытым? Сформулируй гипотезу и способ её проверить.
+criterion: чтение проверяется от двух пользователей.
+followups:
+  Быстрый возврат: 'incident-001: Каким наблюдением докажешь, где именно отказ? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: report_readable
+    title: Группа читает report.txt
+    pass_message: Группа может читать отчёт
+    fail_message: Пользователь группы devs не может прочитать report.txt
+  - id: key_closed
+    title: key.pem остаётся закрытым
+    pass_message: Ключ закрыт
+    fail_message: key.pem должен остаться 600 и недоступным группе и остальным
+reward:
+  base_xp: 100

@@ -1,0 +1,3 @@
+- '`chgrp labdev /srv/shared && chmod 2770 /srv/shared` — группа и setgid.'
+- '`setfacl -m g:labops:rwx /srv/shared` (доступ сейчас) и `setfacl -d -m g:labops:rwx,g:labdev:rwx /srv/shared`
+  (наследуемый, default).'

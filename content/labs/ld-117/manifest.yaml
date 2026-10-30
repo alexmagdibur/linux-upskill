@@ -1,0 +1,63 @@
+schema_version: 1
+id: ld-117
+version: 2
+title: 'TLS-сертификат выдан для другого имени: SAN'
+mode: incident
+difficulty: middle
+estimated_minutes: 30
+description: Клиент отвергает сертификат из-за несовпадения имени. Выпустите правильный сертификат с SAN и подключите
+  его.
+skills:
+- openssl req/x509
+- subjectAltName
+- curl --cacert
+- nginx ssl_certificate
+objectives:
+- Найти причину ошибки проверки имени
+- Выпустить сертификат со SAN
+- Заменить его в nginx и перезагрузить
+task: 'Сайт `https://app.lab.test` (nginx, порт 443) отдаёт сертификат, выписанный на другое имя — клиент проверку
+  не проходит. Учебный корневой CA лежит в `/etc/lab/ca/` (`ca.crt`, `ca.key`).
+
+
+  1. Убедитесь в проблеме: `curl --cacert /etc/lab/ca/ca.crt --resolve app.lab.test:443:127.0.0.1 https://app.lab.test/`.
+
+  2. Выпустите новый ключ и сертификат для `app.lab.test` **со SAN** (`DNS:app.lab.test`), подписанный этим CA.
+
+  3. Подставьте их в nginx (`/etc/lab/tls/app.crt`, `/etc/lab/tls/app.key`) и перезагрузите конфигурацию.
+
+  '
+lesson: 122
+stage: Этап 3. Мидл
+topic: SSH и TLS
+task_type: I
+environment: N
+theory: TLS-клиент проверяет цепочку доверия и имя из SAN.
+prediction: Почему «сертификат не истёк» недостаточно? Сформулируй гипотезу и способ её проверить.
+criterion: клиент проверяет hostname без отключения проверки.
+followups:
+  Быстрый возврат: 'LD-116: Что произойдёт при bind на 0.0.0.0? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 15
+  checks:
+  - id: verified_https
+    title: curl с проверкой цепочки и имени успешен
+    pass_message: Клиент принимает сертификат
+    fail_message: curl --cacert ... https://app.lab.test/ не проходит проверку
+  - id: san_present
+    title: В сертификате SAN app.lab.test
+    pass_message: SAN есть
+    fail_message: В сертификате нет subjectAltName DNS:app.lab.test
+reward:
+  base_xp: 200

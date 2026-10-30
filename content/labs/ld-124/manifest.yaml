@@ -1,0 +1,64 @@
+schema_version: 1
+id: ld-124
+version: 2
+title: Закрепление версий зависимостей и воспроизводимая установка
+mode: practice
+difficulty: middle
+estimated_minutes: 20
+description: Закрепите версии пакетов через APT pinning, чтобы установка давала одинаковый результат.
+skills:
+- apt preferences
+- Pin-Priority
+- apt-cache policy
+- воспроизводимость
+objectives:
+- Описать pin в /etc/apt/preferences.d
+- Убедиться, что кандидат — нужная версия
+- Установить зависимость закреплённой версии
+task: 'В локальном репозитории два релиза библиотеки `labcore`: 1.0 и 2.0. Приложению подходит **только 1.0**, но
+  по умолчанию APT выберет 2.0.
+
+
+  1. Создайте `/etc/apt/preferences.d/labcore` с pin на версию `1.0` (приоритет не ниже 1001).
+
+  2. Убедитесь, что `apt-cache policy labcore` показывает кандидатом 1.0, и установите пакет `labcore`.
+
+  3. После установки `apt-get upgrade -s` не должен предлагать обновление `labcore`.
+
+  '
+lesson: 89
+stage: Этап 3. Мидл
+topic: Пакеты и обновления
+task_type: P
+environment: V
+theory: Reproducible build требует фиксировать версии и входы.
+prediction: Какие элементы остаются изменчивыми даже при одинаковом source? Сформулируй гипотезу и способ её проверить.
+criterion: результаты функционально одинаковы.
+followups:
+  Быстрый возврат: 'LD-123: Как связать регрессию с конкретной версией библиотеки? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: pin_defined
+    title: Pin на 1.0 с приоритетом ≥ 1001
+    pass_message: Pin задан
+    fail_message: 'Нужен pin Package: labcore, Pin: version 1.0, Pin-Priority ≥ 1001'
+  - id: installed_v1
+    title: Установлена labcore 1.0
+    pass_message: Установлена нужная версия
+    fail_message: Должна быть установлена версия labcore 1.0
+  - id: no_upgrade
+    title: upgrade не предлагает labcore
+    pass_message: Обновления нет
+    fail_message: apt-get upgrade -s предлагает обновить labcore
+reward:
+  base_xp: 150

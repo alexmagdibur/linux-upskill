@@ -1,0 +1,2 @@
+- '`df -h /mnt/bytes /mnt/inodes` — байты, `df -i /mnt/bytes /mnt/inodes` — inode.'
+- Если по байтам почти пусто, а inode 100% — это исчерпание inode.

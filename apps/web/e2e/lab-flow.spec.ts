@@ -1,4 +1,14 @@
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+
 import { expect, test, type Page } from "@playwright/test";
+
+// ожидаемые числа берём из контента, чтобы тест не ломался при добавлении заданий
+const LABS_DIR = join(fileURLToPath(new URL(".", import.meta.url)), "..", "..", "..", "content", "labs");
+const ALL = readdirSync(LABS_DIR);
+const BLOCKED = ALL.filter((d) => /availability: (requires_|manual_review)/.test(readFileSync(join(LABS_DIR, d, "manifest.yaml"), "utf8"))).length;
+const RUNNABLE = ALL.length - BLOCKED;
 
 const PASSWORD = "correct-horse-battery";
 
@@ -36,13 +46,40 @@ test.afterEach(async ({ page }) => {
   }, m[1]);
 });
 
-test("каталог показывает 20 лабораторий в трёх модулях", async ({ page }) => {
+test("каталог показывает всю программу: запускаемые и описанные задания", async ({ page }) => {
   await register(page);
   await page.goto("/catalog");
-  await expect(page.locator('[data-testid^="lab-"]')).toHaveCount(20);
-  await expect(page.getByRole("heading", { name: "Incident Simulation" })).toBeVisible();
+  await expect(page.locator('[data-testid^="lab-"]')).toHaveCount(RUNNABLE);
+  await expect(page.getByRole("heading", { name: "Этап 4. Синьор" })).toBeVisible();
+  await page.getByLabel("Доступность").selectOption("");
+  await expect(page.locator('[data-testid^="lab-"]')).toHaveCount(ALL.length);
+  await page.getByLabel("Доступность").selectOption("unavailable");
+  await expect(page.locator('[data-testid^="lab-"]')).toHaveCount(BLOCKED);
+  await page.getByLabel("Доступность").selectOption("available");
   await page.getByLabel("Режим").selectOption("incident");
-  await expect(page.locator('[data-testid^="lab-"]')).toHaveCount(5);
+  const incidents = await page.locator('[data-testid^="lab-"]').count();
+  expect(incidents).toBeGreaterThanOrEqual(5);
+});
+
+test("недоступное задание описано, но не запускается", async ({ page }) => {
+  await register(page);
+  await page.goto("/catalog");
+  await page.getByLabel("Доступность").selectOption("unavailable");
+  await page.locator('[data-availability="requires_vm"]').first().click();
+  await expect(page.getByTestId("unavailable-reason")).toContainText("Запуск отключён");
+  await expect(page.getByTestId("start-lab")).toBeDisabled();
+});
+
+test("новое задание программы проходит через UI (nb-001)", async ({ page }) => {
+  await register(page);
+  await page.goto("/labs/nb-001");
+  await expect(page.getByText("Перед терминалом")).toBeVisible();
+  await page.getByTestId("start-lab").click();
+  await expect(page.getByTestId("terminal")).toHaveAttribute("data-state", "connected", { timeout: 60_000 });
+  await typeInTerminal(page, "pwd > ~/answer.txt");
+  await page.getByTestId("check").click();
+  await expect(page).toHaveURL(/\/result\//, { timeout: 60_000 });
+  await expect(page.getByTestId("result-xp")).toHaveText("+50 XP");
 });
 
 test("полный путь: регистрация → запуск → терминал → проверка → XP → повторный вход", async ({ page }) => {

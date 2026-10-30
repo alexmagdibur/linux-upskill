@@ -1,0 +1,65 @@
+schema_version: 1
+id: ld-131
+version: 2
+title: 'Инцидент: скрипт удаляет не тот каталог при пустой переменной'
+mode: incident
+difficulty: middle
+estimated_minutes: 20
+description: Исправьте валидацию входа и quoting, чтобы опасные значения отклонялись до изменения файловой системы.
+skills:
+- quoting
+- валидация входа
+- cd ... &&
+- find -delete
+objectives:
+- Проверять preconditions до удаления
+- Корректно работать с пробелами в путях
+task: '**Инцидент.** `~/bin/cleanup.sh` очищает каталог `$DIR`, но при пустой или неверной переменной удаляет содержимое
+  **текущего** каталога (`cd` не удался, `rm -rf ./*` выполнился). С путями, содержащими пробелы, он тоже не работает.
+
+
+  Исправьте скрипт:
+
+
+  - пустой или несуществующий `DIR` — сообщение в stderr, код `1` и **ничего не удаляется**;
+
+  - корректный `DIR` (в том числе с пробелами) — удалить всё содержимое (включая скрытые файлы), код `0`.
+
+  '
+lesson: 84
+stage: Этап 3. Мидл
+topic: Bash и Python
+task_type: I
+environment: C
+theory: Пустая переменная и неверное quoting могут расширить область удаления.
+prediction: Какие preconditions проверяются до мутации? Сформулируй гипотезу и способ её проверить.
+criterion: опасные входы отклоняются до изменения FS.
+followups:
+  Быстрый возврат: 'LD-130: Что должно остаться неизменным при втором запуске? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  checks:
+  - id: empty_dir_rejected
+    title: 'DIR пуст: отказ, файлы целы'
+    pass_message: Пустой DIR отклонён
+    fail_message: При пустом DIR скрипт должен отказаться (код ≠ 0) и ничего не удалять
+  - id: missing_dir_rejected
+    title: 'DIR не существует: отказ, файлы целы'
+    pass_message: Несуществующий DIR отклонён
+    fail_message: При несуществующем DIR скрипт должен отказаться (код ≠ 0) и ничего не удалять
+  - id: valid_cleaned
+    title: Корректный DIR (с пробелом) очищен
+    pass_message: Корректный каталог очищен
+    fail_message: Каталог с пробелом в имени должен быть очищен с кодом 0
+reward:
+  base_xp: 200

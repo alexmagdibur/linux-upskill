@@ -1,0 +1,73 @@
+schema_version: 1
+id: ld-055
+version: 2
+title: 'Sandboxing systemd: минимальные права службы'
+mode: practice
+difficulty: senior
+estimated_minutes: 20
+description: Ужесточите unit через директивы sandboxing так, чтобы служба работала, но не могла менять систему и
+  читать домашние каталоги.
+skills:
+- ProtectSystem
+- ProtectHome
+- PrivateTmp
+- NoNewPrivileges
+- ReadWritePaths
+objectives:
+- Включить изоляцию unit
+- Оставить службе доступ только к её каталогу
+- Подтвердить эффект самой службой
+task: 'Служба `labscan.service` работает от root без ограничений. Раз в секунду она пытается (1) создать файл в
+  `/etc`, (2) прочитать каталог `/home/student` и записывает результат в `/var/lib/labapp/probe.txt` (`etc=open|blocked
+  home=open|blocked`). Ещё она обновляет `/var/lib/labapp/heartbeat`.
+
+
+  Ужесточите unit (лучше через drop-in) по принципу минимальных прав:
+
+
+  - `/etc` и система только для чтения (`ProtectSystem=strict` или `full`), но запись в `/var/lib/labapp` **остаётся**
+  (`ReadWritePaths=` или `StateDirectory=`);
+
+  - домашние каталоги недоступны (`ProtectHome=`), собственный `/tmp` (`PrivateTmp=`), `NoNewPrivileges=yes`;
+
+  - служба продолжает работать: `probe.txt` должен показывать `etc=blocked home=blocked`, а heartbeat обновляться.
+
+  '
+lesson: 161
+stage: Этап 4. Синьор
+topic: systemd
+task_type: P
+environment: V
+theory: Sandboxing systemd сокращает доступ службы к FS, сети и kernel API.
+prediction: Как проверить ограничение, не ломая нормальный путь? Сформулируй гипотезу и способ её проверить.
+criterion: сервис работает, попытки лишних операций блокируются.
+followups:
+  Быстрый возврат: 'LD-054: Как определить, какой unit держит порт? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 20
+  checks:
+  - id: sandbox_props
+    title: ProtectSystem/ProtectHome/PrivateTmp/NoNewPrivileges
+    pass_message: Директивы изоляции включены
+    fail_message: Нужны ProtectSystem=strict|full, ProtectHome=yes|read-only|tmpfs, PrivateTmp=yes, NoNewPrivileges=yes
+  - id: effect_blocked
+    title: Служба не может писать в /etc и читать /home
+    pass_message: Изоляция действует
+    fail_message: probe.txt должен показывать etc=blocked home=blocked
+  - id: still_works
+    title: Служба работает и пишет в свой каталог
+    pass_message: Служба по-прежнему работает
+    fail_message: Служба не работает или не может писать heartbeat в /var/lib/labapp
+reward:
+  base_xp: 200

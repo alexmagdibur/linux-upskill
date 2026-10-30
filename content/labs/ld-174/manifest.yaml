@@ -1,0 +1,69 @@
+schema_version: 1
+id: ld-174
+version: 2
+title: 'Основной узел недоступен, реплика отстаёт: промоутить или ждать'
+mode: incident
+difficulty: senior
+estimated_minutes: 25
+description: По метрикам репликации примите решение о переключении и посчитайте потери данных относительно допустимого
+  RPO.
+skills:
+- репликация
+- lag
+- RPO
+- принятие решения при отказе
+objectives:
+- Прочитать состояние реплики
+- Посчитать потенциальную потерю
+- Принять решение по правилу RPO
+task: 'Основной узел недоступен. Состояние реплики: `/var/lib/lab/replica.status` (`applied_tx`, `lag_seconds`),
+  последнее известное значение основного: `/var/lib/lab/primary.last` (`committed_tx`). Допустимая потеря — **не
+  более 100 транзакций** (RPO), а при отставании реплики больше 60 секунд она считается небезопасной для переключения
+  без досинхронизации из WAL (`/var/lib/lab/wal.available`: `yes`/`no`).
+
+
+  Правило решения:
+
+
+  - потери ≤ 100 и lag ≤ 60 → `promote` (переключить на реплику);
+
+  - иначе, если `wal.available=yes` → `catchup` (досинхронизировать реплику из WAL, потом переключать);
+
+  - иначе → `promote_with_loss` (переключить с признанием потерь).
+
+
+  Запишите в `~/decision.txt`: `lost_tx=<committed_tx − applied_tx>` и `action=<promote|catchup|promote_with_loss>`.
+
+  '
+lesson: 189
+stage: Этап 4. Синьор
+topic: Backup и восстановление
+task_type: I
+environment: N
+theory: Failover на отставшую реплику может потерять записи и породить split brain.
+prediction: Какие условия разрешают продвижение реплики? Сформулируй гипотезу и способ её проверить.
+criterion: новая запись не расходится между узлами.
+followups:
+  Быстрый возврат: 'LD-173: Почему их надо измерять на учениях? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: lost_ok
+    title: lost_tx верно
+    pass_message: Потери посчитаны
+    fail_message: lost_tx должен быть равен committed_tx − applied_tx
+  - id: action_ok
+    title: action по правилу
+    pass_message: Решение принято по правилу
+    fail_message: action не соответствует правилу (потери, отставание, наличие WAL)
+reward:
+  base_xp: 250

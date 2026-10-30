@@ -1,0 +1,2 @@
+- '`sudo nft list ruleset` покажет цепочку с `policy drop` и счётчики.'
+- '`sudo nft insert rule inet filter input ct state established,related accept`.'

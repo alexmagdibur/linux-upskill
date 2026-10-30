@@ -1,0 +1,2 @@
+- '`child.terminate()`, затем `child.wait(timeout=3)` внутри `try/except subprocess.TimeoutExpired`.'
+- После истечения дедлайна — `child.kill(); child.wait()` и `sys.exit(0)`.

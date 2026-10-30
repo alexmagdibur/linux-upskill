@@ -1,0 +1,63 @@
+schema_version: 1
+id: ld-005
+version: 2
+title: 'Условное выполнение: && и очистка при любом исходе'
+mode: practice
+difficulty: junior
+estimated_minutes: 15
+description: 'Соберите запуск трёх шагов: второй — только после успеха первого, очистка — всегда.'
+skills:
+- '&&'
+- ;
+- trap
+- коды завершения
+objectives:
+- Выполнять второй шаг только при успехе первого
+- Гарантировать очистку
+task: 'Есть шаги `~/bin/first.sh`, `~/bin/second.sh` и `~/bin/cleanup.sh` (каждый дописывает своё имя в файл `$TRACE`).
+
+
+  Напишите `~/run.sh`, который:
+
+
+  - запускает `second.sh` **только если** `first.sh` завершился успешно;
+
+  - запускает `cleanup.sh` **всегда**, независимо от результата первого.
+
+
+  Проверка запустит `bash ~/run.sh` дважды: когда `first.sh` успешен и когда он падает (переменная `FAIL_FIRST=1`).
+
+  '
+lesson: 22
+stage: Этап 2. Джун
+topic: Терминал, shell и окружение
+task_type: P
+environment: C
+theory: Статус выхода управляет `&&` и `||`, а `;` не зависит от успеха.
+prediction: Какая очистка должна выполниться при любом исходе? Сформулируй гипотезу и способ её проверить.
+criterion: поведение верно в обоих вариантах первой команды.
+followups:
+  Быстрый возврат: 'LD-004: Что увидит новый независимый сеанс? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  checks:
+  - id: success_path
+    title: 'При успехе: first, second, cleanup'
+    pass_message: Успешный путь верный
+    fail_message: При успехе first должны идти first, second, cleanup
+  - id: failure_path
+    title: 'При сбое: first, cleanup'
+    pass_message: Путь при сбое верный
+    fail_message: При падении first должны выполниться только first и cleanup
+reward:
+  base_xp: 100

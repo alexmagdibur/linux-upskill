@@ -1,6 +1,6 @@
 schema_version: 1
 id: linux-005
-version: 1
+version: 2
 title: Поиск в логах через grep
 mode: practice
 difficulty: junior
@@ -28,6 +28,17 @@ task: 'Лог приложения лежит в `/var/log/app/app.log`.
   3. Количество строк уровня `WARN` запишите числом в `~/warn_count.txt`.
 
   '
+lesson: 29
+stage: Этап 2. Джун
+topic: Потоки, текст и данные
+task_type: P
+environment: C
+theory: '`grep` выбирает строки по шаблону; подсчёт требует понять, что считается событием.'
+prediction: Как отличить совпадение строки от количества уникальных запросов? Сформулируй гипотезу и способ её проверить.
+criterion: Фильтр и счётчики верны на исходном логе.
+followups:
+  Быстрый возврат: 'linux-003: Как получить конец файла, не выводя его целиком? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
 runtime:
   type: container
   image: ubuntu-basic

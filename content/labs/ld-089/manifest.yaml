@@ -1,0 +1,80 @@
+schema_version: 1
+id: ld-089
+version: 2
+title: 'Путь пакета: адрес источника, интерфейс, шлюз и MAC соседа'
+mode: learn
+difficulty: junior
+estimated_minutes: 15
+description: По ip addr, ip route и ip neigh восстановите, как пакет покидает машину.
+skills:
+- ip addr
+- ip route get
+- ip neigh
+- ARP
+objectives:
+- Определить source IP и интерфейс
+- Найти next hop по таблице маршрутов
+- Прочитать MAC соседа из ARP
+task: '> В учебной машине `ip netns exec` и `ip -n` недоступны (в контейнере нельзя смонтировать `/sys`). Команды
+  внутри namespace выполняйте так: `sudo nsenter --net=/run/netns/ИМЯ команда`.
+
+
+  Машина соединена с соседним узлом `peer` (network namespace) кабелем veth, адрес соседа `10.50.1.2`. К подсети
+  `10.50.9.0/24` ведёт статический маршрут через него.
+
+
+  Запишите в `~/path.txt`:
+
+
+  ```
+
+  src=<IP-адрес, с которого уходят пакеты к 10.50.1.2>
+
+  dev=<интерфейс, через который уходит трафик к 10.50.1.2>
+
+  via=<шлюз для адреса 10.50.9.5>
+
+  mac=<MAC-адрес соседа 10.50.1.2 из таблицы соседей>
+
+  ```
+
+
+  Чтобы в таблице соседей появилась запись, сначала отправьте соседу `ping`.
+
+  '
+lesson: 52
+stage: Этап 2. Джун
+topic: Сетевые интерфейсы и маршруты
+task_type: L
+environment: N
+theory: IP-пакет идёт по таблице маршрутов, ARP/neighbor и интерфейсу.
+prediction: Как определить следующий hop для конкретного адреса? Сформулируй гипотезу и способ её проверить.
+criterion: схема совпадает с реальными таблицами.
+followups:
+  Быстрый возврат: 'LD-081: Где искать фактический предел workload? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: src_dev_ok
+    title: src и dev
+    pass_message: Источник и интерфейс верны
+    fail_message: src и dev не совпадают с `ip route get 10.50.1.2`
+  - id: via_ok
+    title: via для 10.50.9.5
+    pass_message: Шлюз определён
+    fail_message: via должен совпасть с next hop из `ip route get 10.50.9.5`
+  - id: mac_ok
+    title: mac соседа
+    pass_message: MAC определён
+    fail_message: mac должен совпасть с MAC интерфейса соседа (ip neigh)
+reward:
+  base_xp: 100

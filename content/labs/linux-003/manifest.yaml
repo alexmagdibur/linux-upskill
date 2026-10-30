@@ -1,6 +1,6 @@
 schema_version: 1
 id: linux-003
-version: 1
+version: 2
 title: Просмотр файлов и потоков
 mode: learn
 difficulty: beginner
@@ -26,6 +26,17 @@ task: 'В `~/data` лежат `server.log` (100 строк) и `names.txt`.
   3. Запишите **количество строк** `server.log` в `~/data/count.txt`.
 
   '
+lesson: 14
+stage: Этап 1. Новичок
+topic: Потоки, текст и данные
+task_type: L
+environment: C
+theory: '`head`, `tail`, `wc`, `cat` читают файл разными способами; stdout можно направить в файл.'
+prediction: Как получить конец файла, не выводя его целиком? Сформулируй гипотезу и способ её проверить.
+criterion: Три файла содержат точные результаты.
+followups:
+  Быстрый возврат: 'NB-011: Что станет с прежним содержимым после `>`? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
 runtime:
   type: container
   image: ubuntu-basic

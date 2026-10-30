@@ -1,0 +1,67 @@
+schema_version: 1
+id: ld-183
+version: 2
+title: 'Playbook оставил половину парка в новой версии: восстановить согласованность'
+mode: incident
+difficulty: senior
+estimated_minutes: 40
+description: Обновление прервалось на среднем узле. Найдите причину сбоя, исправьте playbook и приведите все узлы
+  к одной версии.
+skills:
+- ansible-playbook --limit
+- --start-at-task
+- диагностика сбоя
+- согласованность парка
+objectives:
+- Определить, какие узлы на какой версии
+- Найти ошибку в playbook
+- Довести обновление до конца
+task: '**Инцидент.** Обновление `~/ansible/update.yml` (inventory `~/ansible/nodes.ini`) прервалось: `n1` уже на
+  `v2`, а `n2` и `n3` остались на `v1` — парк неоднороден.
+
+
+  1. Выясните версии узлов (`curl http://127.0.0.1:810N/`) и найдите ошибку в `update.yml` (запустите playbook и
+  прочитайте сообщение).
+
+  2. Исправьте playbook и доведите **все три** узла до `v2`. Узлы должны быть здоровы (`/health` отвечает 200).
+
+  '
+lesson: 193
+stage: Этап 4. Синьор
+topic: Конфигурация парка
+task_type: I
+environment: N
+theory: Частичный rollout создаёт несовместимые версии узлов.
+prediction: Как построить idempotent recovery с любого промежуточного состояния? Сформулируй гипотезу и способ её
+  проверить.
+criterion: повторный запуск сходится.
+followups:
+  Быстрый возврат: 'LD-182: Какой сигнал останавливает rollout? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 60
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 60
+  checks:
+  - id: fleet_v2
+    title: Все узлы на v2
+    pass_message: Версии выровнены
+    fail_message: Не все узлы на v2
+  - id: fleet_healthy
+    title: Все узлы здоровы
+    pass_message: Узлы здоровы
+    fail_message: Не все узлы отвечают на /health
+  - id: playbook_fixed
+    title: Playbook проходит целиком
+    pass_message: Playbook исправлен
+    fail_message: ansible-playbook update.yml завершается с ошибкой
+reward:
+  base_xp: 250

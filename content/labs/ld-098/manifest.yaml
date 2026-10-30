@@ -1,0 +1,63 @@
+schema_version: 1
+id: ld-098
+version: 2
+title: 'Захват TCP handshake: SYN, SYN-ACK, ACK и закрытие'
+mode: practice
+difficulty: middle
+estimated_minutes: 20
+description: Снимите короткий дамп соединения и подпишите этапы установления и закрытия TCP.
+skills:
+- tcpdump -w/-r
+- флаги TCP
+- SYN/ACK/FIN
+- pcap
+objectives:
+- Захватить трафик одного соединения
+- Найти этапы handshake
+- Подписать закрытие
+task: 'На `127.0.0.1:8099` слушает учебный сервер: он принимает соединение, отвечает строкой и закрывает его.
+
+
+  1. Запустите захват на интерфейсе `lo` только для порта 8099 в файл `~/hs.pcap` (`tcpdump -i lo -nn port 8099
+  -w ~/hs.pcap`), затем сделайте одно подключение (`nc 127.0.0.1 8099`) и остановите захват.
+
+  2. В `~/hs.txt` перечислите этапы в порядке следования, по одному слову через запятую: `SYN,SYN-ACK,ACK,FIN` (допустимы
+  и другие слова, но эти четыре должны присутствовать).
+
+  '
+lesson: 111
+stage: Этап 3. Мидл
+topic: TCP, DNS и HTTP
+task_type: P
+environment: N
+theory: TCP handshake создаёт соединение до передачи HTTP.
+prediction: Какие пакеты отличают отказ приложения от отказа транспорта? Сформулируй гипотезу и способ её проверить.
+criterion: трасса соответствует реальному запросу.
+followups:
+  Быстрый возврат: 'incident-003: Почему исправления конфига без restart недостаточно? Ответь без справки и назови
+    наблюдение, которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: pcap_has_handshake
+    title: В дампе SYN, SYN-ACK и ACK
+    pass_message: Handshake захвачен
+    fail_message: В hs.pcap нет полного рукопожатия [S], [S.], [.]
+  - id: pcap_has_fin
+    title: В дампе закрытие FIN
+    pass_message: Закрытие захвачено
+    fail_message: В hs.pcap нет FIN ([F.])
+  - id: notes_ok
+    title: hs.txt с этапами
+    pass_message: Этапы подписаны
+    fail_message: В hs.txt должны быть SYN, SYN-ACK, ACK и FIN
+reward:
+  base_xp: 150

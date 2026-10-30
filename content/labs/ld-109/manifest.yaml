@@ -1,0 +1,70 @@
+schema_version: 1
+id: ld-109
+version: 2
+title: 'Атомарное применение ruleset: проверка синтаксиса и откат'
+mode: practice
+difficulty: middle
+estimated_minutes: 25
+description: Подготовьте откат, проверьте новый ruleset без применения и примените его одной атомарной операцией.
+skills:
+- nft -c -f
+- nft -f
+- flush ruleset
+- rollback
+objectives:
+- Сохранить текущее состояние для отката
+- Найти ошибку в черновике
+- Применить одной транзакцией
+task: 'Текущий ruleset разрешает SSH (22). Новый черновик лежит в `/etc/lab/new.nft`: он добавляет порт `8443`,
+  но в нём синтаксическая ошибка.
+
+
+  1. Сохраните **текущий** ruleset для отката в `/etc/lab/rollback.nft` (`nft list ruleset`; файл должен проходить
+  `nft -c -f`).
+
+  2. Проверьте черновик без применения (`nft -c -f /etc/lab/new.nft`), исправьте ошибку.
+
+  3. Примените исправленный `/etc/lab/new.nft` целиком (`nft -f`). После применения правила для SSH должны остаться,
+  а порт 8443 — быть открыт.
+
+  '
+lesson: 118
+stage: Этап 3. Мидл
+topic: Firewall и NAT
+task_type: P
+environment: N
+theory: Атомарная замена ruleset уменьшает риск промежуточной открытой/закрытой политики.
+prediction: Как вернуть доступ при ошибке? Сформулируй гипотезу и способ её проверить.
+criterion: ошибочный ruleset не отрезает доступ.
+followups:
+  Быстрый возврат: 'LD-108: Какие адреса видит backend? Ответь без справки и назови наблюдение, которое подтвердит
+    ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: rollback_saved
+    title: 'rollback.nft: прежний ruleset'
+    pass_message: Откат подготовлен
+    fail_message: Нужен /etc/lab/rollback.nft с прежними правилами (порт 22), проходящий nft -c -f
+  - id: new_applied
+    title: Новый ruleset применён
+    pass_message: Новый ruleset применён
+    fail_message: В действующем ruleset нет правила для порта 8443
+  - id: ssh_kept
+    title: SSH не потерян
+    pass_message: Доступ по SSH сохранён
+    fail_message: В ruleset пропало правило для порта 22
+  - id: draft_valid
+    title: new.nft проходит проверку
+    pass_message: Черновик исправлен
+    fail_message: /etc/lab/new.nft не проходит nft -c -f
+reward:
+  base_xp: 150

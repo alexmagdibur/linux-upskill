@@ -1,0 +1,3 @@
+- '`sudo strace -p $(systemctl show -p MainPID --value labhang)` — смотрите, на каком вызове процесс остановился
+  и какой путь/fd использует.'
+- 'Если читается FIFO, ему нужен записывающий конец: `echo go > /run/lab/jobs.fifo`.'

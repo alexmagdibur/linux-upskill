@@ -1,0 +1,2 @@
+- Последний `backup_done` до `failure` — граница потерянных данных (RPO).
+- RTO считается от `failure` до `restore_done` (а не от `restore_start`).

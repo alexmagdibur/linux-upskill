@@ -1,0 +1,2 @@
+- '`ps -eo args | grep labsecret` и `systemctl show -p Environment labsecret` покажут утечки.'
+- Создайте `/etc/lab/secrets.env`, `chmod 600`, уберите `Environment=` и `--password=`, добавьте `EnvironmentFile=/etc/lab/secrets.env`.

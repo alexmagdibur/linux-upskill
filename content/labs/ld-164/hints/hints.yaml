@@ -1,0 +1,2 @@
+- '`sudo sha256sum -c /var/lib/lab/baseline.sha256 2>&1 | grep -v OK`.'
+- 'Восстановление: `sudo cp /var/backups/lab/<файл> /etc/lab/` и повторная проверка.'

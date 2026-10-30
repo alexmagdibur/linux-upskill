@@ -1,0 +1,2 @@
+- 'Файл pin: `Package: labcore`, `Pin: version 1.0`, `Pin-Priority: 1001`.'
+- 'Проверка: `apt-cache policy labcore` и `apt-get upgrade -s | grep labcore`.'

@@ -1,0 +1,78 @@
+schema_version: 1
+id: ld-028
+version: 2
+title: 'Сервисный пользователь: ровно нужные права на файлы'
+mode: practice
+difficulty: middle
+estimated_minutes: 20
+description: Создайте пользователя без интерактивного входа и дайте ему только необходимый доступ.
+skills:
+- useradd --system
+- nologin
+- chown
+- chmod
+- runuser
+objectives:
+- Создать сервисную учётную запись
+- Выдать чтение конфига и запись только в data/
+- Не открыть соседние секреты
+task: 'Служба будет работать от пользователя `labsvc`. Файлы лежат в `/srv/labsvc` (сейчас каталог доступен только
+  root), рядом лежит секрет `/srv/secret/key`.
+
+
+  1. Создайте **системного** пользователя `labsvc`: без домашнего каталога и с оболочкой `/usr/sbin/nologin`.
+
+  2. `labsvc` должен **читать** `/srv/labsvc/app.conf`, но **не изменять** его.
+
+  3. `labsvc` должен **писать** в каталог `/srv/labsvc/data/`.
+
+  4. `/srv/secret/key` должен остаться **недоступным** для `labsvc` (и остальных).
+
+
+  Права проверяются запуском команд от имени `labsvc`. Права администратора — через `sudo`.
+
+  '
+lesson: 74
+stage: Этап 3. Мидл
+topic: Права и пользователи
+task_type: P
+environment: V
+theory: Сервисному процессу нужен отдельный identity и минимальный доступ.
+prediction: Почему интерактивный shell такому пользователю обычно лишний? Сформулируй гипотезу и способ её проверить.
+criterion: сервис читает данные, пользователь не входит по shell.
+followups:
+  Быстрый возврат: 'incident-005: Почему `chmod 777 -R` не считается исправлением? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: user_ok
+    title: 'labsvc: системный, nologin, без home'
+    pass_message: Пользователь создан правильно
+    fail_message: labsvc должен быть системным пользователем с оболочкой nologin и без домашнего каталога
+  - id: reads_config
+    title: labsvc читает app.conf
+    pass_message: Конфиг читается
+    fail_message: labsvc не может прочитать /srv/labsvc/app.conf
+  - id: config_readonly
+    title: labsvc не может менять app.conf
+    pass_message: Конфиг защищён от записи
+    fail_message: labsvc может изменить app.conf — а не должен
+  - id: writes_data
+    title: labsvc пишет в data/
+    pass_message: Запись в data/ разрешена
+    fail_message: labsvc не может писать в /srv/labsvc/data
+  - id: secret_closed
+    title: Секрет закрыт
+    pass_message: Секрет закрыт
+    fail_message: '/srv/secret/key доступен labsvc или всем: закройте доступ'
+reward:
+  base_xp: 150

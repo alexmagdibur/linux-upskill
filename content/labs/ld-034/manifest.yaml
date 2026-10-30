@@ -1,0 +1,55 @@
+schema_version: 1
+id: ld-034
+version: 2
+title: Штатное завершение фонового процесса
+mode: practice
+difficulty: junior
+estimated_minutes: 15
+description: Завершите процесс сигналом SIGTERM и убедитесь, что он корректно освободил ресурсы.
+skills:
+- kill
+- pkill
+- SIGTERM
+- проверка после завершения
+objectives:
+- Применить штатный сигнал
+- Проверить результат завершения
+task: 'Фоновый `holder.py` держит открытым файл `~/run/data.lock` и при штатном завершении пишет `clean exit` в
+  `~/run/exit.log`.
+
+
+  Завершите его **штатным сигналом SIGTERM** (не `kill -9`) и убедитесь, что процесса не осталось.
+
+  '
+lesson: 43
+stage: Этап 2. Джун
+topic: Процессы
+task_type: P
+environment: C
+theory: SIGTERM просит процесс завершиться, SIGKILL не даёт ему убрать ресурсы.
+prediction: Что следует проверить после штатного завершения? Сформулируй гипотезу и способ её проверить.
+criterion: нет процесса и открытого дескриптора.
+followups:
+  Быстрый возврат: 'LD-033: Как избежать выбора одноимённого процесса? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: process_gone
+    title: Процесса holder.py нет
+    pass_message: Процесс завершён
+    fail_message: holder.py всё ещё работает
+  - id: clean_exit
+    title: Процесс завершился штатно
+    pass_message: Процесс завершился штатно
+    fail_message: 'В exit.log нет clean exit: процесс был убит без обработки SIGTERM'
+reward:
+  base_xp: 100

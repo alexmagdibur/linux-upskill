@@ -1,0 +1,55 @@
+schema_version: 1
+id: nb-008
+version: 2
+title: Копирование и переименование
+mode: practice
+difficulty: beginner
+estimated_minutes: 15
+description: Скопируйте один файл и переименуйте другой, проверяя дерево после каждого шага.
+skills:
+- cp
+- mv
+- ls
+objectives:
+- Отличить копирование от переименования
+- Сохранить исходник при копировании
+task: 'В `~/files` лежат `report.txt` и `draft.txt`.
+
+
+  1. Скопируйте `report.txt` в каталог `~/backup` (оригинал остаётся).
+
+  2. Переименуйте `draft.txt` в `final.txt`.
+
+  '
+lesson: 9
+stage: Этап 1. Новичок
+topic: Файлы и каталоги
+task_type: P
+environment: C
+theory: '`cp` оставляет исходный файл, `mv` переносит имя. Перед операцией важно понять, существует ли цель.'
+prediction: Какая операция оставит исходник на месте? Сформулируй гипотезу и способ её проверить.
+criterion: Backup и оригинал существуют; старого имени переименованного файла нет.
+followups:
+  Быстрый возврат: 'NB-007: Как отличить нулевой размер от отсутствия файла? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: copied
+    title: Копия report.txt в ~/backup, оригинал на месте
+    pass_message: Копия создана, оригинал на месте
+    fail_message: Нужна копия в ~/backup и оригинал в ~/files
+  - id: renamed
+    title: draft.txt переименован в final.txt
+    pass_message: Файл переименован
+    fail_message: final.txt отсутствует или остался draft.txt
+reward:
+  base_xp: 50

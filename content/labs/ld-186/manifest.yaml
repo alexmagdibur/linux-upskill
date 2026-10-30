@@ -1,0 +1,65 @@
+schema_version: 1
+id: ld-186
+version: 2
+title: 'Инцидент: df показывает свободное место, а запись падает'
+mode: incident
+difficulty: middle
+estimated_minutes: 25
+description: Приложение не может создать файл при большом свободном объёме. Найдите причину и освободите ресурс,
+  не тронув нужные данные.
+skills:
+- df -i
+- inode
+- find -empty
+- диагностика ENOSPC
+objectives:
+- Заподозрить inode, а не байты
+- Найти мусор
+- Освободить inode без потери нужных файлов
+task: '**Инцидент.** Скрипт `/opt/lab/writer.sh` пишет файл заданий в `/var/lib/labapp/spool/`, но падает с `No
+  space left on device`, хотя `df -h` показывает много свободного места.
+
+
+  Найдите причину (`df -i`!), освободите ресурс, удалив **только мусор** (пустые файлы в `spool/stale/`). Нужные
+  файлы в `spool/keep/` трогать нельзя. После исправления `writer.sh` должен работать, а занятость inode должна
+  стать ниже 80 %.
+
+  '
+lesson: 147
+stage: Этап 3. Мидл
+topic: Сложные инциденты
+task_type: I
+environment: V
+theory: '`ENOSPC` может означать quota, inode или reserved blocks.'
+prediction: Какие измерения разделяют эти причины? Сформулируй гипотезу и способ её проверить.
+criterion: запись восстановлена, причина подтверждена.
+followups:
+  Быстрый возврат: 'LD-185: Как подтвердить фактический прочитанный файл до reload? Ответь без справки и назови
+    наблюдение, которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 20
+  checks:
+  - id: writer_works
+    title: writer.sh создаёт файл
+    pass_message: Запись снова работает
+    fail_message: writer.sh всё ещё не может создать файл
+  - id: inode_usage_low
+    title: Занятость inode < 80%
+    pass_message: inode освобождены
+    fail_message: inode всё ещё заняты на 80% и больше
+  - id: keep_intact
+    title: Нужные файлы в keep/ целы
+    pass_message: Нужные данные целы
+    fail_message: Файлы в spool/keep удалены или изменены
+reward:
+  base_xp: 200

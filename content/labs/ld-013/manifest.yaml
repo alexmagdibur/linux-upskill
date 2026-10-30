@@ -1,0 +1,50 @@
+schema_version: 1
+id: ld-013
+version: 2
+title: 95-й перцентиль времени ответа по endpoint
+mode: practice
+difficulty: middle
+estimated_minutes: 15
+description: Из JSON-логов посчитайте p95 времени ответа по каждому endpoint.
+skills:
+- python3 json
+- перцентили
+- агрегация по ключу
+objectives:
+- Сгруппировать записи по endpoint
+- Вычислить p95, а не максимум
+task: 'В `~/data/resp.jsonl` — строки JSON вида `{"endpoint": "/a", "ms": 42}` (по 100 замеров на endpoint).
+
+
+  Запишите в `~/p95.json` JSON-объект `{"<endpoint>": <p95 в мс>, ...}`. Допустимо любое стандартное определение
+  перцентиля (ближайший ранг или интерполяция), допуск ≈1 %.
+
+  '
+lesson: 70
+stage: Этап 3. Мидл
+topic: Потоки, текст и данные
+task_type: P
+environment: C
+theory: Перцентиль — свойство распределения, а не среднее; метод интерполяции надо зафиксировать.
+prediction: Как отличается p95 от максимума? Сформулируй гипотезу и способ её проверить.
+criterion: значения совпадают с эталонным вычислением в пределах допуска.
+followups:
+  Быстрый возврат: 'LD-012: Почему `-print0` надёжнее построчного цикла? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: p95
+    title: 'p95.json: верные p95'
+    pass_message: Перцентили посчитаны верно
+    fail_message: Значения p95 в p95.json неверны (не путайте с максимумом)
+reward:
+  base_xp: 150

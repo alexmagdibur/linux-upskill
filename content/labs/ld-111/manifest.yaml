@@ -1,0 +1,77 @@
+schema_version: 1
+id: ld-111
+version: 2
+title: Изоляция metadata-endpoint от учебной нагрузки на сетевом уровне
+mode: practice
+difficulty: senior
+estimated_minutes: 25
+description: Закройте служебный адрес (metadata) для узла-нагрузки, оставив ей доступ к обычному приложению.
+skills:
+- nft
+- 169.254.169.254
+- изоляция сегментов
+- fwd/input
+objectives:
+- Определить, что доступно нагрузке
+- Закрыть только metadata
+- Не сломать приложение
+task: '> В учебной машине `ip netns exec` и `ip -n` недоступны (в контейнере нельзя смонтировать `/sys`). Команды
+  внутри namespace выполняйте так: `sudo nsenter --net=/run/netns/ИМЯ команда`.
+
+
+  На машине есть служебный адрес `169.254.169.254` (порт 80 — «metadata», в ответе секретный токен) и приложение
+  `10.86.0.1:8080`. Узел-нагрузка **`wl`** (`10.86.0.2`) не должен иметь доступа к metadata, но приложение должно
+  оставаться доступным.
+
+
+  Настройте nftables:
+
+
+  - `wl` **не** подключается к `169.254.169.254:80`;
+
+  - `wl` подключается к `10.86.0.1:8080`;
+
+  - сама машина по-прежнему обращается к metadata.
+
+
+  Подсказка: адрес `169.254.169.254` принадлежит машине, значит трафик идёт в цепочку `input`.
+
+  '
+lesson: 174
+stage: Этап 4. Синьор
+topic: Firewall и NAT
+task_type: P
+environment: N
+theory: Management plane и metadata endpoint должны иметь отдельную сетевую границу.
+prediction: Как проверить запрет из workload? Сформулируй гипотезу и способ её проверить.
+criterion: запрещённые адреса недостижимы, разрешённые работают.
+followups:
+  Быстрый возврат: 'LD-110: Почему проверка только IPv4 не доказывает изоляцию сервиса? Ответь без справки и назови
+    наблюдение, которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 15
+  checks:
+  - id: metadata_blocked
+    title: wl не достучится до metadata
+    pass_message: Metadata закрыт для нагрузки
+    fail_message: wl подключается к 169.254.169.254:80
+  - id: app_open
+    title: wl → приложение 8080 работает
+    pass_message: Приложение доступно
+    fail_message: wl не подключается к 10.86.0.1:8080
+  - id: host_still_ok
+    title: Машина читает metadata
+    pass_message: Машина по-прежнему видит metadata
+    fail_message: Сама машина не может подключиться к metadata
+reward:
+  base_xp: 200

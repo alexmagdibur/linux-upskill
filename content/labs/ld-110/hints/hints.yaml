@@ -1,0 +1,2 @@
+- '`sudo nft list ruleset` — нет ни одного правила для `ip6`.'
+- Добавьте `ip6 saddr fd00:85::/64 tcp dport 8080 accept` (при policy drop остальное блокируется).

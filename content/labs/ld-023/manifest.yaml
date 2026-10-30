@@ -1,0 +1,73 @@
+schema_version: 1
+id: ld-023
+version: 2
+title: Атомарная замена конфигурационного файла
+mode: practice
+difficulty: middle
+estimated_minutes: 15
+description: Напишите скрипт, который заменяет конфиг так, чтобы читатель всегда видел либо старую, либо новую полную
+  версию.
+skills:
+- mktemp
+- mv (rename)
+- sync
+- атомарность
+objectives:
+- Писать во временный файл в том же каталоге
+- Заменять через rename
+- Не допускать частичного файла
+task: 'Напишите `~/bin/update_config.sh НОВЫЙ_ФАЙЛ`, которая заменяет `~/app/app.conf` содержимым `НОВЫЙ_ФАЙЛ` **атомарно**:
+
+
+  - сначала пишет полный временный файл **в том же каталоге**, что и `app.conf`;
+
+  - сбрасывает данные на диск (`sync`);
+
+  - затем подменяет файл переименованием (`mv`).
+
+
+  Проверка запустит скрипт на большом файле (≈3 МБ) и параллельно будет читать `app.conf`: любое чтение обязано
+  дать либо старую, либо новую версию целиком.
+
+  '
+lesson: 68
+stage: Этап 3. Мидл
+topic: Файлы и каталоги
+task_type: P
+environment: C
+theory: Rename внутри одной файловой системы атомарно меняет имя; durability требует отдельного внимания.
+prediction: Что гарантирует `fsync`? Сформулируй гипотезу и способ её проверить.
+criterion: при прерывании виден старый либо новый полный файл.
+followups:
+  Быстрый возврат: 'LD-022: Чем `du` может расходиться с `df`? Ответь без справки и назови наблюдение, которое подтвердит
+    ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  checks:
+  - id: uses_rename
+    title: Скрипт подменяет файл через mv/rename
+    pass_message: Подмена через rename
+    fail_message: Скрипт должен подменять app.conf командой mv (rename) временного файла
+  - id: temp_in_same_dir
+    title: Временный файл создаётся рядом с app.conf
+    pass_message: Временный файл в том же каталоге
+    fail_message: Временный файл должен создаваться в каталоге app.conf (mktemp с dirname или .tmp рядом)
+  - id: no_partial_reads
+    title: Читатель не видел частичных версий
+    pass_message: Частичных чтений нет
+    fail_message: Во время обновления читатель увидел неполный app.conf
+  - id: final_content
+    title: Итоговый файл — новая версия
+    pass_message: Новая версия на месте
+    fail_message: После обновления app.conf не совпадает с новым файлом
+reward:
+  base_xp: 150

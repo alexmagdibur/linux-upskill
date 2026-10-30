@@ -1,0 +1,4 @@
+- 'Вариант fstab: строка `tmpfs /srv/labtmp tmpfs size=16M,mode=1777 0 0`, затем `sudo systemctl daemon-reload &&
+  sudo mount -a`.'
+- 'Вариант systemd: юнит `/etc/systemd/system/srv-labtmp.mount` (`What=tmpfs`, `Where=/srv/labtmp`, `Type=tmpfs`,
+  `Options=size=16M`) и `systemctl enable --now`.'

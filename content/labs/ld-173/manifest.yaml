@@ -1,0 +1,73 @@
+schema_version: 1
+id: ld-173
+version: 2
+title: Измерение реальных RPO и RTO на учебном отказе
+mode: practice
+difficulty: middle
+estimated_minutes: 20
+description: По журналу событий отказа посчитайте фактические RPO и RTO и сравните с целевыми.
+skills:
+- RPO
+- RTO
+- журнал событий
+- timeline
+objectives:
+- Построить хронологию
+- Посчитать потерю данных и время восстановления
+- Сравнить с целями
+task: 'Журнал учебного отказа: `/var/lib/lab/events.log` (формат `ЧЧ:ММ:СС событие`). События: `backup_done` (может
+  быть несколько), `failure`, `restore_start`, `restore_done`. Целевые значения: **RPO 15 минут**, **RTO 30 минут**.
+
+
+  Запишите в `~/rpo.txt`:
+
+
+  ```
+
+  rpo_minutes=<сколько минут данных потеряно: от последнего backup_done до failure, целое число минут>
+
+  rto_minutes=<сколько минут заняло восстановление: от failure до restore_done>
+
+  rpo_met=<yes|no>
+
+  rto_met=<yes|no>
+
+  ```
+
+  '
+lesson: 141
+stage: Этап 3. Мидл
+topic: Backup и восстановление
+task_type: P
+environment: N
+theory: RPO — допустимая потеря данных, RTO — время восстановления.
+prediction: Почему их надо измерять на учениях? Сформулируй гипотезу и способ её проверить.
+criterion: числа получены из timeline, а не предположений.
+followups:
+  Быстрый возврат: 'LD-172: Что случится при независимом копировании? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: rpo_ok
+    title: rpo_minutes верен
+    pass_message: RPO посчитан
+    fail_message: rpo_minutes не совпадает с интервалом между последним backup_done и failure
+  - id: rto_ok
+    title: rto_minutes верен
+    pass_message: RTO посчитан
+    fail_message: rto_minutes не совпадает с интервалом failure → restore_done
+  - id: goals_ok
+    title: rpo_met / rto_met верны
+    pass_message: Соответствие целям определено
+    fail_message: rpo_met/rto_met не соответствуют целям (15 и 30 минут)
+reward:
+  base_xp: 150

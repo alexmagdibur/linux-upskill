@@ -1,0 +1,2 @@
+- '`pkill -TERM -f holder.py` или `kill $(pgrep -f holder.py)` — по умолчанию `kill` шлёт SIGTERM.'
+- '`kill -9` не даёт процессу выполнить обработчик и записать `clean exit`.'

@@ -1,0 +1,36 @@
+schema_version: 1
+id: ld-152
+version: 1
+title: 'Namespaces и cgroups: Составьте threat model для sandbox с произвольными командами: ядро, runtime socket,…'
+mode: practice
+difficulty: senior
+estimated_minutes: 30
+description: 'Составьте threat model для sandbox с произвольными командами: ядро, runtime socket,…'
+skills:
+- Namespaces и cgroups
+objectives:
+- каждое существенное допущение связано с тестом/контролем.
+task: '**Задание.** Составьте threat model для sandbox с произвольными командами: ядро, runtime socket, сеть, FS,
+  ресурсы.
+
+
+  **Критерий успеха.** каждое существенное допущение связано с тестом/контролем.
+
+  '
+lesson: 184
+stage: Этап 4. Синьор
+topic: Namespaces и cgroups
+task_type: C
+environment: D
+theory: Threat model связывает активы, атакующего, пути атаки и контрмеры.
+prediction: Какие угрозы контейнер не устраняет? Сформулируй гипотезу и способ её проверить.
+criterion: каждое существенное допущение связано с тестом/контролем.
+followups:
+  Быстрый возврат: 'LD-151: Как отличить блокировку политики от обычного EACCES? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+availability: manual_review
+unavailable_reason: Результат задания — свободный письменный документ (проект, план, разбор). Автоматическая проверка
+  такого результата была бы недостоверной, поэтому задание описано, но запуск отключён; критерий успеха сохранён
+  для самопроверки.
+reward:
+  base_xp: 250

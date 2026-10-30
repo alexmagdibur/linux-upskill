@@ -1,0 +1,2 @@
+- '`df -h /var/log/labapp` и `du -ah /var/log/labapp | sort -h | tail`.'
+- Большой старый архив можно удалить; конфигурацию проверьте `sudo logrotate -d /etc/logrotate.d/labapp`.

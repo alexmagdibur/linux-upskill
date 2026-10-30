@@ -1,0 +1,68 @@
+schema_version: 1
+id: ld-169
+version: 2
+title: Архив с правами и проверка восстановления
+mode: practice
+difficulty: junior
+estimated_minutes: 15
+description: Сделайте архив, сохраняющий права, восстановите его в чистый каталог и сверьте содержимое и метаданные.
+skills:
+- tar -p
+- sha256sum
+- diff -r
+- восстановление
+objectives:
+- Сохранить права и ссылки
+- Проверить восстановление
+- Зафиксировать контрольную сумму
+task: 'В `~/data` лежат файлы с разными правами (`a.sh` — 755, `secret.txt` — 600, `shared.txt` — 664) и ссылка
+  `latest`.
+
+
+  1. Создайте `~/backup.tar.gz` с каталогом `data` (права должны сохраниться).
+
+  2. Запишите контрольную сумму архива (`sha256sum`) в `~/backup.sha256`.
+
+  3. Восстановите архив в **чистый** каталог `~/restore` — права, содержимое и ссылка должны совпасть с оригиналом.
+
+  '
+lesson: 60
+stage: Этап 2. Джун
+topic: Backup и восстановление
+task_type: P
+environment: C
+theory: Backup существует только тогда, когда restore проверен.
+prediction: Какие метаданные и контрольные суммы должны совпасть? Сформулируй гипотезу и способ её проверить.
+criterion: содержимое и метаданные совпадают.
+followups:
+  Быстрый возврат: 'LD-161: Как узнать владельца? Ответь без справки и назови наблюдение, которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  checks:
+  - id: archive
+    title: backup.tar.gz валиден
+    pass_message: Архив создан
+    fail_message: ~/backup.tar.gz отсутствует или повреждён
+  - id: checksum
+    title: backup.sha256 соответствует архиву
+    pass_message: Контрольная сумма верна
+    fail_message: В backup.sha256 нет верной SHA-256 архива
+  - id: perms
+    title: Права после восстановления совпали
+    pass_message: Права сохранены
+    fail_message: Права в ~/restore/data отличаются от ~/data
+  - id: content
+    title: Содержимое и ссылка совпали
+    pass_message: Содержимое и ссылка совпали
+    fail_message: Содержимое или символическая ссылка отличаются от оригинала
+reward:
+  base_xp: 100

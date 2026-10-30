@@ -1,0 +1,2 @@
+- '`sudo ip link add labbr0 type bridge`; `sudo ip link set ha master labbr0`.'
+- Не забудьте `ip link set ... up` для bridge и обоих портов.

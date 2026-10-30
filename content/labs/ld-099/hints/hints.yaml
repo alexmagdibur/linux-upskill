@@ -1,0 +1,4 @@
+- '`dig +ttl @127.0.0.1 -p 5353 app.lab.test` против `dig +ttl @127.0.0.2 -p 5300 app.lab.test` — разница в адресе
+  и TTL.'
+- Уберите/уменьшите `min-cache-ttl` и `local-ttl`, затем `sudo systemctl restart dnsmasq-cache dnsmasq-auth` (перезапуск
+  сбрасывает кэш).

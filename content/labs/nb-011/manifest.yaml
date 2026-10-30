@@ -1,0 +1,54 @@
+schema_version: 1
+id: nb-011
+version: 2
+title: Перенаправление вывода
+mode: practice
+difficulty: beginner
+estimated_minutes: 15
+description: Соберите отчёт из вывода двух команд, не потеряв первую запись.
+skills:
+- '>'
+- '>>'
+- hostname
+objectives:
+- Отличить > от >>
+- Сохранить порядок записей
+task: 'Создайте `~/report.txt` из вывода двух команд **в таком порядке**:
+
+
+  1. `echo "Report: begin"`
+
+  2. `hostname`
+
+
+  Первая запись не должна пропасть.
+
+  '
+lesson: 13
+stage: Этап 1. Новичок
+topic: Потоки, текст и данные
+task_type: P
+environment: C
+theory: '`>` заменяет содержимое файла, `>>` добавляет; это происходит в shell до запуска команды.'
+prediction: Что станет с прежним содержимым после `>`? Сформулируй гипотезу и способ её проверить.
+criterion: Отчёт содержит обе строки без потери первой.
+followups:
+  Быстрый возврат: 'NB-010: Какая команда покажет последние пять строк? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: report
+    title: 'report.txt: две строки по порядку'
+    pass_message: Отчёт собран верно
+    fail_message: 'В report.txt должны быть строки «Report: begin» и имя хоста — именно в таком порядке'
+reward:
+  base_xp: 50

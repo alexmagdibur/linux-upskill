@@ -1,0 +1,59 @@
+schema_version: 1
+id: ld-010
+version: 2
+title: Топ IP из лога в CSV
+mode: practice
+difficulty: junior
+estimated_minutes: 15
+description: Напишите скрипт, который считает запросы по IP и выдаёт CSV, отсортированный по частоте.
+skills:
+- awk
+- sort
+- uniq -c
+- CSV
+objectives:
+- Подсчитать уникальные IP
+- Отсортировать по частоте и по IP при равенстве
+- Выдать корректный CSV
+task: 'Напишите `~/ipcount.sh ЛОГ`, который выводит в stdout CSV:
+
+
+  - первая строка — заголовок `ip,count`;
+
+  - далее по строке на каждый уникальный IP (первое поле строки лога) и число его запросов;
+
+  - сортировка: **по убыванию числа запросов**, при равенстве — **по возрастанию IP**.
+
+
+  Пример лога — `~/data/access.log`. Проверка запустит скрипт на скрытом логе.
+
+  '
+lesson: 33
+stage: Этап 2. Джун
+topic: Потоки, текст и данные
+task_type: P
+environment: C
+theory: Конвейер фильтрации должен явно задавать извлечение, группировку и сортировку.
+prediction: Что произойдёт при совпадающей частоте IP? Сформулируй гипотезу и способ её проверить.
+criterion: счётчики верны на скрытом логе и заголовок корректен.
+followups:
+  Быстрый возврат: 'LD-009: Почему порядок `2>&1` и `>file` важен? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  checks:
+  - id: csv
+    title: CSV верен на скрытом логе
+    pass_message: CSV посчитан верно
+    fail_message: Вывод ipcount.sh на скрытом логе не совпадает с эталоном (заголовок, счётчики, порядок при равенстве)
+reward:
+  base_xp: 100

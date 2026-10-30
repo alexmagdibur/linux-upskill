@@ -1,0 +1,64 @@
+schema_version: 1
+id: ld-151
+version: 2
+title: Фильтр системных вызовов (seccomp) для службы
+mode: practice
+difficulty: senior
+estimated_minutes: 20
+description: Ограничьте службу фильтром системных вызовов и докажите, что запрещённый вызов блокируется, а работа
+  продолжается.
+skills:
+- SystemCallFilter
+- seccomp
+- '@system-service'
+- EPERM
+objectives:
+- Задать SystemCallFilter
+- Запретить опасную группу вызовов
+- Подтвердить блокировку
+task: 'Служба `labseccomp.service` каждую секунду пытается выполнить вызов `mount` (запрещённый операции) и записывает
+  в `/var/lib/labapp/seccomp.txt` результат: `mount=allowed|blocked`. Ещё она пишет heartbeat.
+
+
+  Задайте `SystemCallFilter=` так, чтобы использовалась разрешённая группа `@system-service` и **вызов mount был
+  заблокирован** (`SystemCallErrorNumber=EPERM`), при этом служба продолжала работать. Проверьте `seccomp.txt`.
+
+  '
+lesson: 183
+stage: Этап 4. Синьор
+topic: Namespaces и cgroups
+task_type: P
+environment: D
+theory: Seccomp ограничивает syscalls, LSM — доступ по политике.
+prediction: Как отличить блокировку политики от обычного EACCES? Сформулируй гипотезу и способ её проверить.
+criterion: запрещённый syscall/путь блокируется, нормальная работа сохраняется.
+followups:
+  Быстрый возврат: 'LD-150: Как определить минимальный набор, а не добавлять `SYS_ADMIN` наугад? Ответь без справки
+    и назови наблюдение, которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 15
+  checks:
+  - id: filter_set
+    title: SystemCallFilter задан
+    pass_message: Фильтр настроен
+    fail_message: Нужен SystemCallFilter (с @system-service) и SystemCallErrorNumber=EPERM
+  - id: mount_blocked
+    title: mount заблокирован
+    pass_message: Запрещённый вызов блокируется
+    fail_message: seccomp.txt не показывает mount=blocked
+  - id: alive
+    title: Служба работает
+    pass_message: Служба жива
+    fail_message: Служба не пишет heartbeat
+reward:
+  base_xp: 200

@@ -1,0 +1,72 @@
+schema_version: 1
+id: ld-116
+version: 2
+title: 'SSH port forwarding: локальный и удалённый, кто слушает порт'
+mode: practice
+difficulty: middle
+estimated_minutes: 30
+description: Поднимите два туннеля — локальный (-L) и удалённый (-R) — и объясните, на какой стороне открывается
+  порт.
+skills:
+- ssh -L
+- ssh -R
+- ssh -fN
+- ss -ltnp
+objectives:
+- Настроить -L и -R
+- Проверить через ss и curl
+- Понять, где слушает порт
+task: 'На машине работает backend `127.0.0.1:8000` (отдаёт `backend-ok`) и `sshd`. Пользователь `labuser` принимает
+  вход по ключу (его ключи для `student` уже настроены).
+
+
+  Поднимите **два фоновых туннеля** (`ssh -f -N …`, не завершайте их):
+
+
+  1. **Локальный (-L)**: порт `127.0.0.1:9000` у клиента (`student`) → `127.0.0.1:8000` через `labuser@127.0.0.1`;
+
+  2. **Удалённый (-R)**: порт `127.0.0.1:9100` открывается на **стороне сервера** (sshd) и ведёт в `127.0.0.1:8000`.
+
+
+  Затем запишите в `~/fwd.txt` две строки: `L_listens=<client|server>` и `R_listens=<client|server>` — на чьей стороне
+  ssh открывает порт.
+
+  '
+lesson: 121
+stage: Этап 3. Мидл
+topic: SSH и TLS
+task_type: P
+environment: N
+theory: Local и remote forwarding различаются местом слушающего сокета.
+prediction: Что произойдёт при bind на 0.0.0.0? Сформулируй гипотезу и способ её проверить.
+criterion: два тестовых сервиса доступны только через заданные туннели.
+followups:
+  Быстрый возврат: 'LD-115: Как увидеть точную причину в логах? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 15
+  checks:
+  - id: local_forward
+    title: 127.0.0.1:9000 → backend-ok
+    pass_message: Локальный туннель работает
+    fail_message: curl http://127.0.0.1:9000/ не возвращает backend-ok (нужен ssh -L)
+  - id: remote_forward
+    title: 127.0.0.1:9100 → backend-ok, держит sshd
+    pass_message: Удалённый туннель работает
+    fail_message: Порт 9100 не открыт sshd-процессом (нужен ssh -R)
+  - id: sides_ok
+    title: 'fwd.txt: L=client, R=server'
+    pass_message: Стороны определены верно
+    fail_message: 'fwd.txt: L_listens=client и R_listens=server'
+reward:
+  base_xp: 150

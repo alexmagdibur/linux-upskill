@@ -1,0 +1,2 @@
+- '`cat /var/lib/lab/replica.status /var/lib/lab/primary.last /var/lib/lab/wal.available`.'
+- Потери — это разность `committed_tx − applied_tx`.

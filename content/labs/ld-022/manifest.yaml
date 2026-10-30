@@ -1,0 +1,61 @@
+schema_version: 1
+id: ld-022
+version: 2
+title: 'Инцидент: файл удалён, а место не освободилось'
+mode: incident
+difficulty: middle
+estimated_minutes: 20
+description: Удалённый файл держит открытый дескриптор процесса. Найдите виновника и освободите место, не уронив
+  сервис.
+skills:
+- df
+- du
+- /proc/PID/fd
+- сигналы
+objectives:
+- Объяснить расхождение du и df
+- Найти удалённый, но открытый inode
+- Освободить место без остановки сервиса
+task: '**Инцидент.** В `~/spool` удалили огромный `big.log`, но `df -h ~` по-прежнему показывает занятое место.
+  Сервис `~/spool/holder.py` должен продолжать работать: он пишет `~/spool/app.log`.
+
+
+  Найдите процесс с открытым удалённым файлом (`ls -l /proc/PID/fd | grep deleted`) и освободите место **без остановки
+  сервиса**. Сервис перечитывает/закрывает лишние дескрипторы по сигналу `SIGUSR1`.
+
+
+  Нужно, чтобы свободного места стало больше 40 МБ.
+
+  '
+lesson: 67
+stage: Этап 3. Мидл
+topic: Файлы и каталоги
+task_type: I
+environment: C
+theory: Удаление имени не освобождает inode, пока процесс держит дескриптор.
+prediction: Чем `du` может расходиться с `df`? Сформулируй гипотезу и способ её проверить.
+criterion: место освободилось, сервис работает.
+followups:
+  Быстрый возврат: 'LD-021: Что именно доказывает успешная проверка SHA-256? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: space_freed
+    title: Свободно больше 40 МБ
+    pass_message: Место освобождено
+    fail_message: Свободного места всё ещё меньше 40 МБ
+  - id: service_alive
+    title: Сервис holder.py работает
+    pass_message: Сервис продолжает работать
+    fail_message: Процесс holder.py остановлен — сервис терять нельзя
+reward:
+  base_xp: 200

@@ -1,0 +1,67 @@
+schema_version: 1
+id: ld-076
+version: 2
+title: 'tmpfs для временных данных: лимит и очистка после перезагрузки'
+mode: practice
+difficulty: middle
+estimated_minutes: 20
+description: Подключите tmpfs с лимитом размера для временных данных так, чтобы он монтировался при загрузке.
+skills:
+- tmpfs
+- systemd .mount / fstab
+- size=
+- findmnt
+objectives:
+- Описать постоянный mount
+- Ограничить размер
+- Убедиться, что данные не переживают reboot
+task: 'Для временных данных приложения нужен каталог `/srv/labtmp` на **tmpfs** размером **16 МБ**, который монтируется
+  **автоматически при загрузке** (через mount-юнит `srv-labtmp.mount` или запись в `/etc/fstab`).
+
+
+  Данные в нём не должны переживать перезагрузку, а запись больше 16 МБ — упираться в лимит.
+
+
+  Проверка запишет файл-метку, **перезагрузит машину** и проверит, что каталог смонтирован как tmpfs 16M, метка
+  исчезла, а запись 20 МБ невозможна.
+
+  '
+lesson: 100
+stage: Этап 3. Мидл
+topic: Файловые системы и место
+task_type: P
+environment: V
+theory: tmpfs хранит данные в памяти и обычно очищается после reboot.
+prediction: Какие ресурсы он потребляет и чем отличается от дискового тома? Сформулируй гипотезу и способ её проверить.
+criterion: предел работает, постоянные данные не затронуты.
+followups:
+  Быстрый возврат: 'LD-075: Почему слепое remount rw до диагностики рискованно? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  reboot_before_validate: true
+  exercise_timeout_seconds: 20
+  checks:
+  - id: mounted_tmpfs
+    title: /srv/labtmp — tmpfs после reboot
+    pass_message: tmpfs смонтирован при загрузке
+    fail_message: После перезагрузки /srv/labtmp не смонтирован как tmpfs
+  - id: size_limited
+    title: Размер 16M, запись 20 МБ невозможна
+    pass_message: Лимит размера работает
+    fail_message: 'Лимит 16M не задан: запись 20 МБ проходит'
+  - id: cleaned_on_reboot
+    title: Метка пропала после reboot
+    pass_message: Данные не пережили reboot
+    fail_message: Файл-метка пережил перезагрузку (это не tmpfs)
+reward:
+  base_xp: 150

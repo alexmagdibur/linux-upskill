@@ -1,0 +1,68 @@
+schema_version: 1
+id: ld-107
+version: 2
+title: 'Инцидент: неверное правило блокирует healthcheck после деплоя'
+mode: incident
+difficulty: middle
+estimated_minutes: 25
+description: После обновления правил балансировщик перестал получать ответ healthcheck. Найдите виновное правило
+  по счётчикам и удалите именно его.
+skills:
+- nft list ruleset -a
+- counter
+- delete rule handle
+- порядок правил
+objectives:
+- Найти правило по росту счётчиков
+- Удалить по handle
+- Не сломать остальные правила
+task: '> В учебной машине `ip netns exec` и `ip -n` недоступны (в контейнере нельзя смонтировать `/sys`). Команды
+  внутри namespace выполняйте так: `sudo nsenter --net=/run/netns/ИМЯ команда`.
+
+
+  **Инцидент.** Узел `hc` (`10.83.0.2`) проверяет `10.83.0.1:8080` и после деплоя правил получает таймаут. Остальные
+  правила (SSH с `10.83.0.0/24`, остальной ruleset) должны остаться как есть.
+
+
+  Найдите по счётчикам (`sudo nft -a list ruleset`, после нескольких проверок с `hc`) правило, которое отбрасывает
+  healthcheck, и **удалите именно его** (`nft delete rule ... handle N`), не сбрасывая весь ruleset.
+
+  '
+lesson: 116
+stage: Этап 3. Мидл
+topic: Firewall и NAT
+task_type: I
+environment: N
+theory: Counters и tracing ruleset показывают путь пакета по цепочкам.
+prediction: Как доказать, какое правило отбросило healthcheck? Сформулируй гипотезу и способ её проверить.
+criterion: healthcheck восстановлен, политика сохранена.
+followups:
+  Быстрый возврат: 'LD-106: Почему ответный пакет допускается без широкого входящего правила? Ответь без справки
+    и назови наблюдение, которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 15
+  checks:
+  - id: healthcheck_ok
+    title: Healthcheck проходит
+    pass_message: Healthcheck проходит
+    fail_message: hc не может подключиться к 10.83.0.1:8080
+  - id: others_kept
+    title: Остальные правила на месте
+    pass_message: Остальные правила сохранены
+    fail_message: Правила для SSH и policy drop должны остаться
+  - id: bad_rule_gone
+    title: Виновного правила нет
+    pass_message: Виновное правило удалено
+    fail_message: Правило с drop для порта 8080 всё ещё в ruleset
+reward:
+  base_xp: 200

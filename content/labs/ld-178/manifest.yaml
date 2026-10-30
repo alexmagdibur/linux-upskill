@@ -1,0 +1,71 @@
+schema_version: 1
+id: ld-178
+version: 2
+title: 'Идемпотентный Ansible playbook: установка и запуск службы'
+mode: practice
+difficulty: middle
+estimated_minutes: 35
+description: Напишите playbook, который при повторном запуске ничего не меняет (changed=0).
+skills:
+- ansible-playbook
+- идемпотентность
+- модули user/file/copy/systemd
+- changed=0
+objectives:
+- Использовать модули вместо shell
+- Получить changed=0 на втором запуске
+- Запустить службу
+task: 'Напишите `~/ansible/site.yml` (play для `localhost`, подключение local), который:
+
+
+  - создаёт системного пользователя `labsvc`;
+
+  - создаёт каталог `/opt/labsvc` (владелец `labsvc`) и файл `/opt/labsvc/index.html` с текстом `hello`;
+
+  - ставит unit `/etc/systemd/system/labsvc.service` (запуск `python3 -m http.server 8070 --bind 127.0.0.1` из `/opt/labsvc`
+  от `labsvc`);
+
+  - включает и запускает службу `labsvc`.
+
+
+  Playbook должен быть **идемпотентным**: второй запуск даёт `changed=0`. Запускайте от root (`sudo ansible-playbook
+  -i localhost, -c local ~/ansible/site.yml`).
+
+  '
+lesson: 142
+stage: Этап 3. Мидл
+topic: Конфигурация парка
+task_type: P
+environment: N
+theory: Идемпотентные модули приводят узел к состоянию, не повторяя лишних действий.
+prediction: Почему ноль изменений во втором прогоне важен? Сформулируй гипотезу и способ её проверить.
+criterion: второй прогон сообщает ноль изменений.
+followups:
+  Быстрый возврат: 'LD-177: Как не применить изменение к чужому хосту? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 45
+  exercise_timeout_seconds: 30
+  checks:
+  - id: runs_ok
+    title: playbook выполняется без ошибок
+    pass_message: Playbook выполняется
+    fail_message: ansible-playbook завершился с ошибкой или не найден
+  - id: idempotent
+    title: 'второй запуск: changed=0'
+    pass_message: Playbook идемпотентен
+    fail_message: Повторный запуск playbook изменил систему (changed > 0)
+  - id: service_ok
+    title: labsvc отвечает hello
+    pass_message: Служба работает
+    fail_message: http://127.0.0.1:8070/ не отдаёт hello
+reward:
+  base_xp: 150

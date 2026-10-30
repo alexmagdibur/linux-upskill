@@ -1,0 +1,56 @@
+schema_version: 1
+id: ld-035
+version: 2
+title: Процесс, переживающий закрытие терминала
+mode: practice
+difficulty: middle
+estimated_minutes: 15
+description: Запустите длинную задачу так, чтобы закрытие терминала (SIGHUP) её не убило.
+skills:
+- nohup
+- setsid
+- SIGHUP
+- сессии
+objectives:
+- Объяснить роль сессии и SIGHUP
+- Запустить задачу в отвязанном виде
+task: 'Скрипт `~/bin/longjob.sh` работает ~4 секунды, а в начале записывает в `~/job.info` свой PID, SID и маску
+  игнорируемых сигналов, в конце создаёт `~/job.done`.
+
+
+  Запустите его **в фоне так, чтобы он пережил закрытие терминала** (отвязка от сессии или игнорирование SIGHUP)
+  и дождитесь `~/job.done`.
+
+  '
+lesson: 78
+stage: Этап 3. Мидл
+topic: Процессы
+task_type: P
+environment: C
+theory: Закрытие терминала и SIGHUP связаны с сессией и controlling TTY.
+prediction: Почему простое `&` не всегда сохраняет процесс? Сформулируй гипотезу и способ её проверить.
+criterion: после переподключения процесс и результат существуют.
+followups:
+  Быстрый возврат: 'LD-034: Что следует проверить после штатного завершения? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: job_done
+    title: 'Задача завершилась: job.done создан'
+    pass_message: Задача выполнена
+    fail_message: Файл ~/job.done не появился
+  - id: survives_hup
+    title: Задача защищена от SIGHUP
+    pass_message: Задача отвязана от терминала
+    fail_message: Задача не защищена от закрытия терминала (нужны nohup или setsid)
+reward:
+  base_xp: 150

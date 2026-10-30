@@ -1,0 +1,69 @@
+schema_version: 1
+id: ld-082
+version: 2
+title: 'Инцидент: процесс убит OOM killer в контейнере'
+mode: incident
+difficulty: middle
+estimated_minutes: 20
+description: Найдите лимит памяти контейнера, число OOM-убийств и пик потребления по счётчикам cgroup.
+skills:
+- cgroup v2
+- memory.max
+- memory.events
+- memory.peak
+objectives:
+- Подтвердить OOM счётчиками
+- Назвать лимит и пик
+task: '**Инцидент.** Приложение `~/bin/hog.py` при старте было убито: `Killed`.
+
+
+  Подтвердите причину по счётчикам cgroup контейнера и запишите в `~/oom_report.txt`:
+
+
+  ```
+
+  limit_bytes=<значение /sys/fs/cgroup/memory.max>
+
+  oom_kills=<oom_kill из /sys/fs/cgroup/memory.events>
+
+  peak_bytes=<значение /sys/fs/cgroup/memory.peak>
+
+  ```
+
+  '
+lesson: 102
+stage: Этап 3. Мидл
+topic: Память и CPU
+task_type: I
+environment: C
+theory: OOM killer выбирает процесс при дефиците памяти; cgroup OOM не требует заполнения памяти всего хоста.
+prediction: Какие counters это подтвердят? Сформулируй гипотезу и способ её проверить.
+criterion: причина подтверждена counters/логами.
+followups:
+  Быстрый возврат: 'LD-081: Где искать фактический предел workload? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: limit
+    title: limit_bytes совпадает с memory.max
+    pass_message: Лимит указан верно
+    fail_message: limit_bytes должен совпадать с /sys/fs/cgroup/memory.max
+  - id: oom_kills
+    title: oom_kills ≥ 1 и совпадает со счётчиком
+    pass_message: OOM-убийства подтверждены
+    fail_message: oom_kills должен совпадать с oom_kill в memory.events (и быть ≥ 1)
+  - id: peak
+    title: 'peak_bytes: пик около лимита'
+    pass_message: Пик указан верно
+    fail_message: peak_bytes должен быть значением memory.peak (пик достигал лимита)
+reward:
+  base_xp: 200

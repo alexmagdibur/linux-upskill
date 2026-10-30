@@ -1,0 +1,2 @@
+- '`ls -l /opt/labsite` и `curl -s 127.0.0.1:8090` покажут текущее состояние.'
+- '`sudo ln -sfn /opt/labsite/releases/2 /opt/labsite/current && sudo systemctl reload labsite`.'

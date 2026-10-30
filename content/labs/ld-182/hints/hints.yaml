@@ -1,0 +1,3 @@
+- '`- hosts: nodes`, `serial: 1`; задачи: copy (`content: "{{ new_version }}\n"`), systemd `restarted`, затем uri
+  с `register`/`until: r.status == 200`, `retries: 20`, `delay: 1`.'
+- Подключение local уже задано в inventory.

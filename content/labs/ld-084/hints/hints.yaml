@@ -1,0 +1,3 @@
+- '`sudo systemctl set-property labbatch CPUQuota=20%` и `sudo systemctl set-property labbatch Nice=10` (Nice можно
+  задать drop-in-ом).'
+- '`systemctl show -p Nice -p CPUQuotaPerSecUSec labbatch` покажет итог.'

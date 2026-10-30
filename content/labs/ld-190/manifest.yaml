@@ -1,0 +1,64 @@
+schema_version: 1
+id: ld-190
+version: 2
+title: 'Инцидент: cron и timer запускают одно и то же задание'
+mode: incident
+difficulty: senior
+estimated_minutes: 25
+description: Два планировщика запускают одно задание в одну минуту и портят данные. Устраните двойной запуск и восстановите
+  данные.
+skills:
+- cron.d
+- systemd timer
+- flock
+- идемпотентность задания
+objectives:
+- Найти оба триггера
+- Оставить один (или сделать задание безопасным)
+- Дедуплицировать журнал
+task: '**Инцидент.** Задание `/opt/lab/job.sh` запускается **и** из cron (`/etc/cron.d/labjob`), **и** по таймеру
+  `labjob.timer`. В журнале `/var/lib/lab/ledger.txt` из-за этого дубли.
+
+
+  1. Устраните двойной запуск: оставьте **один** триггер (или сделайте задание безопасным: блокировка `flock` +
+  пропуск уже записанного слота).
+
+  2. **Восстановите данные**: уберите дубликаты из `/var/lib/lab/ledger.txt` (уникальные записи должны сохраниться).
+
+
+  Проверка одновременно «сработает» оба оставшихся триггера: на один слот должна быть **ровно одна** запись.
+
+  '
+lesson: 196
+stage: Этап 4. Синьор
+topic: Сложные инциденты
+task_type: I
+environment: N
+theory: Дублирующиеся schedulers могут одновременно менять один файл.
+prediction: Какие lock/ownership и recovery нужны? Сформулируй гипотезу и способ её проверить.
+criterion: один запуск на окно и целостный результат.
+followups:
+  Быстрый возврат: 'LD-189: Как ограничить каскад? Ответь без справки и назови наблюдение, которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 25
+  checks:
+  - id: no_double_run
+    title: Одновременный запуск даёт одну запись
+    pass_message: Двойного запуска нет
+    fail_message: При одновременном срабатывании триггеров на слот записано не ровно одно выполнение
+  - id: data_repaired
+    title: Журнал без дублей, записи сохранены
+    pass_message: Данные восстановлены
+    fail_message: В ledger.txt остались дубликаты или потеряны уникальные записи
+reward:
+  base_xp: 250

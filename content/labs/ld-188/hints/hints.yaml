@@ -1,0 +1,3 @@
+- '`echo | openssl s_client -connect 127.0.0.1:9301 -servername app.lab.test -CAfile /etc/lab/ca/ca.crt` — для каждого
+  порта; смотрите `Verify return code`.'
+- В `/etc/lab/tls/labtls-N.env` указаны пути сертификата; затем `sudo systemctl restart labtls@N`.

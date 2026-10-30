@@ -1,0 +1,3 @@
+- 'Через drop-in: `sudo systemctl edit labscan` и секция `[Service]`.'
+- '`ProtectSystem=strict` делает всю ФС read-only — не забудьте `ReadWritePaths=/var/lib/labapp`.'
+- 'Проверка эффекта: `sudo systemctl restart labscan; sleep 2; cat /var/lib/labapp/probe.txt`.'

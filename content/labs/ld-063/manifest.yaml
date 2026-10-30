@@ -1,0 +1,76 @@
+schema_version: 1
+id: ld-063
+version: 2
+title: Correlation ID через прокси, приложение и worker
+mode: practice
+difficulty: senior
+estimated_minutes: 30
+description: 'Сквозной идентификатор запроса: nginx генерирует его, передаёт приложению, а приложение — worker-у;
+  один ID виден во всех трёх журналах.'
+skills:
+- $request_id
+- proxy_set_header
+- log_format
+- трассировка запроса
+objectives:
+- Сгенерировать ID на входе
+- Передать заголовком вниз по цепочке
+- Найти запрос по ID во всех логах
+task: 'Цепочка: **nginx** (`127.0.0.1:8090`) → **приложение** (`127.0.0.1:9100`, пишет `/var/log/lab/app.log`) →
+  **worker** (читает очередь, пишет `/var/log/lab/worker.log`).
+
+
+  Приложение берёт идентификатор из заголовка `X-Request-ID` и передаёт его worker-у, но nginx его не формирует
+  и в свой журнал не пишет.
+
+
+  Настройте nginx (`/etc/nginx/conf.d/trace.conf`):
+
+
+  - формат журнала доступа с `rid=$request_id`, запись в `/var/log/nginx/trace.log`;
+
+  - передача `X-Request-ID: $request_id` приложению (`proxy_set_header`).
+
+
+  Результат: после запроса `curl http://127.0.0.1:8090/order` **один и тот же** ID виден в журналах nginx, приложения
+  и worker-а.
+
+  '
+lesson: 163
+stage: Этап 4. Синьор
+topic: Журналы и время
+task_type: P
+environment: N
+theory: Correlation ID проходит между компонентами и должен сохраняться в логах.
+prediction: Почему он не должен содержать секрет пользователя? Сформулируй гипотезу и способ её проверить.
+criterion: один запрос прослеживается от входа до результата без записи секрета.
+followups:
+  Быстрый возврат: 'LD-062: Как измерить offset и связать события без доверия к wall clock? Ответь без справки и
+    назови наблюдение, которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 45
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 15
+  checks:
+  - id: nginx_logs_rid
+    title: nginx пишет rid=…
+    pass_message: ID есть в журнале nginx
+    fail_message: В /var/log/nginx/trace.log нет rid=<id> для запроса
+  - id: app_sees_rid
+    title: приложение логирует тот же ID
+    pass_message: ID дошёл до приложения
+    fail_message: В app.log нет ID запроса (проверьте proxy_set_header X-Request-ID)
+  - id: worker_sees_rid
+    title: worker логирует тот же ID
+    pass_message: ID дошёл до worker-а
+    fail_message: В worker.log нет ID запроса
+reward:
+  base_xp: 200

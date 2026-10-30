@@ -1,0 +1,63 @@
+schema_version: 1
+id: ld-075
+version: 2
+title: 'Инцидент: «Read-only file system» — причина по mount до исправления'
+mode: incident
+difficulty: middle
+estimated_minutes: 20
+description: Запись в каталог внезапно даёт Read-only file system. Установите причину по параметрам монтирования
+  и верните запись.
+skills:
+- findmnt
+- /proc/mounts
+- mount -o remount,rw
+- диагностика RO
+objectives:
+- Определить причину по опциям mount
+- Зафиксировать причину письменно
+- Безопасно вернуть rw
+task: '**Инцидент.** Приложение не может писать в `/srv/data`: `Read-only file system`.
+
+
+  1. **Сначала диагностика:** по `findmnt /srv/data` (или `/proc/mounts`) выясните, почему запись невозможна. Запишите
+  в `~/cause.txt` одну строку: путь монтирования и найденный признак (слово `ro`), например `/srv/data ro`.
+
+  2. Верните запись **без потери данных** (`remount`, а не размонтирование и не пересоздание).
+
+  '
+lesson: 99
+stage: Этап 3. Мидл
+topic: Файловые системы и место
+task_type: I
+environment: V
+theory: Kernel может перемонтировать FS read-only после ошибок.
+prediction: Почему слепое remount rw до диагностики рискованно? Сформулируй гипотезу и способ её проверить.
+criterion: FS восстановлена без пропуска проверки целостности.
+followups:
+  Быстрый возврат: 'LD-074: Как отличить quota error от полного диска? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: cause_recorded
+    title: 'cause.txt: /srv/data и ro'
+    pass_message: Причина зафиксирована
+    fail_message: В cause.txt должны быть путь /srv/data и признак ro
+  - id: writable_again
+    title: Запись в /srv/data работает
+    pass_message: Запись снова работает
+    fail_message: /srv/data всё ещё доступен только для чтения
+  - id: data_intact
+    title: Данные сохранены
+    pass_message: Данные на месте
+    fail_message: 'Файл marker.txt потерян: нельзя пересоздавать файловую систему'
+reward:
+  base_xp: 200

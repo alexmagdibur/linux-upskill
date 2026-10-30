@@ -1,0 +1,59 @@
+schema_version: 1
+id: nb-005
+version: 2
+title: 'Справка: man и --help'
+mode: practice
+difficulty: beginner
+estimated_minutes: 15
+description: Найдите в справке нужную опцию ls и подтвердите её реальным вызовом.
+skills:
+- --help
+- ls -S
+- чтение справки
+objectives:
+- Найти опцию в справке
+- Описать её смысл
+- Применить опцию
+task: 'В `~/files` лежат файлы разного размера.
+
+
+  1. Через справку (`ls --help`) найдите опцию, которая **сортирует по размеру** (самые большие первыми).
+
+  2. Создайте `~/option.txt` с названием опции и кратким смыслом (в тексте должны быть сама опция и слово `size`
+  или `размер`).
+
+  3. Подтвердите находку: сохраните вывод `ls` с этой опцией для `~/files` в `~/sorted.txt`.
+
+  '
+lesson: 6
+stage: Этап 1. Новичок
+topic: Терминал, shell и окружение
+task_type: P
+environment: C
+theory: Справка помогает узнать синтаксис и значение опций; инженер не обязан помнить каждый флаг.
+prediction: Как найти в `man` опцию для показа скрытых файлов? Сформулируй гипотезу и способ её проверить.
+criterion: Опция и смысл верны; результат подтверждён реальным вызовом.
+followups:
+  Быстрый возврат: 'linux-001: Почему два одинаковых имени файла могут обозначать разные объекты? Ответь без справки
+    и назови наблюдение, которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: option_named
+    title: 'option.txt: опция и смысл'
+    pass_message: Опция и смысл указаны
+    fail_message: В option.txt нужны опция -S и слово size/размер
+  - id: sorted_by_size
+    title: 'sorted.txt: файлы по убыванию размера'
+    pass_message: Результат подтверждён вызовом
+    fail_message: В sorted.txt файлы не отсортированы по убыванию размера
+reward:
+  base_xp: 50

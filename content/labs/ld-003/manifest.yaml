@@ -1,0 +1,61 @@
+schema_version: 1
+id: ld-003
+version: 2
+title: 'Alias, функция или бинарник: что реально запускается'
+mode: practice
+difficulty: junior
+estimated_minutes: 15
+description: 'В окружении подменён grep: выясните, что запускается на самом деле, и вызовите системный бинарник.'
+skills:
+- type
+- alias
+- command
+- /usr/bin/grep
+objectives:
+- Отличить alias, function и бинарник
+- Вызвать настоящий grep
+task: 'В вашей оболочке `grep` ведёт себя странно: `grep apple ~/data/fruit.txt` печатает не то, что ожидается.
+
+
+  1. Выясните, чем на самом деле является `grep` (`type grep`) и где лежит настоящий бинарник.
+
+  2. В `~/report.txt` напишите одной-двумя фразами: что это (слово `alias`) и путь настоящего бинарника.
+
+  3. Настоящим `grep` найдите строки с `apple` в `~/data/fruit.txt` и сохраните их в `~/apples.txt`.
+
+
+  Подсказка: попробуйте открыть новую login-оболочку (`bash -l`), если подмена не видна.
+
+  '
+lesson: 20
+stage: Этап 2. Джун
+topic: Терминал, shell и окружение
+task_type: P
+environment: C
+theory: Shell ищет имена среди alias, функций, builtins и файлов в `PATH`.
+prediction: Почему `which` не всегда показывает фактическую команду? Сформулируй гипотезу и способ её проверить.
+criterion: отчёт различает alias/function/binary; результат поиска верен.
+followups:
+  Быстрый возврат: 'LD-002: Как проверить путь до создания каталога? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: report
+    title: 'report.txt: alias и путь бинарника'
+    pass_message: Отчёт различает alias и бинарник
+    fail_message: В report.txt должны быть слово alias и путь /usr/bin/grep
+  - id: apples
+    title: 'apples.txt: строки с apple'
+    pass_message: Результат поиска верный
+    fail_message: 'В apples.txt не те строки: ищите настоящим grep'
+reward:
+  base_xp: 100

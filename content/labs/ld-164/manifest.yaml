@@ -1,0 +1,65 @@
+schema_version: 1
+id: ld-164
+version: 2
+title: 'Контроль целостности: обнаружить несанкционированное изменение'
+mode: practice
+difficulty: middle
+estimated_minutes: 20
+description: Снимите эталонные контрольные суммы критичных конфигов и обнаружьте изменение с помощью проверки.
+skills:
+- sha256sum
+- sha256sum -c
+- baseline
+- обнаружение изменений
+objectives:
+- Создать эталон
+- Выявить изменённый файл
+- Восстановить и зафиксировать
+task: 'Критичные файлы: `/etc/lab/app.conf`, `/etc/lab/db.conf`, `/etc/lab/acl.conf`. Эталон контрольных сумм хранится
+  в `/var/lib/lab/baseline.sha256` (формат `sha256sum`).
+
+
+  1. Проверкой эталона (`sha256sum -c`) найдите файл, который был изменён без разрешения.
+
+  2. Запишите его путь в `~/tampered.txt`.
+
+  3. Восстановите файл из резервной копии `/var/backups/lab/` (копия эталонная) и убедитесь, что проверка проходит
+  целиком.
+
+  '
+lesson: 136
+stage: Этап 3. Мидл
+topic: Безопасность
+task_type: P
+environment: V
+theory: Контроль целостности выявляет изменение относительно доверенного baseline.
+prediction: Как защитить сам baseline? Сформулируй гипотезу и способ её проверить.
+criterion: тестовая модификация даёт сигнал с указанием файла.
+followups:
+  Быстрый возврат: 'LD-163: Почему отключение enforcement скрывает проблему? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: found_file
+    title: Изменённый файл назван верно
+    pass_message: Файл найден
+    fail_message: В tampered.txt должен быть путь изменённого файла (только он)
+  - id: restored
+    title: Файл восстановлен, baseline проходит
+    pass_message: Целостность восстановлена
+    fail_message: sha256sum -c baseline всё ещё сообщает о расхождениях
+  - id: baseline_untouched
+    title: Эталон не изменён
+    pass_message: Эталон не подменён
+    fail_message: Эталонный файл baseline.sha256 был изменён
+reward:
+  base_xp: 150

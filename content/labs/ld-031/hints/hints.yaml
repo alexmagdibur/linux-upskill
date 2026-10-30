@@ -1,0 +1,2 @@
+- 'Правило вида `oper ALL=(root) NOPASSWD: /usr/bin/systemctl restart labsvc.service`.'
+- Файл создавайте через `sudo tee`, затем `sudo chmod 440 файл` и `sudo visudo -c`.

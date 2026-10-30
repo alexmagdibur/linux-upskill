@@ -1,0 +1,55 @@
+schema_version: 1
+id: ld-012
+version: 2
+title: 'Нулевой разделитель: странные имена файлов'
+mode: practice
+difficulty: middle
+estimated_minutes: 15
+description: Обработайте файлы с пробелами, переводами строки и ведущим дефисом так, чтобы ни один не потерялся.
+skills:
+- find -print0
+- xargs -0
+- cp --
+- имена файлов
+objectives:
+- Не полагаться на построчное чтение имён
+- Не дать имени превратиться в опцию
+task: 'В `~/files` лежат пять файлов с «опасными» именами (пробел, перевод строки в имени, ведущий дефис, имя `--help`).
+
+
+  Скопируйте **все** файлы в каталог `~/out` (плоско, имена сохранить). Ни один файл не должен потеряться и не должен
+  быть воспринят как опция команды.
+
+  '
+lesson: 69
+stage: Этап 3. Мидл
+topic: Потоки, текст и данные
+task_type: P
+environment: C
+theory: В Unix имя файла может содержать пробел и перевод строки, но не NUL.
+prediction: Почему `-print0` надёжнее построчного цикла? Сформулируй гипотезу и способ её проверить.
+criterion: ни один файл не потерян и не интерпретирован как опция.
+followups:
+  Быстрый возврат: 'LD-011: Как проверить парсер на краевых входах? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: names_preserved
+    title: Все 5 имён сохранены
+    pass_message: Все имена сохранены
+    fail_message: В ~/out нет всех пяти файлов с исходными именами
+  - id: content_preserved
+    title: Содержимое файлов сохранено
+    pass_message: Содержимое сохранено
+    fail_message: Содержимое скопированных файлов не совпадает
+reward:
+  base_xp: 150

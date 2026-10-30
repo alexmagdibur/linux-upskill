@@ -1,0 +1,83 @@
+schema_version: 1
+id: ld-105
+version: 2
+title: 'nftables: SSH только с управляющего узла, HTTP — из клиентской сети'
+mode: practice
+difficulty: junior
+estimated_minutes: 30
+description: Настройте input-политику с запретом по умолчанию и точечными разрешениями по подсетям.
+skills:
+- nft
+- input chain
+- policy drop
+- ct state
+- ip saddr
+objectives:
+- Запретить входящее по умолчанию
+- Разрешить SSH только с mgmt
+- Разрешить HTTP только из клиентской сети
+task: '> В учебной машине `ip netns exec` и `ip -n` недоступны (в контейнере нельзя смонтировать `/sys`). Команды
+  внутри namespace выполняйте так: `sudo nsenter --net=/run/netns/ИМЯ команда`.
+
+
+  Узлы: **`mgmt`** (`10.81.1.2`, управляющая сеть) и **`cli`** (`10.81.2.2`, клиентская сеть). На машине слушают
+  порты `22` (учебный «SSH») и `80` (HTTP).
+
+
+  Настройте nftables (таблица `inet filter`, цепочка `input`, hook input) так, чтобы:
+
+
+  - политика по умолчанию — **drop**; loopback и уже установленные соединения (`ct state established,related`) разрешены;
+
+  - порт **22** доступен **только** из `10.81.1.0/24`;
+
+  - порт **80** доступен **только** из `10.81.2.0/24`;
+
+  - ICMP ping от обоих узлов разрешён.
+
+
+  Сохраните правила в `/etc/nftables.conf` (чтобы они переживали перезагрузку) и примените их.
+
+  '
+lesson: 55
+stage: Этап 2. Джун
+topic: Firewall и NAT
+task_type: P
+environment: N
+theory: Firewall policy описывает допустимые потоки между ролями, а не просто список портов.
+prediction: Как проверить запреты столь же тщательно, как разрешения? Сформулируй гипотезу и способ её проверить.
+criterion: матрица доступов выполняется.
+followups:
+  Быстрый возврат: 'LD-097: Как различить bind и сетевой запрет? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 15
+  checks:
+  - id: ssh_only_mgmt
+    title: '22: mgmt да, cli нет'
+    pass_message: SSH только с управляющего узла
+    fail_message: Порт 22 должен быть доступен из mgmt и закрыт для cli
+  - id: http_only_cli
+    title: '80: cli да, mgmt нет'
+    pass_message: HTTP только из клиентской сети
+    fail_message: Порт 80 должен быть доступен из cli и закрыт для mgmt
+  - id: default_drop_ping
+    title: policy drop и ping разрешён
+    pass_message: Политика по умолчанию — drop
+    fail_message: Нужна цепочка input с policy drop; ping с обоих узлов разрешён
+  - id: persisted
+    title: Правила сохранены в /etc/nftables.conf
+    pass_message: Правила сохранены
+    fail_message: /etc/nftables.conf не проходит nft -c или не содержит политику drop и порты 22/80
+reward:
+  base_xp: 100

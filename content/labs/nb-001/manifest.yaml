@@ -1,0 +1,49 @@
+schema_version: 1
+id: nb-001
+version: 2
+title: Командная строка и текущий каталог
+mode: practice
+difficulty: beginner
+estimated_minutes: 15
+description: Узнайте, в каком каталоге вы находитесь сразу после открытия терминала, и запишите абсолютный путь.
+skills:
+- pwd
+- перенаправление >
+objectives:
+- Определить текущий каталог
+- Записать результат команды в файл
+task: 'Вы только что открыли терминал.
+
+
+  1. Узнайте **текущий каталог** (абсолютный путь).
+
+  2. Запишите этот путь в файл `~/answer.txt`.
+
+  '
+lesson: 1
+stage: Этап 1. Новичок
+topic: Терминал, shell и окружение
+task_type: P
+environment: C
+theory: Команда выполняется в контексте текущего каталога процесса. Prompt может его показывать, но это лишь оформление.
+prediction: Что выведет `pwd` после открытия нового терминала? Сформулируй гипотезу и способ её проверить.
+criterion: Файл содержит точный абсолютный путь текущего каталога до записи.
+followups:
+  Повторение: 'Это первый урок: вернись к нему завтра в новом каталоге без чтения справки.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: answer
+    title: 'answer.txt: текущий каталог'
+    pass_message: Путь записан верно
+    fail_message: В ~/answer.txt должен быть абсолютный путь каталога, в котором вы находитесь
+reward:
+  base_xp: 50

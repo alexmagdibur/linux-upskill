@@ -24,6 +24,13 @@ class Lab(Base):
     position: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     estimated_minutes: Mapped[int] = mapped_column(Integer, nullable=False)
     published: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    # методическая часть учебной программы
+    lesson_number: Mapped[int | None] = mapped_column(Integer)
+    topic: Mapped[str | None] = mapped_column(Text)
+    task_type: Mapped[str | None] = mapped_column(Text)  # L | P | I | C
+    environment: Mapped[str | None] = mapped_column(Text)  # C | V | N | D
+    availability: Mapped[str] = mapped_column(Text, nullable=False, server_default="available", default="available")
+    unavailable_reason: Mapped[str | None] = mapped_column(Text)
 
     __table_args__ = (Index("ix_labs_module_id", "module_id"), Index("ix_labs_mode_difficulty", "mode", "difficulty"))
 

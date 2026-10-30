@@ -1,0 +1,2 @@
+- '`ansible-vault encrypt vars/secrets.yml --vault-password-file ~/.vault_pass`.'
+- 'В playbook добавьте `vars_files: [vars/all.yml, vars/secrets.yml]`.'

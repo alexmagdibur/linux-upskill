@@ -1,0 +1,3 @@
+- '`sudo sqlite3 /var/lib/labapp/orders.db ".backup ''/var/backups/labapp/orders.bak''"`.'
+- 'Восстановление: `sudo cp /var/backups/labapp/orders.bak /var/lib/labapp/restored.db` и `sqlite3 ... ''PRAGMA
+  integrity_check''`.'

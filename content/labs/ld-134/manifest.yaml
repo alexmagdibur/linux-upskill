@@ -1,0 +1,60 @@
+schema_version: 1
+id: ld-134
+version: 2
+title: 'Инцидент: частично выполненная автоматизация создаёт дубли'
+mode: incident
+difficulty: senior
+estimated_minutes: 20
+description: 'Добавьте checkpoint и идемпотентный повтор: сбой на любом шаге должен восстанавливаться без дублей.'
+skills:
+- checkpoint
+- идемпотентность
+- retry
+- восстановление
+objectives:
+- Запоминать выполненные шаги
+- Безопасно повторять после сбоя
+task: '**Инцидент.** `~/bin/migrate.sh` выполняет 4 шага (каждый дописывает `stepN` в `$STATE/ledger.txt`). При
+  сбое посередине повторный запуск начинает с начала и создаёт дубли.
+
+
+  Доработайте скрипт: после сбоя на **любом** шаге повторный запуск должен завершиться кодом `0` и оставить в `ledger.txt`
+  каждый из `step1…step4` **ровно по одному разу** (сохраняйте прогресс — checkpoint).
+
+
+  Переменная `FAIL_AT=N` имитирует сбой перед шагом N.
+
+  '
+lesson: 154
+stage: Этап 4. Синьор
+topic: Bash и Python
+task_type: I
+environment: C
+theory: После частичного успеха retry безопасен только при известной точке восстановления.
+prediction: Какие шаги могут быть повторены? Сформулируй гипотезу и способ её проверить.
+criterion: сбой на каждом шаге восстанавливается.
+followups:
+  Быстрый возврат: 'LD-133: Как обработать большой поток без OOM? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  checks:
+  - id: recovers_all_steps
+    title: Восстановление после сбоя на каждом из 4 шагов
+    pass_message: Все сбои восстанавливаются без дублей
+    fail_message: После сбоя на одном из шагов ledger содержит дубли или не все шаги
+  - id: exit_codes
+    title: Сбой даёт ≠ 0, повтор даёт 0
+    pass_message: Коды завершения верны
+    fail_message: Запуск со сбоем должен вернуть ненулевой код, повторный — 0
+reward:
+  base_xp: 250

@@ -1,0 +1,2 @@
+- 'Посмотрите файл: `cat ~/data/events.csv`.'
+- '`python3 -c ''import csv,sys; ...''` — читайте `csv.reader`, пишите `csv.writer`.'

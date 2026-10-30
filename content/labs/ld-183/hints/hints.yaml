@@ -1,0 +1,2 @@
+- '`cd ~/ansible && ansible-playbook -i nodes.ini update.yml` покажет, на каком узле/задаче падение.'
+- Ошибка в адресе health-check узла (порт не соответствует `node_id`).

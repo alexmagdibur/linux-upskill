@@ -9,7 +9,7 @@ export function Result() {
   const nav = useNavigate();
   const result = useValidationResult(sessionId, attemptId);
   const session = useSession(sessionId);
-  const todo = useLabs({ completed: "false" });
+  const todo = useLabs({ completed: "false", availability: "available" });
   const start = useStartLab();
 
   if (result.isLoading) return <Spinner />;

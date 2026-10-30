@@ -1,6 +1,6 @@
 schema_version: 1
 id: linux-011
-version: 1
+version: 2
 title: Пользователи и группы (без host privileges)
 mode: practice
 difficulty: junior
@@ -29,6 +29,19 @@ task: 'Создавать пользователей без root нельзя �
   4. `gid_devs.txt` — числовой GID группы `devs`.
 
   '
+lesson: 36
+stage: Этап 2. Джун
+topic: Права и пользователи
+task_type: P
+environment: C
+theory: '`id`, `getent`, `/etc/passwd`, `/etc/group` показывают identity и членство; в этом sandbox нельзя создавать
+  пользователей.'
+prediction: Почему запись в `/etc/passwd` не равна активному процессу этого пользователя? Сформулируй гипотезу и
+  способ её проверить.
+criterion: Ответы соответствуют учётным данным sandbox.
+followups:
+  Быстрый возврат: 'linux-010: Какую группу получит новый файл в setgid-каталоге? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
 runtime:
   type: container
   image: ubuntu-basic

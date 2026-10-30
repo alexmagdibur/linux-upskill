@@ -98,6 +98,9 @@ def session_view(s: LabSession, v: LabVersion, lab: Lab, attempt: ValidationAtte
             "base_xp": pub["base_xp"],
         },
         "task": pub["task"],
+        "theory": pub.get("theory"),
+        "prediction": pub.get("prediction"),
+        "criterion": pub.get("criterion"),
         "objectives": pub["objectives"],
         "checks": [c["title"] for c in pub["checks"]],
         "hints_total": len(pub["hints"]),
@@ -120,6 +123,24 @@ def accepted_view(s: LabSession) -> dict[str, Any]:
 
 
 # ---------------------------------------------------------------------- create
+_ENV_TITLES = {
+    "V": "учебная VM (root, systemd, ядро, диски)",
+    "N": "несколько узлов (сеть, кластер)",
+    "D": "VM с container runtime",
+}
+
+
+def _ensure_runnable(lab: Lab) -> None:
+    """Лаборатории, требующие VM/кластер, только описаны: запустить их в контейнерной песочнице небезопасно."""
+    if lab.availability != "available":
+        raise AppError(
+            "LAB_UNAVAILABLE",
+            "Эта лаборатория требует окружения, которое пока недоступно: " + _ENV_TITLES.get(lab.environment or "", "VM-runtime"),
+            409,
+            {"environment": lab.environment, "reason": lab.unavailable_reason},
+        )
+
+
 async def _insert_session(db: AsyncSession, settings: Settings, user: User, lab: Lab, version: LabVersion) -> LabSession:
     if settings.sandbox_runtime == "disabled":
         raise AppError("SANDBOX_DISABLED", "Песочницы отключены в конфигурации сервера", 503)
@@ -173,6 +194,7 @@ async def create_session(
 ) -> tuple[LabSession, bool]:
     """Возвращает (сессия, создана_новая)."""
     lab = await labs_service.resolve_lab(db, lab_ref)
+    _ensure_runnable(lab)
     version = await labs_service.latest_version(db, lab.id)
     req_hash = sha256_hex(f"create:{lab.slug}")
 

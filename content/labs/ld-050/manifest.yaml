@@ -1,0 +1,68 @@
+schema_version: 1
+id: ld-050
+version: 2
+title: 'Порядок запуска: зависимость сервиса от подготовленного ресурса'
+mode: practice
+difficulty: middle
+estimated_minutes: 20
+description: Сервис падает при холодной загрузке, потому что стартует раньше своей зависимости. Задайте зависимости
+  в unit.
+skills:
+- After=
+- Requires=
+- oneshot
+- порядок загрузки
+objectives:
+- Увидеть гонку при загрузке
+- Задать After= и Requires=
+- Получить чистую загрузку без отказов
+task: '`labapp.service` нужен ресурс, который готовит `labdata.service` (oneshot: через ~4 с создаёт `/run/labdata/ready`).
+  Оба сервиса включены в автозапуск, но порядка между ними нет, поэтому при загрузке `labapp` иногда стартует раньше
+  и падает с сообщением `labdata not ready`.
+
+
+  Задайте в unit `labapp` **зависимость и порядок**: он должен запускаться **после** `labdata.service` и **требовать**
+  его. Править сам `labdata` и приложение не нужно. Лучше использовать drop-in (`systemctl edit labapp`).
+
+
+  Проверка перезагрузит машину: `labapp` должен подняться **без единого отказа** в журнале этой загрузки (задержки
+  и повторы `Restart=` — не решение).
+
+  '
+lesson: 91
+stage: Этап 3. Мидл
+topic: systemd
+task_type: P
+environment: V
+theory: '`After=` задаёт порядок, `Requires=` — зависимость; готовность сети может отличаться от её запуска.'
+prediction: Какой сигнал нужен приложению? Сформулируй гипотезу и способ её проверить.
+criterion: холодная загрузка не вызывает ложных отказов.
+followups:
+  Быстрый возврат: 'LD-049: Почему `start` и `enable` не одно и то же? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  reboot_before_validate: true
+  checks:
+  - id: ordered_and_required
+    title: 'labapp: After= и Requires= на labdata'
+    pass_message: Порядок и зависимость заданы
+    fail_message: В unit labapp нет After=labdata.service и Requires=labdata.service
+  - id: app_running
+    title: labapp активен после reboot
+    pass_message: labapp работает после перезагрузки
+    fail_message: labapp не запущен после перезагрузки
+  - id: clean_boot
+    title: Загрузка без отказов labapp
+    pass_message: Холодная загрузка чистая
+    fail_message: В журнале этой загрузки есть отказы labapp (not ready)
+reward:
+  base_xp: 150

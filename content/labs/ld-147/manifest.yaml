@@ -1,0 +1,69 @@
+schema_version: 1
+id: ld-147
+version: 2
+title: 'cgroup v2 вручную: лимит памяти и CPU, события и throttling'
+mode: practice
+difficulty: middle
+estimated_minutes: 25
+description: Создайте cgroup вручную, ограничьте процесс по памяти и CPU и прочитайте события.
+skills:
+- cgroup v2
+- memory.max
+- cpu.max
+- memory.events
+objectives:
+- Создать группу и записать лимиты
+- Поместить процесс в группу
+- Прочитать события
+task: 'Создайте cgroup `/sys/fs/cgroup/labgrp`, задайте `memory.max` = 50 МБ и `cpu.max` = `20000 100000` (20 %
+  ядра), запустите в ней скрипт `/opt/lab/hog.py` (он выделяет память и крутит CPU) и убедитесь по `memory.events`
+  / `cpu.stat`, что лимиты действуют.
+
+
+  Скрипт запущен как `nohup python3 /opt/lab/hog.py` (PID запишите в `cgroup.procs`). После проверки процесс должен
+  остаться в группе. В `~/cg.txt` запишите: `oom=<число oom/oom_kill из memory.events>` и `throttled=<nr_throttled
+  из cpu.stat>`.
+
+  '
+lesson: 130
+stage: Этап 3. Мидл
+topic: Namespaces и cgroups
+task_type: P
+environment: D
+theory: Cgroup v2 задаёт ограничения дерева процессов, а события показывают давление ресурсов.
+prediction: Как отличить лимит от отсутствия нагрузки? Сформулируй гипотезу и способ её проверить.
+criterion: лимиты и события наблюдаемы.
+followups:
+  Быстрый возврат: 'LD-146: Какие интерфейс и правила создают доступ? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 15
+  checks:
+  - id: limits_ok
+    title: memory.max=50M, cpu.max=20%
+    pass_message: Лимиты заданы
+    fail_message: В labgrp нужны memory.max=52428800 и cpu.max=20000 100000
+  - id: proc_in_group
+    title: hog.py внутри labgrp
+    pass_message: Процесс в группе
+    fail_message: Процесс /opt/lab/hog.py не находится в cgroup labgrp
+  - id: throttle_effect
+    title: nr_throttled > 0
+    pass_message: Throttling виден
+    fail_message: cpu.stat группы не показывает throttling
+  - id: report_ok
+    title: 'cg.txt: throttled > 0'
+    pass_message: Измерения записаны
+    fail_message: В cg.txt должны быть oom=<число> и throttled=<число > 0>
+reward:
+  base_xp: 150

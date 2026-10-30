@@ -1,0 +1,2 @@
+- 'PID: `systemctl show -p MainPID --value labmem`; затем `grep -E ''VmRSS|VmSize'' /proc/PID/status`.'
+- VSZ — всё адресное пространство, RSS — реально присутствующие страницы. Page cache не входит в RSS процесса.

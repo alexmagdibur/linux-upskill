@@ -1,0 +1,2 @@
+- '`sysctl net.ipv4.ip_local_port_range` — диапазон из четырёх портов.'
+- '`grep -r port_range /etc/sysctl.d/` найдёт источник; поправьте значение и `sudo sysctl --system`.'

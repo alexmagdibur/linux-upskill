@@ -1,0 +1,56 @@
+schema_version: 1
+id: nb-004
+version: 2
+title: Абсолютные и относительные пути
+mode: practice
+difficulty: beginner
+estimated_minutes: 15
+description: 'Опишите один и тот же файл двумя способами: абсолютным и относительным путём из рабочего каталога.'
+skills:
+- абсолютный путь
+- относительный путь
+- pwd
+objectives:
+- Составить абсолютный путь
+- Составить относительный путь
+- Убедиться, что оба ведут к одному файлу
+task: 'Рабочий каталог — `~/work`; в нём лежит `data/report.txt`.
+
+
+  Запишите в `~/work/paths.txt` **две строки**: на первой — абсолютный путь к `report.txt`, на второй — относительный
+  путь к нему **из каталога `~/work`**.
+
+  '
+lesson: 4
+stage: Этап 1. Новичок
+topic: Терминал, shell и окружение
+task_type: P
+environment: C
+theory: Абсолютный путь начинается от `/`, относительный разрешается от текущего каталога. Один файл может быть
+  назван обоими способами.
+prediction: Как изменится смысл `data/report.txt` после `cd`? Сформулируй гипотезу и способ её проверить.
+criterion: Оба пути ведут к одному inode из заданного рабочего каталога.
+followups:
+  Быстрый возврат: 'NB-003: Куда приведёт `cd ..` из вложенного каталога? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: absolute
+    title: Первая строка — абсолютный путь
+    pass_message: Абсолютный путь верный
+    fail_message: Первая строка должна быть абсолютным путём к report.txt
+  - id: relative
+    title: Вторая строка — относительный путь
+    pass_message: Относительный путь верный
+    fail_message: Вторая строка должна быть относительным путём (из ~/work) к тому же файлу
+reward:
+  base_xp: 50

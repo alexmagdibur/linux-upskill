@@ -62,6 +62,12 @@ def lab_summary(lab: Lab, module: Module, base_xp: int, progress: UserProgress |
         "completed": bool(progress and progress.completed_at),
         "best_score": float(progress.best_score) if progress else None,
         "attempts_count": progress.attempts_count if progress else 0,
+        "lesson": lab.lesson_number,
+        "topic": lab.topic,
+        "task_type": lab.task_type,
+        "environment": lab.environment,
+        "availability": lab.availability,
+        "unavailable_reason": lab.unavailable_reason,
     }
 
 
@@ -94,8 +100,13 @@ async def list_labs(
     module: str | None,
     limit: int,
     offset: int,
+    availability: str | None = None,
 ) -> tuple[list[dict[str, Any]], int]:
     stmt = _labs_query(user_id)
+    if availability == "available":
+        stmt = stmt.where(Lab.availability == "available")
+    elif availability == "unavailable":
+        stmt = stmt.where(Lab.availability != "available")
     if mode:
         stmt = stmt.where(Lab.mode == mode)
     if difficulty:
@@ -127,6 +138,12 @@ async def lab_card(db: AsyncSession, user_id: uuid.UUID, lab_ref: str) -> dict[s
             "hints_total": len(pub["hints"]),
             "checks": [c["title"] for c in pub["checks"]],
             "version": version.version,
+            "stage": pub.get("stage"),
+            "theory": pub.get("theory"),
+            "prediction": pub.get("prediction"),
+            "criterion": pub.get("criterion"),
+            "followups": pub.get("followups", {}),
+            "task": pub["task"],
         }
     )
     return card

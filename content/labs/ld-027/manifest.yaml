@@ -1,0 +1,60 @@
+schema_version: 1
+id: ld-027
+version: 2
+title: 'Инцидент: «Permission denied» у исполняемого скрипта'
+mode: incident
+difficulty: junior
+estimated_minutes: 20
+description: Скрипт исполняемый, но не запускается. Найдите настоящую причину (права, путь или noexec) и исправьте
+  только её.
+skills:
+- ls -l
+- mount
+- noexec
+- диагностика запуска
+objectives:
+- Отличить причины Permission denied
+- Не применять chmod -R наугад
+task: '**Инцидент.** `/tmp/job/run.sh` имеет права `755`, но при запуске даёт `Permission denied`.
+
+
+  Выясните причину (`ls -l`, `mount | grep '' /tmp ''`) и исправьте **только действительный источник** проблемы:
+  после исправления `~/jobs/run.sh` должен запускаться и печатать `job done`.
+
+
+  Права файлов в `/tmp/job` менять нельзя (в частности, `chmod -R` — ошибка).
+
+  '
+lesson: 40
+stage: Этап 2. Джун
+topic: Права и пользователи
+task_type: I
+environment: C
+theory: '`EACCES` может возникнуть из-за mode bits, родительского каталога или mount `noexec`.'
+prediction: Как отличить причины без случайного `chmod -R`? Сформулируй гипотезу и способ её проверить.
+criterion: исправлен только действительный источник ошибки.
+followups:
+  Быстрый возврат: 'LD-026: Как это отличается от прав файла? Ответь без справки и назови наблюдение, которое подтвердит
+    ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  checks:
+  - id: job_runs
+    title: ~/jobs/run.sh запускается
+    pass_message: Скрипт запускается и печатает job done
+    fail_message: ~/jobs/run.sh не запускается или не печатает job done
+  - id: tmp_untouched
+    title: Права в /tmp/job не тронуты
+    pass_message: Права в /tmp/job не менялись
+    fail_message: Права файлов в /tmp/job изменены (chmod -R — не решение)
+reward:
+  base_xp: 150

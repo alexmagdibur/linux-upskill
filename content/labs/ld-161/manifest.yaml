@@ -1,0 +1,69 @@
+schema_version: 1
+id: ld-161
+version: 2
+title: Неожиданные слушающие порты и их владельцы
+mode: practice
+difficulty: junior
+estimated_minutes: 20
+description: Найдите TCP-порты, слушающие на всех адресах и не входящие в список разрешённых, и определите процессы-владельцы.
+skills:
+- ss -ltnp
+- allowlist портов
+- PID владельца
+objectives:
+- Составить реальную картину слушающих портов
+- Сравнить с белым списком
+- Назвать процессы-владельцы
+task: 'Разрешённые порты перечислены в `/etc/lab/allowed-ports` (по одному на строку).
+
+
+  Найдите все TCP-порты в состоянии LISTEN на **не-loopback** адресах (`0.0.0.0`, `*`, `[::]`), которых **нет**
+  в этом списке, и запишите в `~/unexpected.txt` по строке на порт в формате:
+
+
+  ```
+
+  <порт> <PID процесса-владельца> <имя процесса>
+
+  ```
+
+
+  Процессы завершать не нужно. Информацию о процессах-владельцах `ss` показывает только с `sudo`.
+
+  '
+lesson: 59
+stage: Этап 2. Джун
+topic: Безопасность
+task_type: P
+environment: V
+theory: Listening socket — потенциальная точка входа; один и тот же порт может слушать разные адреса.
+prediction: Как узнать владельца? Сформулируй гипотезу и способ её проверить.
+criterion: список и рекомендации совпадают с состоянием VM.
+followups:
+  Быстрый возврат: 'LD-153: Какие показатели отделяют нагрузку от деградации? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: ports_exact
+    title: Список портов совпадает
+    pass_message: Список неожиданных портов верный
+    fail_message: В unexpected.txt должны быть ровно неожиданные порты (не-loopback, не из allowlist)
+  - id: pids_exact
+    title: PID владельцев верны
+    pass_message: Владельцы определены верно
+    fail_message: PID процессов-владельцев указаны неверно
+  - id: services_alive
+    title: Процессы не завершены
+    pass_message: Процессы не затронуты
+    fail_message: 'Процессы-владельцы завершены: в этом задании их только находят'
+reward:
+  base_xp: 100

@@ -1,0 +1,2 @@
+- '`[prod:children]` с перечислением `web` и `db`; переменные групп — `[web:vars]`.'
+- 'Проверка: `ansible-inventory -i inventory.ini --graph --vars`.'

@@ -1,0 +1,74 @@
+schema_version: 1
+id: ld-091
+version: 2
+title: 'Шлюз пингуется, а удалённая подсеть — нет: маршруты и forwarding'
+mode: incident
+difficulty: middle
+estimated_minutes: 30
+description: 'Найдите три причины недоступности удалённой подсети: нет маршрута на клиенте, выключен forwarding
+  на маршрутизаторе, нет обратного маршрута.'
+skills:
+- ip route
+- ip_forward
+- traceroute
+- обратный маршрут
+objectives:
+- Идти по пути пакета узел за узлом
+- Включить forwarding
+- Добавить маршруты в обе стороны
+task: '> В учебной машине `ip netns exec` и `ip -n` недоступны (в контейнере нельзя смонтировать `/sys`). Команды
+  внутри namespace выполняйте так: `sudo nsenter --net=/run/netns/ИМЯ команда`.
+
+
+  Топология: **машина** (`10.61.0.1`) — **маршрутизатор** `r` (`10.61.0.2` / `10.62.0.2`) — узел `far` (`10.62.0.3`).
+
+
+  Машина пингует маршрутизатор (`10.61.0.2`), но **не** `10.62.0.3`. Найдите все причины и устраните:
+
+
+  - `ping 10.62.0.3` с машины должен проходить;
+
+  - маршрутизатор должен пересылать пакеты (`net.ipv4.ip_forward=1` внутри `r`);
+
+  - узлы `far` должен знать обратный путь к `10.61.0.0/24`.
+
+
+  Подсказка: проверяйте по очереди — таблицу маршрутов на машине, forwarding на `r`, маршрут на `far`.
+
+  '
+lesson: 106
+stage: Этап 3. Мидл
+topic: Сетевые интерфейсы и маршруты
+task_type: I
+environment: N
+theory: Достижимость gateway не доказывает наличие маршрута до удалённой сети или обратного пути.
+prediction: Какие обе стороны проверить? Сформулируй гипотезу и способ её проверить.
+criterion: TCP до целевого сервиса работает в обе стороны.
+followups:
+  Быстрый возврат: 'LD-090: Почему неправильная маска ломает связь при «правильном» IP? Ответь без справки и назови
+    наблюдение, которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: end_to_end
+    title: ping машина → far
+    pass_message: Связь есть
+    fail_message: ping 10.62.0.3 не проходит
+  - id: forwarding_on
+    title: ip_forward=1 в r
+    pass_message: Forwarding включён
+    fail_message: В namespace r выключен net.ipv4.ip_forward
+  - id: return_route
+    title: far знает путь к 10.61.0.0/24
+    pass_message: Обратный маршрут есть
+    fail_message: На far нет маршрута к 10.61.0.0/24 через r
+reward:
+  base_xp: 200

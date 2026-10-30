@@ -1,0 +1,62 @@
+schema_version: 1
+id: ld-037
+version: 2
+title: 'Инцидент: сервис не завершается по SIGTERM из-за зависшего child'
+mode: incident
+difficulty: middle
+estimated_minutes: 20
+description: 'Добавьте контролируемое завершение: дать ребёнку время, затем принудительно убить и выйти в срок.'
+skills:
+- signal
+- SIGTERM/SIGKILL
+- дедлайн
+- subprocess
+objectives:
+- Корректно завершать дочерние процессы
+- Не превышать дедлайн остановки
+task: '**Инцидент.** `~/svc/service.py` запускает дочерний процесс, который **игнорирует SIGTERM**. По SIGTERM сервис
+  ждёт ребёнка вечно, и оркестратор вынужден убивать его через SIGKILL.
+
+
+  Исправьте обработчик SIGTERM: послать ребёнку `terminate()`, подождать **не более 3 секунд**, затем `kill()`,
+  и завершить сервис с кодом 0. После остановки не должно оставаться ни сервиса, ни ребёнка, а вся остановка — уложиться
+  в ~6 секунд.
+
+  '
+lesson: 80
+stage: Этап 3. Мидл
+topic: Процессы
+task_type: I
+environment: C
+theory: Корректное завершение требует остановить приём работы, дождаться активных операций и закрыть детей.
+prediction: Что делать по истечении deadline? Сформулируй гипотезу и способ её проверить.
+criterion: нет оставшихся детей и потерянных запросов сверх допуска.
+followups:
+  Быстрый возврат: 'LD-036: Почему сигнал zombie обычно не решает причину? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  checks:
+  - id: service_exits
+    title: Сервис завершился по SIGTERM
+    pass_message: Сервис завершился
+    fail_message: Сервис не завершился по SIGTERM
+  - id: no_children
+    title: Дочерних процессов не осталось
+    pass_message: Дочерних процессов нет
+    fail_message: После остановки остался дочерний процесс
+  - id: in_deadline
+    title: Остановка уложилась в дедлайн
+    pass_message: Остановка уложилась в срок
+    fail_message: Остановка заняла слишком долго
+reward:
+  base_xp: 200

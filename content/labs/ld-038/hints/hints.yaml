@@ -1,0 +1,2 @@
+- '`readlink /proc/PID/cwd`, `tr ''\0'' ''\n'' < /proc/PID/environ`, `ls -l /proc/PID/fd`.'
+- Лимиты — `/proc/PID/limits`, cgroup — `/proc/PID/cgroup`.

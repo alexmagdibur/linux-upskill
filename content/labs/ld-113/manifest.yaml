@@ -1,0 +1,71 @@
+schema_version: 1
+id: ld-113
+version: 2
+title: Вход по SSH-ключу с проверкой host key
+mode: practice
+difficulty: junior
+estimated_minutes: 25
+description: Настройте вход по ключу для учебного пользователя и проверяйте отпечаток сервера, а не принимайте его
+  вслепую.
+skills:
+- ssh-keygen
+- authorized_keys
+- known_hosts
+- StrictHostKeyChecking
+objectives:
+- Создать ключ
+- Установить публичный ключ на сервер
+- Добавить host key в known_hosts после проверки отпечатка
+task: 'На этой же машине работает `sshd`. Пользователь `labuser` (пароля у него нет) должен принимать вход по ключу.
+
+
+  1. Создайте у себя (`student`) ключ `ed25519` (`~/.ssh/id_ed25519`, без пароля допустимо для обучения).
+
+  2. Установите публичный ключ в `~labuser/.ssh/authorized_keys` с правильными правами (каталог `0700`, файл `0600`,
+  владелец `labuser`).
+
+  3. Добавьте host key сервера в `~/.ssh/known_hosts`, **сверив отпечаток** (`ssh-keyscan` + `ssh-keygen -lf` с
+  отпечатком `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub`).
+
+
+  Проверка: `ssh -o BatchMode=yes -o StrictHostKeyChecking=yes labuser@127.0.0.1 echo ok`.
+
+  '
+lesson: 56
+stage: Этап 2. Джун
+topic: SSH и TLS
+task_type: P
+environment: N
+theory: SSH host key подтверждает сервер, ключ пользователя подтверждает клиента.
+prediction: Что означает предупреждение о смене host key? Сформулируй гипотезу и способ её проверить.
+criterion: вход работает без пароля, подмена host key обнаруживается.
+followups:
+  Быстрый возврат: 'LD-105: Как проверить запреты столь же тщательно, как разрешения? Ответь без справки и назови
+    наблюдение, которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 15
+  checks:
+  - id: login_ok
+    title: Вход по ключу со строгой проверкой host key
+    pass_message: Вход по ключу работает
+    fail_message: ssh с BatchMode и StrictHostKeyChecking=yes не проходит
+  - id: perms_ok
+    title: Права на ключ и authorized_keys
+    pass_message: Права корректны
+    fail_message: Нужны ~/.ssh/id_ed25519 0600, authorized_keys 0600, владелец labuser
+  - id: hostkey_pinned
+    title: host key в known_hosts совпадает с сервером
+    pass_message: Host key закреплён
+    fail_message: В known_hosts нет записи с отпечатком host key сервера
+reward:
+  base_xp: 100

@@ -1,0 +1,62 @@
+schema_version: 1
+id: ld-133
+version: 2
+title: Потоковый парсер JSON на Python
+mode: practice
+difficulty: middle
+estimated_minutes: 15
+description: 'Перепишите разбор JSON-строк в Python с потоковым чтением: большой вход не должен приводить к OOM.'
+skills:
+- python3
+- json
+- потоковая обработка
+- ulimit -v
+objectives:
+- Читать stdin построчно
+- Игнорировать битые строки
+- Укладываться в ограничение памяти
+task: 'Напишите `~/bin/parse.py`: читает со stdin **JSON-строки** вида `{"user": "...", "amount": число, "status":
+  "..."}` и печатает в stdout один JSON-объект `{"<user>": <сумма amount>, ...}` — только по записям со `status
+  == "ok"`.
+
+
+  - битые строки и записи без `user`/`amount` — пропускать (можно писать в stderr);
+
+  - суммы округлять до 2 знаков;
+
+  - читать вход **потоково**: проверка подаст ~600 тыс. строк при ограничении памяти процесса ≈120 МБ.
+
+  '
+lesson: 86
+stage: Этап 3. Мидл
+topic: Bash и Python
+task_type: P
+environment: C
+theory: Структурированный JSON следует разбирать парсером, учитывая типы и отсутствие полей.
+prediction: Как обработать большой поток без OOM? Сформулируй гипотезу и способ её проверить.
+criterion: скрытые варианты входа проходят.
+followups:
+  Быстрый возврат: 'LD-132: Как избежать вечного stale lock? Ответь без справки и назови наблюдение, которое подтвердит
+    ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  checks:
+  - id: small_cases
+    title: 'Малые входы: битые строки, юникод'
+    pass_message: Малый вход разобран верно
+    fail_message: На малом входе (битые строки, юникод) результат неверен
+  - id: large_stream
+    title: Большой вход в ограничении памяти
+    pass_message: Большой вход обработан потоково
+    fail_message: На большом входе при лимите памяти результат неверен (читайте stdin построчно)
+reward:
+  base_xp: 150

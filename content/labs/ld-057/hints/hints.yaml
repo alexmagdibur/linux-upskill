@@ -1,0 +1,3 @@
+- '`sudo journalctl -u labcrash.service --since "$(cat ~/cutoff.txt)" -o cat` — сообщения после метки.'
+- 'Boot ID: `sudo journalctl -u labcrash.service --since ... -o json | head -1` и поле `_BOOT_ID` (или `journalctl
+  --list-boots`).'

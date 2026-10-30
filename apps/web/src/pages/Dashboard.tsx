@@ -9,7 +9,7 @@ const ACTIVE = new Set(["PROVISIONING", "READY", "RUNNING", "VALIDATING"]);
 export function Dashboard() {
   const { user } = useAuth();
   const progress = useProgress();
-  const todo = useLabs({ completed: "false" });
+  const todo = useLabs({ completed: "false", availability: "available" });
   const history = useSessionHistory(5);
   const active = history.data?.items.find((s) => ACTIVE.has(s.status));
   const next = todo.data?.items[0];

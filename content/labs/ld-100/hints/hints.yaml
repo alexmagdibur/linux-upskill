@@ -1,0 +1,3 @@
+- '`sudo tail /var/log/nginx/error.log`: `connect() failed (111: Connection refused)` означает, что по адресу upstream
+  никто не слушает.'
+- '`ss -ltnp` покажет реальный порт backend; поправьте `proxy_pass` и `sudo systemctl reload nginx`.'

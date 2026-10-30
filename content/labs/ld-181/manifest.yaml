@@ -1,0 +1,73 @@
+schema_version: 1
+id: ld-181
+version: 2
+title: 'Ansible: секреты в vault отдельно от обычных переменных'
+mode: practice
+difficulty: middle
+estimated_minutes: 35
+description: Разделите обычные переменные и секреты, зашифруйте секреты ansible-vault и убедитесь, что в открытом
+  виде их нет.
+skills:
+- ansible-vault
+- vars vs secrets
+- vault password file
+- права 0600
+objectives:
+- Вынести секрет в зашифрованный файл
+- Оставить обычные переменные открытыми
+- Запустить playbook с vault
+task: 'Playbook `~/ansible/db.yml` создаёт `/etc/lab/db.conf` из переменных `db_host` (обычная) и `db_password`
+  (секрет `S3cretPass`). Сейчас пароль лежит открытым текстом в `~/ansible/vars/all.yml`.
+
+
+  1. Вынесите секрет в `~/ansible/vars/secrets.yml` и **зашифруйте** его `ansible-vault` (пароль vault — в файле
+  `~/.vault_pass`, права `0600`); в `all.yml` останется только `db_host`.
+
+  2. Playbook должен работать с `--vault-password-file ~/.vault_pass`, а `/etc/lab/db.conf` — иметь права `0600`
+  и содержать пароль.
+
+  3. В открытом виде в `~/ansible` пароль встречаться не должен.
+
+  '
+lesson: 145
+stage: Этап 3. Мидл
+topic: Конфигурация парка
+task_type: P
+environment: N
+theory: Секреты должны иметь отдельный жизненный цикл и не попадать в stdout/diff.
+prediction: Как проверить это тестовым маркером? Сформулируй гипотезу и способ её проверить.
+criterion: логи и diff не содержат тестовый секрет.
+followups:
+  Быстрый возврат: 'LD-180: Как отличить санкционированное исключение от случайной ручной правки? Ответь без справки
+    и назови наблюдение, которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 45
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 25
+  checks:
+  - id: vault_encrypted
+    title: secrets.yml зашифрован
+    pass_message: Секреты зашифрованы
+    fail_message: vars/secrets.yml должен быть зашифрован ansible-vault ($ANSIBLE_VAULT)
+  - id: no_plaintext
+    title: Пароля нет в открытом виде
+    pass_message: Пароль не лежит открыто
+    fail_message: Пароль S3cretPass виден в открытом виде в ~/ansible
+  - id: playbook_works
+    title: playbook работает, db.conf с паролем 0600
+    pass_message: Playbook работает с vault
+    fail_message: Playbook с --vault-password-file не создал /etc/lab/db.conf (0600) с паролем
+  - id: vault_pass_safe
+    title: .vault_pass имеет права 0600
+    pass_message: Пароль vault защищён
+    fail_message: Права ~/.vault_pass должны быть 0600
+reward:
+  base_xp: 150

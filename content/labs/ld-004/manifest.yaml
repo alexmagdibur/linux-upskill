@@ -1,0 +1,56 @@
+schema_version: 1
+id: ld-004
+version: 2
+title: Переменная окружения только для дочерних процессов
+mode: practice
+difficulty: junior
+estimated_minutes: 15
+description: Передайте APP_MODE дочернему процессу, но не сохраняйте её в профиле.
+skills:
+- export
+- окружение процесса
+- ~/.profile
+objectives:
+- Экспортировать переменную
+- Не сделать её постоянной
+task: 'Скрипт `~/bin/show_mode.sh` печатает `mode=$APP_MODE`.
+
+
+  1. Сделайте `APP_MODE=prod` доступной **дочернему** процессу и сохраните вывод скрипта в `~/child_out.txt`.
+
+  2. Не записывайте переменную ни в один файл профиля: новая независимая оболочка её видеть не должна.
+
+  '
+lesson: 21
+stage: Этап 2. Джун
+topic: Терминал, shell и окружение
+task_type: P
+environment: C
+theory: Переменная shell становится частью окружения ребёнка после `export`; наследование идёт только вниз.
+prediction: Что увидит новый независимый сеанс? Сформулируй гипотезу и способ её проверить.
+criterion: дочерний скрипт видит значение, новый сеанс — нет.
+followups:
+  Быстрый возврат: 'LD-003: Почему `which` не всегда показывает фактическую команду? Ответь без справки и назови
+    наблюдение, которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  checks:
+  - id: child_sees
+    title: Дочерний скрипт видит APP_MODE
+    pass_message: Дочерний процесс увидел значение
+    fail_message: В child_out.txt должно быть mode=prod
+  - id: not_persistent
+    title: Новый сеанс переменную не видит
+    pass_message: Переменная не сохранилась
+    fail_message: Переменная попала в профиль и видна в новом сеансе
+reward:
+  base_xp: 100

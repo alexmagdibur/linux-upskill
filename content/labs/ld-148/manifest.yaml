@@ -1,0 +1,36 @@
+schema_version: 1
+id: ld-148
+version: 1
+title: 'Namespaces и cgroups: Процесс внутри контейнера видит неожиданные права из-за UID mapping'
+mode: incident
+difficulty: middle
+estimated_minutes: 20
+description: Процесс внутри контейнера видит неожиданные права из-за UID mapping
+skills:
+- Namespaces и cgroups
+objectives:
+- запись доступна нужному пользователю без world-writable.
+task: '**Задание.** Процесс внутри контейнера видит неожиданные права из-за UID mapping. Объясните и исправьте доступ
+  к volume.
+
+
+  **Критерий успеха.** запись доступна нужному пользователю без world-writable.
+
+  '
+lesson: 131
+stage: Этап 3. Мидл
+topic: Namespaces и cgroups
+task_type: I
+environment: D
+theory: UID внутри контейнера может отображаться иначе на хосте.
+prediction: Почему `chmod 777` — плохое исправление volume permissions? Сформулируй гипотезу и способ её проверить.
+criterion: запись доступна нужному пользователю без world-writable.
+followups:
+  Быстрый возврат: 'LD-147: Как отличить лимит от отсутствия нагрузки? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+availability: requires_vm_container_runtime
+unavailable_reason: Задание требует контейнерный runtime (Docker/podman) внутри учебной машины. Для этого нужно
+  включить вложенные контейнеры (security.nesting), что ослабляет изоляцию, поэтому по умолчанию это отключено.
+  Описание и критерий сохранены.
+reward:
+  base_xp: 200

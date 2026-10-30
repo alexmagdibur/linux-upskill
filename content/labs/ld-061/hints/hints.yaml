@@ -1,0 +1,2 @@
+- 'В конфиге: `/var/log/lab/app.log { rotate 3; missingok; nocompress; postrotate ... endscript }`.'
+- 'Отправить сигнал службе: `/usr/bin/systemctl kill -s HUP lablogger.service`.'

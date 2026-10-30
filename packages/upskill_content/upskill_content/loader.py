@@ -22,8 +22,8 @@ class LoadedLab:
     manifest: LabManifest
     directory: Path
     content_hash: str
-    setup_script: bytes
-    validate_script: bytes
+    setup_script: bytes = b""
+    validate_script: bytes = b""
     exercise_script: bytes | None = None
 
 
@@ -77,6 +77,10 @@ def load_lab(lab_dir: Path) -> LoadedLab:
     if manifest.id != lab_dir.name:
         raise ContentError(f"{lab_dir.name}: id в манифесте ({manifest.id}) не совпадает с именем каталога")
 
+    if manifest.availability != "available":
+        # описание без исполняемой части: скриптов нет, подсказки необязательны
+        return LoadedLab(manifest, lab_dir, _tree_hash(lab_dir), b"", b"", None)
+
     hints_path = lab_dir / "hints" / "hints.yaml"
     hints = list(manifest.hints)
     if hints_path.is_file():
@@ -87,6 +91,7 @@ def load_lab(lab_dir: Path) -> LoadedLab:
     if not 1 <= len(hints) <= 3:
         raise ContentError(f"{lab_dir.name}: нужно 1–3 подсказки, найдено {len(hints)}")
     manifest = manifest.model_copy(update={"hints": hints})
+    assert manifest.validation is not None
 
     setup = _safe_file(lab_dir, manifest.setup.script).read_bytes().replace(b"\r\n", b"\n")
     validate = _safe_file(lab_dir, manifest.validation.script).read_bytes().replace(b"\r\n", b"\n")

@@ -1,0 +1,70 @@
+schema_version: 1
+id: ld-118
+version: 2
+title: TLS termination и перенаправление HTTP на HTTPS
+mode: practice
+difficulty: middle
+estimated_minutes: 30
+description: Настройте nginx как TLS-терминатор перед backend и добавьте постоянный редирект с HTTP.
+skills:
+- nginx server blocks
+- ssl_certificate
+- return 301
+- proxy_pass
+objectives:
+- Настроить HTTPS-сервер
+- Проксировать на backend
+- Добавить редирект с порта 80
+task: 'Backend (`labback`) слушает `127.0.0.1:9000` и отвечает `backend-ok`. Готовый сертификат для `app.lab.test`
+  лежит в `/etc/lab/tls/` (`app.crt`, `app.key`; CA — `/etc/lab/ca/ca.crt`).
+
+
+  Настройте nginx (`/etc/nginx/conf.d/app.conf`):
+
+
+  - порт 443: TLS, `proxy_pass` на `http://127.0.0.1:9000`;
+
+  - порт 80: постоянное перенаправление (`301`) на `https://$host$request_uri`.
+
+
+  Конфигурация должна проходить `nginx -t`; примените её (`reload`).
+
+  '
+lesson: 123
+stage: Этап 3. Мидл
+topic: SSH и TLS
+task_type: P
+environment: N
+theory: TLS termination меняет границу доверия между клиентом, proxy и backend.
+prediction: Где должны выставляться secure cookies? Сформулируй гипотезу и способ её проверить.
+criterion: TLS работает, cookies защищены, plaintext не отдаёт приватный ответ.
+followups:
+  Быстрый возврат: 'LD-117: Почему «сертификат не истёк» недостаточно? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 15
+  checks:
+  - id: redirect_301
+    title: HTTP → 301 на HTTPS с путём
+    pass_message: Редирект настроен
+    fail_message: http://…/x должен отвечать 301 на https://app.lab.test/x
+  - id: https_proxy
+    title: HTTPS отдаёт ответ backend
+    pass_message: TLS-терминация работает
+    fail_message: https://app.lab.test/ не возвращает backend-ok с проверкой сертификата
+  - id: nginx_valid
+    title: nginx -t проходит
+    pass_message: Конфигурация валидна
+    fail_message: nginx -t сообщает об ошибке
+reward:
+  base_xp: 150

@@ -1,0 +1,69 @@
+schema_version: 1
+id: ld-084
+version: 2
+title: nice и CPU quota на двух конкурирующих службах
+mode: practice
+difficulty: middle
+estimated_minutes: 20
+description: 'Покажите разницу между приоритетом (nice) и жёстким лимитом (CPU quota): приоритет не ограничивает
+  службу, когда CPU свободен.'
+skills:
+- nice
+- CPUQuota
+- CPUWeight
+- cgroup cpu.stat
+objectives:
+- Понять, что nice работает только при конкуренции
+- Ограничить фоновую службу квотой
+- Не навредить критичной службе
+task: 'Две службы жгут CPU: критичная `labcrit.service` и фоновая `labbatch.service`. Фоновая не должна отнимать
+  у машины больше **25 % одного ядра даже когда критичная простаивает** (одним `nice` этого не добиться — он действует
+  только при конкуренции).
+
+
+  1. Ограничьте `labbatch` квотой CPU (`CPUQuota=`) и понизьте ей приоритет (`Nice=` > 0).
+
+  2. Критичную службу не трогайте: она должна остаться запущенной и без лимитов.
+
+
+  Проверка остановит критичную службу и измерит использование CPU фоновой.
+
+  '
+lesson: 104
+stage: Этап 3. Мидл
+topic: Память и CPU
+task_type: P
+environment: V
+theory: Nice меняет относительный приоритет, quota задаёт верхнюю границу.
+prediction: При каких условиях разница становится видна? Сформулируй гипотезу и способ её проверить.
+criterion: измерения демонстрируют отличие при нагрузке.
+followups:
+  Быстрый возврат: 'LD-083: Как CPU throttling отличается от высокой утилизации? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 15
+  checks:
+  - id: batch_capped
+    title: Фоновая служба ≤ 30% ядра в одиночку
+    pass_message: Квота действует
+    fail_message: 'labbatch в одиночку занимает больше 30% ядра: нужна CPUQuota'
+  - id: batch_nice
+    title: Nice > 0 у labbatch
+    pass_message: Приоритет понижен
+    fail_message: У labbatch должен быть Nice > 0
+  - id: crit_untouched
+    title: labcrit работает без квоты
+    pass_message: Критичная служба не тронута
+    fail_message: labcrit остановлена или ограничена по CPU
+reward:
+  base_xp: 150

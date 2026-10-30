@@ -1,0 +1,1 @@
+sudo nft flush ruleset

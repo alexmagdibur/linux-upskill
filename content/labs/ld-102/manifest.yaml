@@ -1,0 +1,62 @@
+schema_version: 1
+id: ld-102
+version: 2
+title: 'Периодические таймауты: исчерпание эфемерных портов'
+mode: incident
+difficulty: senior
+estimated_minutes: 20
+description: 'Клиент не может открыть новые соединения: слишком узкий диапазон локальных портов.'
+skills:
+- ip_local_port_range
+- ss -s
+- sysctl.d
+- эфемерные порты
+objectives:
+- Заподозрить нехватку портов
+- Измерить диапазон
+- Исправить и закрепить через sysctl.d
+task: '**Инцидент.** Клиентское приложение периодически падает с `Cannot assign requested address` при открытии
+  соединений. Нагрузка не выросла.
+
+
+  Найдите причину (`sysctl net.ipv4.ip_local_port_range`, `ss -s`), верните нормальный диапазон (не уже `32768 60999`,
+  то есть не менее 20000 портов) и **закрепите** настройку так, чтобы она переживала перезагрузку (файл в `/etc/sysctl.d/`,
+  а плохую настройку уберите).
+
+  '
+lesson: 170
+stage: Этап 4. Синьор
+topic: TCP, DNS и HTTP
+task_type: I
+environment: N
+theory: Короткоживущие соединения расходуют ephemeral ports и создают TIME_WAIT.
+prediction: Как connection reuse меняет профиль? Сформулируй гипотезу и способ её проверить.
+criterion: ошибка исчезла под той же нагрузкой.
+followups:
+  Быстрый возврат: 'LD-101: Что должен вернуть resolver? Ответь без справки и назови наблюдение, которое подтвердит
+    ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: range_wide
+    title: Диапазон ≥ 20000 портов
+    pass_message: Диапазон восстановлен
+    fail_message: Диапазон эфемерных портов слишком узкий
+  - id: persisted_ok
+    title: Конфигурация sysctl.d исправлена
+    pass_message: Настройка закреплена
+    fail_message: В /etc/sysctl.d остался узкий диапазон
+  - id: connections_ok
+    title: 100 одновременных соединений открываются
+    pass_message: Соединения открываются
+    fail_message: Открыть 100 одновременных соединений не удалось
+reward:
+  base_xp: 250

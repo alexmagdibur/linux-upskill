@@ -1,0 +1,2 @@
+- 'Файл `/etc/ssh/sshd_config.d/10-baseline.conf` (учтите: ранние файлы в sshd_config.d имеют приоритет над поздними).'
+- 'Проверка: `sudo sshd -t && sudo sshd -T | grep -Ei ''passwordauth|permitroot|allowusers|maxauth|loglevel|x11''`.'

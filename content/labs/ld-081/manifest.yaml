@@ -1,0 +1,66 @@
+schema_version: 1
+id: ld-081
+version: 2
+title: 'Доступная память: free, /proc/meminfo и cgroup'
+mode: learn
+difficulty: junior
+estimated_minutes: 10
+description: Сравните то, что показывают free и /proc/meminfo, с реальным лимитом cgroup, и объясните доступную
+  память процесса.
+skills:
+- free
+- /proc/meminfo
+- cgroup memory.max
+- page cache
+objectives:
+- Найти фактический предел контейнера
+- Не путать cache с «потерянной» RAM
+task: 'Процесс в контейнере ограничен cgroup, а `free` показывает память всего хоста.
+
+
+  Создайте `~/mem.txt` с тремя строками:
+
+
+  1. `limit_bytes=<значение лимита памяти из cgroup>` (файл `/sys/fs/cgroup/memory.max`);
+
+  2. `memtotal_kb=<MemTotal из /proc/meminfo>`;
+
+  3. `note=<1–2 фразы>`: почему `MemTotal` не равен лимиту процесса и при чём тут cache.
+
+  '
+lesson: 51
+stage: Этап 2. Джун
+topic: Память и CPU
+task_type: L
+environment: C
+theory: '`free` внутри контейнера может отражать хост, а cgroup задаёт реальный лимит.'
+prediction: Где искать фактический предел workload? Сформулируй гипотезу и способ её проверить.
+criterion: расчёт не путает cache с «потерянной» RAM.
+followups:
+  Быстрый возврат: 'LD-073: Почему маленькие файлы могут вызвать `ENOSPC` при свободных гигабайтах? Ответь без справки
+    и назови наблюдение, которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: limit
+    title: 'limit_bytes: лимит cgroup'
+    pass_message: Лимит cgroup указан верно
+    fail_message: limit_bytes должен совпадать с /sys/fs/cgroup/memory.max
+  - id: memtotal
+    title: 'memtotal_kb: MemTotal'
+    pass_message: MemTotal указан верно
+    fail_message: memtotal_kb должен совпадать с MemTotal из /proc/meminfo
+  - id: note
+    title: 'note: объяснение про cache'
+    pass_message: Объяснение содержит cache
+    fail_message: В note нужно объяснение, упоминающее cache (кэш)
+reward:
+  base_xp: 100

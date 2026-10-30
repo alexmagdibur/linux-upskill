@@ -1,0 +1,2 @@
+- '`pwd`, `echo $HOME` и `command -v bash` дают нужные значения.'
+- Соберите JSON через `printf '{"cwd":"%s",...}\n' ...`.

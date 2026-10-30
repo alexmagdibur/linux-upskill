@@ -1,0 +1,65 @@
+schema_version: 1
+id: ld-150
+version: 2
+title: 'Лишняя capability у службы: убрать и доказать по CapEff'
+mode: incident
+difficulty: senior
+estimated_minutes: 20
+description: Уберите у службы ненужную Linux capability и подтвердите результат по маске CapEff процесса.
+skills:
+- CapabilityBoundingSet
+- /proc/PID/status CapEff
+- capsh --decode
+- наименьшие привилегии
+objectives:
+- Прочитать маску capability процесса
+- Сузить набор в unit
+- Сохранить работоспособность
+task: 'Служба `labcap.service` работает от root с полным набором capability, хотя ей нужна только `CAP_NET_BIND_SERVICE`
+  (она слушает порт 81 и пишет heartbeat).
+
+
+  Сузьте набор до **одной** capability `CAP_NET_BIND_SERVICE` (`CapabilityBoundingSet=` и `AmbientCapabilities=`),
+  так, чтобы:
+
+
+  - в `/proc/PID/status` у основного процесса `CapEff` соответствовал только `cap_net_bind_service`;
+
+  - служба продолжала слушать порт 81.
+
+  '
+lesson: 182
+stage: Этап 4. Синьор
+topic: Namespaces и cgroups
+task_type: I
+environment: D
+theory: Linux capabilities дробят полномочия root.
+prediction: Как определить минимальный набор, а не добавлять `SYS_ADMIN` наугад? Сформулируй гипотезу и способ её
+  проверить.
+criterion: CapEff минимален, функциональные тесты зелёные.
+followups:
+  Быстрый возврат: 'LD-149: Какие из них важны именно этому сервису? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 15
+  checks:
+  - id: capeff_minimal
+    title: CapEff = только net_bind_service
+    pass_message: Набор capability минимален
+    fail_message: CapEff процесса должен содержать только cap_net_bind_service
+  - id: still_listening
+    title: Порт 81 слушается
+    pass_message: Служба работает
+    fail_message: Служба не слушает порт 81
+reward:
+  base_xp: 250

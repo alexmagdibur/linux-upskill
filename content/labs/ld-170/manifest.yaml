@@ -1,0 +1,71 @@
+schema_version: 1
+id: ld-170
+version: 2
+title: Периодический backup приложения с ротацией и проверкой
+mode: practice
+difficulty: middle
+estimated_minutes: 35
+description: 'Настройте резервное копирование по расписанию: архив, проверка целостности и хранение только последних
+  копий.'
+skills:
+- tar
+- systemd timer / cron
+- ротация
+- проверка архива
+objectives:
+- Написать скрипт backup
+- Запускать по расписанию
+- Хранить последние три копии и проверять каждую
+task: 'Данные приложения лежат в `/var/lib/labapp/data` (файлы `users.db`, `settings.conf`, каталог `uploads/`).
+  Настройте резервное копирование:
+
+
+  - скрипт `/usr/local/bin/lab-backup.sh` создаёт архив `/var/backups/labapp/labapp-<время>.tar.gz` (время с точностью
+  до секунды), **проверяет** его (`tar -tzf`) и пишет рядом файл `.sha256`;
+
+  - хранятся только **3 последних** архива (старые удаляются);
+
+  - запуск по расписанию — systemd-таймер `lab-backup.timer` (служба `lab-backup.service`), включённый (`enabled`).
+
+
+  Проверка запустит `lab-backup.service` несколько раз подряд.
+
+  '
+lesson: 138
+stage: Этап 3. Мидл
+topic: Backup и восстановление
+task_type: P
+environment: V
+theory: Ротация ограничивает объём backup, но может удалить последнюю рабочую копию.
+prediction: Как проверить retention policy? Сформулируй гипотезу и способ её проверить.
+criterion: удалённый по возрасту архив удаляется, новый восстанавливается.
+followups:
+  Быстрый возврат: 'LD-169: Какие метаданные и контрольные суммы должны совпасть? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 40
+  checks:
+  - id: rotation_ok
+    title: После 5 запусков осталось ровно 3 архива
+    pass_message: Ротация работает
+    fail_message: После нескольких запусков должно остаться ровно 3 архива с .sha256
+  - id: archive_valid
+    title: Новейший архив содержит данные и валиден
+    pass_message: Архив валиден
+    fail_message: Новейший архив повреждён или не содержит users.db, settings.conf и uploads/
+  - id: timer_enabled
+    title: Таймер включён и имеет расписание
+    pass_message: Расписание настроено
+    fail_message: lab-backup.timer должен быть enabled и иметь OnCalendar
+reward:
+  base_xp: 150

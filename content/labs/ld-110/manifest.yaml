@@ -1,0 +1,73 @@
+schema_version: 1
+id: ld-110
+version: 2
+title: Доступно по IPv4, но открыто лишним клиентам по IPv6
+mode: incident
+difficulty: senior
+estimated_minutes: 30
+description: Правила ограничивают только IPv4. Выровняйте политику для IPv6, не ломая доступ разрешённого клиента.
+skills:
+- inet table
+- ip6 saddr
+- nft
+- dual-stack
+objectives:
+- Обнаружить дыру в IPv6
+- Описать политику для обоих семейств
+- Проверить обе стороны
+task: '> В учебной машине `ip netns exec` и `ip -n` недоступны (в контейнере нельзя смонтировать `/sys`). Команды
+  внутри namespace выполняйте так: `sudo nsenter --net=/run/netns/ИМЯ команда`.
+
+
+  Сервис на порту `8080` должен быть доступен только клиенту `ok` (`10.85.0.2` / `fd00:85::2`). Лишний клиент `bad`
+  (`10.85.1.2` / `fd00:85:1::2`) по IPv4 заблокирован, но по IPv6 всё ещё подключается.
+
+
+  Исправьте политику (желательно одной таблицей `inet`), чтобы:
+
+
+  - `ok` подключался и по IPv4, и по IPv6;
+
+  - `bad` не подключался ни по IPv4, ни по IPv6;
+
+  - остальные правила (SSH `22`) остались.
+
+  '
+lesson: 173
+stage: Этап 4. Синьор
+topic: Firewall и NAT
+task_type: I
+environment: N
+theory: IPv4 и IPv6 имеют отдельные адреса и пути.
+prediction: Почему проверка только IPv4 не доказывает изоляцию сервиса? Сформулируй гипотезу и способ её проверить.
+criterion: обе семьи проходят одинаковую матрицу доступов.
+followups:
+  Быстрый возврат: 'LD-109: Как вернуть доступ при ошибке? Ответь без справки и назови наблюдение, которое подтвердит
+    ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 15
+  checks:
+  - id: ok_both
+    title: 'ok: IPv4 и IPv6'
+    pass_message: Разрешённый клиент работает
+    fail_message: Клиент ok должен подключаться и по IPv4, и по IPv6
+  - id: bad_blocked_both
+    title: 'bad: ни IPv4, ни IPv6'
+    pass_message: Лишний клиент заблокирован
+    fail_message: Клиент bad подключается по IPv4 или IPv6
+  - id: ssh_kept
+    title: Правило SSH сохранено
+    pass_message: SSH сохранён
+    fail_message: Правило для порта 22 пропало
+reward:
+  base_xp: 250

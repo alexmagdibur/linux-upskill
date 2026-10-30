@@ -1,0 +1,1 @@
+echo timeout > ~/cause.txt

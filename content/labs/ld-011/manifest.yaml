@@ -1,0 +1,53 @@
+schema_version: 1
+id: ld-011
+version: 2
+title: CSV с кавычками и запятыми в полях
+mode: practice
+difficulty: junior
+estimated_minutes: 15
+description: Извлеките записи с ошибкой из CSV, где поля содержат запятые и кавычки; простой cut здесь не подходит.
+skills:
+- python3 csv
+- awk
+- краевые случаи
+objectives:
+- Корректно разобрать CSV
+- Сохранить исходное квотирование
+task: 'В `~/data/events.csv` колонки `id,message,level,host`; в сообщениях бывают запятые и кавычки.
+
+
+  Сохраните в `~/errors.csv` заголовок и **только записи, где `level` = `ERROR`**. Файл должен оставаться корректным
+  CSV (поля с запятыми — в кавычках).
+
+
+  Подсказка: `cut -d,` ломается на запятых внутри кавычек — используйте модуль `csv` в `python3`.
+
+  '
+lesson: 34
+stage: Этап 2. Джун
+topic: Потоки, текст и данные
+task_type: P
+environment: C
+theory: CSV допускает разделитель внутри кавычек; разбиение по символу запятой неверно.
+prediction: Как проверить парсер на краевых входах? Сформулируй гипотезу и способ её проверить.
+criterion: корректны записи со сложными полями.
+followups:
+  Быстрый возврат: 'LD-010: Что произойдёт при совпадающей частоте IP? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: errors
+    title: 'errors.csv: только ERROR-записи'
+    pass_message: Записи извлечены верно
+    fail_message: errors.csv должен содержать заголовок и только строки ERROR, с корректным CSV-квотированием
+reward:
+  base_xp: 100

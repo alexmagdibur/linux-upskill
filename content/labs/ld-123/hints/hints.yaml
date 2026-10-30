@@ -1,0 +1,3 @@
+- '`apt-cache policy labfmt` покажет доступные версии.'
+- '`sudo apt-get install -y --allow-downgrades labfmt=1.0`, затем `sudo apt-mark hold labfmt` и `sudo systemctl
+  restart labapp`.'

@@ -1,0 +1,4 @@
+- Создайте `~/.ssh/id_ed25519` и добавьте публичный ключ в `authorized_keys` пользователей `jump` и `inner` (права
+  0700/0600, владелец — они).
+- 'Хост-ключи: `ssh-keyscan` для обоих адресов в `~/.ssh/known_hosts`. Config: `Host inner / HostName 10.95.2.2
+  / User inner / ProxyJump jump@10.95.1.1`.'

@@ -1,0 +1,58 @@
+schema_version: 1
+id: ld-014
+version: 2
+title: 'Инцидент: отчёт зависит от локали'
+mode: incident
+difficulty: middle
+estimated_minutes: 20
+description: Отчёт «плывёт» в зависимости от LC_ALL. Сделайте его воспроизводимым для обеих локалей.
+skills:
+- LC_ALL
+- locale
+- awk length
+- воспроизводимость
+objectives:
+- Понять, какие переменные влияют на вывод
+- Зафиксировать локаль в скрипте
+task: '**Инцидент.** `~/bin/report.sh` строит отчёт (имя и длина имени в символах). Запущенный с `LC_ALL=C` и с
+  `LC_ALL=C.UTF-8`, он выдаёт **разные байты** (для кириллицы длина считается то в байтах, то в символах).
+
+
+  Исправьте скрипт, чтобы его вывод был **побайтно одинаков** при обеих локалях (стабилизируйте окружение внутри
+  скрипта).
+
+  '
+lesson: 71
+stage: Этап 3. Мидл
+topic: Потоки, текст и данные
+task_type: I
+environment: C
+theory: Локаль влияет на сортировку, классы символов и регистр.
+prediction: Какие переменные среды надо стабилизировать для воспроизводимости? Сформулируй гипотезу и способ её
+  проверить.
+criterion: байты результата одинаковы при обеих локалях.
+followups:
+  Быстрый возврат: 'LD-013: Как отличается p95 от максимума? Ответь без справки и назови наблюдение, которое подтвердит
+    ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  checks:
+  - id: same_bytes
+    title: Вывод одинаков при LC_ALL=C и C.UTF-8
+    pass_message: Вывод воспроизводим
+    fail_message: Вывод скрипта различается при разных локалях
+  - id: report_complete
+    title: Отчёт не пуст (4 строки)
+    pass_message: Отчёт полный
+    fail_message: Отчёт должен содержать 4 строки
+reward:
+  base_xp: 200

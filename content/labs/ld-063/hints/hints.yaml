@@ -1,0 +1,4 @@
+- '`log_format trace ''$remote_addr rid=$request_id "$request"''; access_log /var/log/nginx/trace.log trace;` (log_format
+  — на уровне http, т. е. в conf.d вне server).'
+- '`proxy_set_header X-Request-ID $request_id;` в `location /` перед `proxy_pass`; затем `sudo nginx -t && sudo
+  systemctl reload nginx`.'

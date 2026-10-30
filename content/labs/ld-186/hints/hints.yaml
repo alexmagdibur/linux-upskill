@@ -1,0 +1,2 @@
+- '`df -h /var/lib/labapp/spool` и `df -i /var/lib/labapp/spool` — сравните.'
+- 'Мусор — пустые файлы в `spool/stale/`: `find /var/lib/labapp/spool/stale -type f -empty -delete`.'

@@ -1,6 +1,6 @@
 schema_version: 1
 id: linux-012
-version: 1
+version: 2
 title: Переменные окружения
 mode: learn
 difficulty: beginner
@@ -25,6 +25,17 @@ task: '1. Выполните `export APP_ENV=production`, затем запус�
   **в новой сессии**: добавьте `~/bin` в `PATH` в `~/.profile`.
 
   '
+lesson: 16
+stage: Этап 1. Новичок
+topic: Терминал, shell и окружение
+task_type: L
+environment: C
+theory: '`export` передаёт переменную дочерним процессам; изменение `PATH` влияет на поиск команд.'
+prediction: Почему дочерний shell видит экспортированную переменную? Сформулируй гипотезу и способ её проверить.
+criterion: Дочерний процесс видит значение и нужный бинарник находится по `PATH`.
+followups:
+  Быстрый возврат: 'NB-012: Как проверить статус последней команды? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
 runtime:
   type: container
   image: ubuntu-basic

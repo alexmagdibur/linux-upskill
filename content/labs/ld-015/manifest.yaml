@@ -1,0 +1,59 @@
+schema_version: 1
+id: ld-015
+version: 2
+title: Маскирование секретов в логе
+mode: practice
+difficulty: middle
+estimated_minutes: 15
+description: Замените секреты в копии лога, сохранив структуру строк и возможность группировки по request ID.
+skills:
+- sed -E
+- регулярные выражения
+- анонимизация логов
+objectives:
+- Скрыть значения секретов
+- Не потерять события
+- Сохранить request ID
+task: 'В `~/logs/app.log` есть строки с секретами (`token=…`, `password=…`, `api_key=…`).
+
+
+  Создайте копию `~/logs/sanitized.log`, где **значения секретов заменены на `[REDACTED]`** (ключ остаётся: `token=[REDACTED]`).
+  Число строк и `req=…` каждой строки менять нельзя; исходный `app.log` оставьте как есть.
+
+  '
+lesson: 72
+stage: Этап 3. Мидл
+topic: Потоки, текст и данные
+task_type: P
+environment: C
+theory: Редакция секрета должна сохранять полезные поля диагностики.
+prediction: Почему простое удаление всей строки ухудшает расследование? Сформулируй гипотезу и способ её проверить.
+criterion: секретные образцы отсутствуют, число событий неизменно.
+followups:
+  Быстрый возврат: 'LD-014: Какие переменные среды надо стабилизировать для воспроизводимости? Ответь без справки
+    и назови наблюдение, которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: secrets_gone
+    title: Секретов в копии нет
+    pass_message: Секреты скрыты
+    fail_message: В sanitized.log остались секретные значения
+  - id: structure_kept
+    title: Число строк и request ID сохранены
+    pass_message: Структура сохранена
+    fail_message: Число строк или идентификаторы req отличаются от исходных
+  - id: keys_kept
+    title: Ключи сохранены, значения заменены
+    pass_message: Ключи сохранены
+    fail_message: 'Строки с секретами должны сохранить ключ: token=[REDACTED]'
+reward:
+  base_xp: 150

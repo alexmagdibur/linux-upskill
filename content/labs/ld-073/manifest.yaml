@@ -1,0 +1,69 @@
+schema_version: 1
+id: ld-073
+version: 2
+title: Исчерпание байтов и исчерпание inode на двух маленьких ФС
+mode: practice
+difficulty: junior
+estimated_minutes: 20
+description: Покажите разницу между «кончилось место» и «кончились inode», найдя, какая из двух файловых систем
+  страдает от чего.
+skills:
+- df -h
+- df -i
+- tmpfs
+- inode
+objectives:
+- Читать df по байтам и по inode
+- Не путать два вида исчерпания
+task: 'В системе две маленькие файловые системы: `/mnt/bytes` и `/mnt/inodes`. Запись в обе сейчас падает с `No
+  space left on device`, но причины **разные**.
+
+
+  Запишите в `~/diag.txt` две строки:
+
+
+  ```
+
+  bytes_full=<точка монтирования, где закончились БАЙТЫ>
+
+  inodes_full=<точка монтирования, где закончились INODE>
+
+  ```
+
+
+  Подсказка: сравните вывод `df -h` и `df -i`.
+
+  '
+lesson: 50
+stage: Этап 2. Джун
+topic: Файловые системы и место
+task_type: P
+environment: V
+theory: FS ограничена и байтами, и количеством inode.
+prediction: Почему маленькие файлы могут вызвать `ENOSPC` при свободных гигабайтах? Сформулируй гипотезу и способ
+  её проверить.
+criterion: корректно распознаны обе причины `ENOSPC`.
+followups:
+  Быстрый возврат: 'incident-002: Как различить общий диск и квоту каталога логов? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: bytes_ok
+    title: bytes_full определён верно
+    pass_message: Исчерпание байтов найдено
+    fail_message: bytes_full указан неверно
+  - id: inodes_ok
+    title: inodes_full определён верно
+    pass_message: Исчерпание inode найдено
+    fail_message: inodes_full указан неверно
+reward:
+  base_xp: 100

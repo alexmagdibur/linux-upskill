@@ -1,0 +1,2 @@
+- '`type grep` покажет, что это alias, а `type -a grep` — все варианты.'
+- 'Обойти alias можно так: `/usr/bin/grep`, `command grep` или `\grep`.'

@@ -1,0 +1,2 @@
+- '`dpkg -S /usr/bin/jq` показывает владельца файла.'
+- '`dpkg-query -W -f=''${Version}\n'' jq` и `dpkg-query -W -f=''${Depends}\n'' jq` — версия и зависимости.'

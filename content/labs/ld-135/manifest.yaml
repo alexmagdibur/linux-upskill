@@ -1,0 +1,78 @@
+schema_version: 1
+id: ld-135
+version: 2
+title: 'CLI-утилита: dry-run, структурные логи, таймауты, лимит параллелизма'
+mode: practice
+difficulty: senior
+estimated_minutes: 15
+description: Соберите утилиту пакетного запуска с режимом dry-run, JSON-логами, таймаутом и ограничением параллелизма.
+skills:
+- argparse
+- JSON-логи
+- ThreadPoolExecutor
+- timeout
+- dry-run
+objectives:
+- Реализовать dry-run без побочных эффектов
+- Ограничить параллелизм
+- Убивать зависшие задачи по таймауту
+task: 'Напишите `~/bin/batch.py [--dry-run] [--max-parallel N] [--timeout S] --out ДИР ФАЙЛ_ЗАДАЧ`.
+
+
+  Файл задач — строки `имя секунды`. Задача «работает» `секунды` (запустите `sleep`), затем создаёт `ДИР/имя.done`.
+
+
+  В stdout — **по одной JSON-строке на событие** с ключами `event`, `task`, `ts` (число, секунды):
+
+
+  - `plan` — для каждой задачи при `--dry-run` (тогда **ничего** не запускается и не создаётся);
+
+  - `start` / `finish` — начало и конец задачи;
+
+  - `timeout` — задача превысила `--timeout`: её процесс убивается, `.done` не создаётся.
+
+
+  Одновременно работает не более `--max-parallel` задач (по умолчанию 2).
+
+  '
+lesson: 155
+stage: Этап 4. Синьор
+topic: Bash и Python
+task_type: P
+environment: C
+theory: Dry-run должен применять ту же логику планирования без мутаций; structured logs объясняют действия.
+prediction: Что проверит тест? Сформулируй гипотезу и способ её проверить.
+criterion: dry-run ничего не меняет; рабочий режим соблюдает лимиты.
+followups:
+  Быстрый возврат: 'LD-134: Какие шаги могут быть повторены? Ответь без справки и назови наблюдение, которое подтвердит
+    ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  checks:
+  - id: dry_run
+    title: 'dry-run: план без побочных эффектов'
+    pass_message: dry-run ничего не меняет
+    fail_message: В режиме dry-run нужны события plan для всех задач и ни одного созданного файла
+  - id: parallel_limit
+    title: Параллелизм ≤ --max-parallel, результат создан
+    pass_message: Лимит параллелизма соблюдается
+    fail_message: Одновременно выполнялось больше задач, чем --max-parallel, или не все .done созданы
+  - id: timeout_kills
+    title: Зависшая задача убита по таймауту
+    pass_message: Таймаут работает
+    fail_message: Задача, превысившая --timeout, должна дать событие timeout и не создать .done
+  - id: json_logs
+    title: Логи — JSON-строки с event/task/ts
+    pass_message: Логи структурированы
+    fail_message: Каждая строка лога должна быть JSON с ключами event, task, ts
+reward:
+  base_xp: 200

@@ -1,0 +1,68 @@
+schema_version: 1
+id: ld-172
+version: 2
+title: Согласованный backup приложения и БД и восстановление
+mode: practice
+difficulty: middle
+estimated_minutes: 30
+description: Снимите непротиворечивую копию SQLite-базы под нагрузкой и убедитесь, что восстановление работает.
+skills:
+- sqlite3 .backup
+- integrity_check
+- согласованность
+- restore
+objectives:
+- Понять, почему cp под записью опасен
+- Снять копию средствами БД
+- Восстановить и проверить
+task: 'Служба `labdb-writer.service` непрерывно пишет в `/var/lib/labapp/orders.db` (SQLite). Обычный `cp` под записью
+  может дать повреждённую копию.
+
+
+  1. Снимите **согласованную** копию в `/var/backups/labapp/orders.bak` (используйте встроенный механизм: `sqlite3
+  ... ".backup ..."`).
+
+  2. **Восстановите** копию как новую базу `/var/lib/labapp/restored.db` и убедитесь, что `PRAGMA integrity_check`
+  возвращает `ok`, а таблица `orders` не пуста.
+
+  3. Рабочую базу не останавливайте и не меняйте.
+
+  '
+lesson: 140
+stage: Этап 3. Мидл
+topic: Backup и восстановление
+task_type: P
+environment: N
+theory: Согласованный backup БД и файлов требует одного логического момента.
+prediction: Что случится при независимом копировании? Сформулируй гипотезу и способ её проверить.
+criterion: приложение стартует с согласованным состоянием.
+followups:
+  Быстрый возврат: 'LD-171: Как проверить полноту архива перед словом «успешно»? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 20
+  checks:
+  - id: backup_valid
+    title: orders.bak проходит integrity_check
+    pass_message: Копия согласована
+    fail_message: orders.bak повреждена или не является корректной базой SQLite
+  - id: restore_valid
+    title: restored.db восстановлена, orders не пуста
+    pass_message: Восстановление проверено
+    fail_message: restored.db отсутствует, повреждена или таблица orders пуста
+  - id: source_running
+    title: Источник работает и растёт
+    pass_message: Рабочая база не затронута
+    fail_message: Служба-писатель остановлена или база не обновляется
+reward:
+  base_xp: 150

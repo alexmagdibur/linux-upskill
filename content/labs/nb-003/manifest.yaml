@@ -1,0 +1,63 @@
+schema_version: 1
+id: nb-003
+version: 2
+title: Переход между каталогами
+mode: practice
+difficulty: beginner
+estimated_minutes: 15
+description: Перейдите в глубоко вложенный каталог, затем к его родителю и зафиксируйте оба пути.
+skills:
+- cd
+- cd ..
+- pwd
+objectives:
+- Перейти в каталог по пути
+- Подняться к родителю
+- Не изменить проект
+task: 'Проект лежит в `~/project`.
+
+
+  1. Перейдите в `~/project/src/app/core` и запишите абсолютный путь в `~/paths/core.txt`.
+
+  2. Поднимитесь на уровень выше (`cd ..`) и запишите новый путь в `~/paths/parent.txt`.
+
+
+  Файлы проекта менять не нужно.
+
+  '
+lesson: 3
+stage: Этап 1. Новичок
+topic: Терминал, shell и окружение
+task_type: P
+environment: C
+theory: '`cd` меняет рабочий каталог текущего shell; `..` обозначает родителя, `.` — текущий каталог.'
+prediction: Куда приведёт `cd ..` из вложенного каталога? Сформулируй гипотезу и способ её проверить.
+criterion: Оба пути верны и каталог проекта не изменён.
+followups:
+  Быстрый возврат: 'NB-002: Как отличить скрытый файл от отсутствующего? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: core
+    title: 'core.txt: путь вложенного каталога'
+    pass_message: Путь вложенного каталога верный
+    fail_message: В paths/core.txt должен быть путь ~/project/src/app/core
+  - id: parent
+    title: 'parent.txt: путь родителя'
+    pass_message: Путь родителя верный
+    fail_message: В paths/parent.txt должен быть путь ~/project/src/app
+  - id: project_intact
+    title: Проект не изменён
+    pass_message: Проект на месте
+    fail_message: Файлы проекта изменены или удалены
+reward:
+  base_xp: 50

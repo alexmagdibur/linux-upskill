@@ -1,0 +1,62 @@
+schema_version: 1
+id: ld-185
+version: 2
+title: 'Инцидент: сервис отдаёт старый конфиг из symlink — безопасный reload'
+mode: incident
+difficulty: middle
+estimated_minutes: 20
+description: Релиз выкатили, но сервис читает старую версию через symlink. Переключите ссылку и перезагрузите конфигурацию
+  без рестарта.
+skills:
+- symlink релизов
+- ln -sfn
+- systemctl reload
+- SIGHUP
+objectives:
+- Найти, куда указывает current
+- Переключить на новый релиз
+- Применить reload, не перезапуская процесс
+task: '**Инцидент.** После выкладки релиза 2 сервис `labsite.service` по-прежнему отвечает старым значением (`curl
+  http://127.0.0.1:8090` → `v1`). Конфиг читается через ссылку `/opt/labsite/current`.
+
+
+  Переключите `current` на `releases/2` и **перезагрузите конфигурацию без рестарта** (`systemctl reload labsite`):
+  процесс (PID) должен остаться тем же, счётчик рестартов — нулевым, а ответ — `v2`.
+
+  '
+lesson: 146
+stage: Этап 3. Мидл
+topic: Сложные инциденты
+task_type: I
+environment: V
+theory: Ссылка может указывать на старый релиз при живом процессе.
+prediction: Как подтвердить фактический прочитанный файл до reload? Сформулируй гипотезу и способ её проверить.
+criterion: новое значение наблюдается без потери запросов.
+followups:
+  Быстрый возврат: 'LD-181: Как проверить это тестовым маркером? Ответь без справки и назови наблюдение, которое
+    подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: serves_v2
+    title: Сервис отвечает v2
+    pass_message: Сервис отдаёт новую версию
+    fail_message: http://127.0.0.1:8090 всё ещё отвечает старым значением
+  - id: symlink_ok
+    title: current → releases/2
+    pass_message: Ссылка указывает на релиз 2
+    fail_message: current должна указывать на /opt/labsite/releases/2
+  - id: no_restart
+    title: PID не менялся, рестартов нет
+    pass_message: Reload выполнен без рестарта
+    fail_message: 'Сервис был перезапущен (PID изменился): нужен reload, а не restart'
+reward:
+  base_xp: 200

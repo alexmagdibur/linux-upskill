@@ -1,6 +1,6 @@
 schema_version: 1
 id: linux-013
-version: 1
+version: 2
 title: Процессы и сигналы
 mode: practice
 difficulty: junior
@@ -26,6 +26,17 @@ task: 'В песочнице работают два фоновых процес
   2. Завершите `stuck.sh`. Процесс `worker.sh` должен продолжить работу!
 
   '
+lesson: 41
+stage: Этап 2. Джун
+topic: Процессы
+task_type: P
+environment: C
+theory: PID идентифицирует процесс; SIGTERM просит штатное завершение, SIGKILL принудительно останавливает.
+prediction: Почему сначала проверяют процесс и пробуют SIGTERM? Сформулируй гипотезу и способ её проверить.
+criterion: Зависший процесс отсутствует; нужный worker жив.
+followups:
+  Быстрый возврат: 'LD-027: Как отличить причины без случайного `chmod -R`? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
 runtime:
   type: container
   image: ubuntu-basic

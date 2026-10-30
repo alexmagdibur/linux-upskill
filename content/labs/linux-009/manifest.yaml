@@ -1,6 +1,6 @@
 schema_version: 1
 id: linux-009
-version: 1
+version: 2
 title: Права доступа chmod
 mode: learn
 difficulty: beginner
@@ -27,6 +27,18 @@ task: 'В каталоге `~/perm` лежат файлы с неудачным�
   4. Каталог `shared` — `rwxr-xr-x` (`755`).
 
   '
+lesson: 17
+stage: Этап 1. Новичок
+topic: Права и пользователи
+task_type: L
+environment: C
+theory: Mode bits задают чтение, запись и исполнение для владельца, группы и остальных.
+prediction: Чем право исполнения каталога отличается от права исполнения файла? Сформулируй гипотезу и способ её
+  проверить.
+criterion: Матрица ролей выполняется без лишнего доступа.
+followups:
+  Быстрый возврат: 'linux-012: Почему дочерний shell видит экспортированную переменную? Ответь без справки и назови
+    наблюдение, которое подтвердит ответ.'
 runtime:
   type: container
   image: ubuntu-basic

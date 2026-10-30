@@ -95,9 +95,19 @@ export function Workspace() {
             </div>
           )}
           {s.status === "EXPIRED" && <div role="alert" className="rounded-md border border-amber-800 bg-amber-950/60 px-4 py-3 text-sm text-amber-200">Время сессии истекло. Нажмите «Сначала», чтобы запустить лабораторию заново.</div>}
+          {(s.theory || s.prediction) && (
+            <Card>
+              <details>
+                <summary className="cursor-pointer font-semibold">Теория и вопрос перед терминалом</summary>
+                {s.theory && <div className="mt-3"><Markdown text={s.theory} /></div>}
+                {s.prediction && <p className="mt-3 rounded border border-sky-900 bg-sky-950/40 p-3 text-sm text-slate-300"><strong>Перед терминалом:</strong> {s.prediction}</p>}
+              </details>
+            </Card>
+          )}
           <Card>
             <h2 className="mb-3 font-semibold">Задание</h2>
             <Markdown text={s.task} />
+            {s.criterion && <p className="mt-3 text-sm text-slate-400"><strong>Критерий успеха:</strong> {s.criterion}</p>}
           </Card>
           <Card>
             <h2 className="mb-2 font-semibold">Критерии успеха</h2>

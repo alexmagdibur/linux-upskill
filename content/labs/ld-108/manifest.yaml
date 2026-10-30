@@ -1,0 +1,79 @@
+schema_version: 1
+id: ld-108
+version: 2
+title: DNAT к backend с сохранением реального адреса клиента
+mode: practice
+difficulty: middle
+estimated_minutes: 35
+description: Настройте перенаправление порта на backend так, чтобы backend видел настоящий IP клиента, а не адрес
+  маршрутизатора.
+skills:
+- nft nat prerouting
+- dnat to
+- ip_forward
+- masquerade vs без SNAT
+objectives:
+- Настроить DNAT
+- Разрешить forwarding
+- Не маскарадить трафик
+task: '> В учебной машине `ip netns exec` и `ip -n` недоступны (в контейнере нельзя смонтировать `/sys`). Команды
+  внутри namespace выполняйте так: `sudo nsenter --net=/run/netns/ИМЯ команда`.
+
+
+  Схема: клиент **`cli`** (`10.84.1.2`) → **машина** (`10.84.1.1`, порт `8080`) → backend **`be`** (`10.84.2.2`,
+  порт `80`, возвращает `backend`, логирует адрес клиента в `/var/lib/lab/seen`).
+
+
+  Настройте на машине:
+
+
+  - включённый `net.ipv4.ip_forward`;
+
+  - DNAT: запросы на `10.84.1.1:8080` перенаправляются на `10.84.2.2:80` (таблица `ip nat`, цепочка prerouting);
+
+  - правило разрешающего forward, если у вас включён firewall;
+
+  - **без masquerade/SNAT**: backend должен видеть адрес клиента `10.84.1.2`.
+
+
+  Проверка: `curl http://10.84.1.1:8080/` из `cli` возвращает `backend`, а в `seen` — `10.84.1.2`.
+
+  '
+lesson: 117
+stage: Этап 3. Мидл
+topic: Firewall и NAT
+task_type: P
+environment: N
+theory: DNAT меняет адрес назначения, SNAT — источника; это влияет на обратный путь и логи.
+prediction: Какие адреса видит backend? Сформулируй гипотезу и способ её проверить.
+criterion: запрос достигает нужного сервиса и путь документирован.
+followups:
+  Быстрый возврат: 'LD-107: Как доказать, какое правило отбросило healthcheck? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  exercise_timeout_seconds: 15
+  checks:
+  - id: dnat_works
+    title: cli получает ответ backend
+    pass_message: DNAT работает
+    fail_message: curl http://10.84.1.1:8080/ из cli не возвращает backend
+  - id: client_ip_kept
+    title: backend видит 10.84.1.2
+    pass_message: Адрес клиента сохранён
+    fail_message: backend видит адрес не клиента (проверьте, что нет masquerade/SNAT)
+  - id: forward_on
+    title: ip_forward=1
+    pass_message: Forwarding включён
+    fail_message: net.ipv4.ip_forward должен быть 1
+reward:
+  base_xp: 150

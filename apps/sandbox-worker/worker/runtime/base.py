@@ -91,6 +91,10 @@ class RuntimeAdapter(ABC):
     async def exercise(self, runtime_ref: str, script: bytes, timeout: int) -> ValidationContext:
         """Выполнить доверенный сценарий-«прогон» от имени ученика (вывод игнорируется проверкой)."""
 
+    async def reboot(self, runtime_ref: str) -> None:
+        """Перезагрузить учебную машину и дождаться загрузки (только runtime с настоящим init)."""
+        raise RuntimeError_("REBOOT_UNSUPPORTED", "этот runtime не поддерживает перезагрузку")
+
     @abstractmethod
     async def destroy(self, runtime_ref: str) -> None: ...
 

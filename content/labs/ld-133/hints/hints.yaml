@@ -1,0 +1,2 @@
+- 'Не собирайте все строки в список: `for line in sys.stdin:` и накапливайте только словарь сумм.'
+- '`json.loads` в `try/except ValueError`, значения — через `float()`.'

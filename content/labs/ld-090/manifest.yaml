@@ -1,0 +1,64 @@
+schema_version: 1
+id: ld-090
+version: 2
+title: Неверная маска и подсеть на учебном интерфейсе
+mode: practice
+difficulty: junior
+estimated_minutes: 15
+description: 'Интерфейс настроен в чужой подсети: узел не видит шлюз. Исправьте адрес и маску.'
+skills:
+- ip addr
+- ip route
+- маска сети
+- ping
+objectives:
+- Увидеть несовпадение подсетей
+- Исправить адрес и маску
+- Проверить связь со шлюзом
+task: '> В учебной машине `ip netns exec` и `ip -n` недоступны (в контейнере нельзя смонтировать `/sys`). Команды
+  внутри namespace выполняйте так: `sudo nsenter --net=/run/netns/ИМЯ команда`.
+
+
+  Интерфейс `hv0` подключён к шлюзу `10.60.0.1/24` (network namespace `gw`), но шлюз недоступен.
+
+
+  Исправьте настройку так, чтобы `hv0` имел адрес из подсети `10.60.0.0/24` с маской `/24` (например, `10.60.0.5/24`),
+  без адреса шлюза, и `ping 10.60.0.1` проходил. Лишних адресов на `hv0` оставаться не должно.
+
+  '
+lesson: 53
+stage: Этап 2. Джун
+topic: Сетевые интерфейсы и маршруты
+task_type: P
+environment: N
+theory: Префикс адреса определяет локальную подсеть.
+prediction: Почему неправильная маска ломает связь при «правильном» IP? Сформулируй гипотезу и способ её проверить.
+criterion: связь есть внутри подсети и не выходит за заданный маршрут.
+followups:
+  Быстрый возврат: 'LD-089: Как определить следующий hop для конкретного адреса? Ответь без справки и назови наблюдение,
+    которое подтвердит ответ.'
+runtime:
+  type: lxd
+  image: ubuntu-systemd
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: addr_ok
+    title: hv0 в подсети 10.60.0.0/24
+    pass_message: Адрес и маска верны
+    fail_message: Адрес hv0 должен быть из 10.60.0.0/24 с маской /24 (но не 10.60.0.1)
+  - id: only_one_addr
+    title: Единственный IPv4-адрес
+    pass_message: Лишних адресов нет
+    fail_message: На hv0 остались лишние IPv4-адреса
+  - id: gw_pingable
+    title: Шлюз отвечает на ping
+    pass_message: Шлюз доступен
+    fail_message: Шлюз 10.60.0.1 не отвечает
+reward:
+  base_xp: 100
