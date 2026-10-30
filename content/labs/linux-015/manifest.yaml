@@ -1,0 +1,72 @@
+schema_version: 1
+id: linux-015
+version: 1
+title: Bash-скрипт резервного копирования
+mode: practice
+difficulty: middle
+estimated_minutes: 25
+description: 'Напишите настоящий bash-скрипт: аргументы, проверки, код возврата и создание датированного архива.'
+skills:
+- bash
+- аргументы $1 $2
+- date
+- tar
+- коды возврата
+objectives:
+- Принять каталоги через аргументы
+- Создать датированный tar.gz
+- Корректно сообщить об ошибке кодом возврата
+task: 'Напишите скрипт `~/backup.sh`, который вызывается так: `bash ~/backup.sh ИСТОЧНИК НАЗНАЧЕНИЕ`.
+
+
+  Требования:
+
+
+  - создаёт каталог назначения, если его нет;
+
+  - упаковывает **содержимое** каталога-источника в `НАЗНАЧЕНИЕ/backup-ГГГГ-ММ-ДД.tar.gz` (дата сегодняшняя, формат
+  `date +%F`);
+
+  - при успехе печатает `Backup created: <путь к архиву>` и завершается с кодом `0`;
+
+  - если источника не существует — печатает ошибку в **stderr**, **ничего не создаёт** и завершается с ненулевым
+  кодом.
+
+
+  Проверка запустит ваш скрипт на каталоге `~/data` (внутри `report.txt` и `notes.md`).
+
+  '
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  checks:
+  - id: script_exists
+    title: Скрипт ~/backup.sh создан
+    pass_message: Скрипт найден
+    fail_message: Файл ~/backup.sh не найден
+  - id: backup_created
+    title: Создан backup-ГГГГ-ММ-ДД.tar.gz
+    pass_message: Архив создан с верным именем
+    fail_message: В ~/backups нет архива backup-<сегодняшняя дата>.tar.gz
+  - id: archive_valid
+    title: Архив валиден и содержит файлы
+    pass_message: Архив содержит report.txt и notes.md
+    fail_message: Архив повреждён или не содержит report.txt и notes.md
+  - id: exit_code_ok
+    title: Код возврата 0 и сообщение Backup created
+    pass_message: Успешный запуск оформлен верно
+    fail_message: 'При успехе скрипт должен вернуть 0 и напечатать «Backup created: …»'
+  - id: missing_source
+    title: Отсутствующий источник даёт ошибку
+    pass_message: Ошибка обрабатывается верно
+    fail_message: Для несуществующего источника нужен ненулевой код возврата и отсутствие архива
+reward:
+  base_xp: 150

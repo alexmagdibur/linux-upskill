@@ -1,0 +1,53 @@
+schema_version: 1
+id: linux-003
+version: 1
+title: Просмотр файлов и потоков
+mode: learn
+difficulty: beginner
+estimated_minutes: 10
+description: 'Читайте файлы по частям и перенаправляйте вывод: head, tail, wc, cat, оператор >.'
+skills:
+- head
+- tail
+- wc
+- cat
+- перенаправление >
+objectives:
+- Прочитать начало и конец файла
+- Посчитать строки
+- Сохранить вывод команды в файл
+task: 'В `~/data` лежат `server.log` (100 строк) и `names.txt`.
+
+
+  1. Сохраните **последние 5 строк** `server.log` в `~/data/last5.txt`.
+
+  2. Сохраните **первые 3 строки** `names.txt` в `~/data/first3.txt`.
+
+  3. Запишите **количество строк** `server.log` в `~/data/count.txt`.
+
+  '
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: last5
+    title: last5.txt содержит последние 5 строк
+    pass_message: Последние 5 строк сохранены
+    fail_message: В last5.txt не последние 5 строк server.log
+  - id: first3
+    title: first3.txt содержит первые 3 строки
+    pass_message: Первые 3 строки сохранены
+    fail_message: В first3.txt не первые 3 строки names.txt
+  - id: count
+    title: count.txt содержит число строк
+    pass_message: Число строк указано верно
+    fail_message: В count.txt неверное количество строк
+reward:
+  base_xp: 50

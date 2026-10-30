@@ -1,0 +1,67 @@
+# Инфраструктура Linux Upskill.
+#   docker compose -f infra/compose/docker-compose.yml up -d            — только PostgreSQL + Redis (режим разработки)
+#   docker compose -f infra/compose/docker-compose.yml --profile full up -d --build — весь стек (api, worker, web, proxy)
+name: upskill
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: upskill
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-upskill}
+      POSTGRES_DB: upskill
+    ports: ["127.0.0.1:${POSTGRES_PORT:-15432}:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U upskill -d upskill"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports: ["127.0.0.1:${REDIS_PORT:-6379}:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  # ---- профиль full: приложение. Worker — отдельная граница доверия и единственный, кто видит Docker API. ----
+  api:
+    profiles: ["full"]
+    build: { context: ../.., dockerfile: apps/api/Dockerfile }
+    env_file: [../../.env]
+    environment:
+      DATABASE_URL: postgresql+asyncpg://upskill:${POSTGRES_PASSWORD:-upskill}@postgres:5432/upskill
+      REDIS_URL: redis://redis:6379/0
+      WORKER_URL: http://worker:8100
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN_FULL:-http://localhost:8080}   # origin профиля full (nginx на :8080)
+    depends_on: { postgres: { condition: service_healthy }, redis: { condition: service_healthy } }
+    expose: ["8000"]
+
+  worker:
+    profiles: ["full"]
+    build: { context: ../.., dockerfile: apps/sandbox-worker/Dockerfile }
+    env_file: [../../.env]
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      API_INTERNAL_URL: http://api:8000
+      WORKER_HOST: 0.0.0.0
+    # ВНИМАНИЕ: worker получает Docker socket хоста — это его доверенная роль. В публичном
+    # развёртывании worker обязан жить на отдельном хосте/VM (см. docs/security).
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ../../content:/app/content:ro
+    depends_on: { redis: { condition: service_healthy } }
+    expose: ["8100"]
+
+  web:
+    profiles: ["full"]
+    build: { context: ../.., dockerfile: apps/web/Dockerfile }
+    depends_on: [api]
+    ports: ["127.0.0.1:8080:80"]
+
+volumes:
+  pgdata:

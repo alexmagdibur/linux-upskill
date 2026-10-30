@@ -1,0 +1,63 @@
+schema_version: 1
+id: linux-010
+version: 1
+title: Владельцы файлов chown (без выдачи опасных прав)
+mode: practice
+difficulty: junior
+estimated_minutes: 15
+description: 'Управляйте группой-владельцем: chown :группа, chgrp -R и setgid-каталог. Смена пользователя-владельца
+  требует root и в песочнице не выдаётся.'
+skills:
+- chown
+- chgrp
+- ls -l
+- setgid
+objectives:
+- Сменить группу-владельца файла
+- Рекурсивно сменить группу каталога
+- Настроить setgid для общего каталога
+task: 'Вы работаете **без прав root**: пользователя-владельца файлов менять нельзя, но группу — можно, если вы в
+  ней состоите (`id`).
+
+
+  В `~/project`:
+
+
+  1. Файл `app.conf` — группа-владелец `devs` (`chown :devs` или `chgrp`).
+
+  2. Каталог `src` вместе со всем содержимым — группа `ops`.
+
+  3. Каталог `shared` — группа `devs` и **setgid-бит** (режим `2775`), чтобы новые файлы наследовали группу.
+
+  4. `deploy.sh` не трогайте — его группа должна остаться прежней.
+
+  '
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: conf_group
+    title: app.conf в группе devs
+    pass_message: Группа app.conf верная
+    fail_message: Группа app.conf должна быть devs
+  - id: src_group
+    title: src и всё внутри в группе ops
+    pass_message: Группа каталога src верная
+    fail_message: Всё содержимое src (и сам каталог) должно быть в группе ops
+  - id: shared_setgid
+    title: 'shared: группа devs + setgid'
+    pass_message: Каталог shared настроен верно
+    fail_message: У shared должны быть группа devs и бит setgid (2775)
+  - id: deploy_untouched
+    title: deploy.sh не затронут
+    pass_message: deploy.sh не изменён
+    fail_message: Группа deploy.sh была изменена, а не должна
+reward:
+  base_xp: 100

@@ -1,0 +1,51 @@
+schema_version: 1
+id: linux-004
+version: 1
+title: Поиск файлов через find
+mode: practice
+difficulty: junior
+estimated_minutes: 15
+description: Найдите нужные файлы по имени и размеру и наведите порядок в дереве проекта командой find.
+skills:
+- find
+- -name
+- -type
+- -empty
+objectives:
+- Найти файлы по маске имени
+- Найти и удалить пустые файлы
+- Не задеть остальные файлы
+task: 'В `~/projects` лежит дерево проекта.
+
+
+  1. Найдите все файлы с расширением `.conf` (именно `*.conf`) и запишите их **абсолютные пути**, по одному на строку,
+  в `~/found_conf.txt`.
+
+  2. Удалите все **пустые** файлы внутри `~/projects`. Остальные файлы (включая `old.conf.bak`) должны остаться.
+
+  '
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: found_conf
+    title: found_conf.txt содержит все *.conf
+    pass_message: Список файлов верный
+    fail_message: В ~/found_conf.txt не тот список *.conf (нужны абсолютные пути, без лишних файлов)
+  - id: empty_removed
+    title: Пустые файлы удалены
+    pass_message: Пустые файлы удалены
+    fail_message: Пустые файлы всё ещё на месте
+  - id: others_intact
+    title: Остальные файлы не затронуты
+    pass_message: Остальные файлы на месте
+    fail_message: Удалены или повреждены непустые файлы
+reward:
+  base_xp: 100

@@ -1,0 +1,52 @@
+schema_version: 1
+id: linux-014
+version: 1
+title: Диагностика дискового пространства (quota/workspace)
+mode: practice
+difficulty: junior
+estimated_minutes: 15
+description: Рабочее пространство ограничено по размеру. Найдите, что занимает место, и освободите его, не удалив
+  ценные данные.
+skills:
+- du
+- df
+- sort
+- rm
+objectives:
+- Найти самый «тяжёлый» подкаталог
+- Освободить место безопасно
+- Не удалить важные файлы
+task: 'Каталог `~/disk` почти заполнил квоту рабочего пространства. Внутри три подкаталога: `cache`, `logs`, `media`.
+
+
+  1. Определите **самый большой подкаталог** `~/disk` и запишите его имя (или путь) в `~/biggest.txt`.
+
+  2. Освободите место: суммарный размер `~/disk` должен стать **меньше 8 МБ**. Каталог `media` содержит ценные видео
+  — **не удаляйте его файлы**.
+
+  '
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: biggest
+    title: 'biggest.txt: самый большой подкаталог'
+    pass_message: Самый большой каталог определён верно
+    fail_message: В ~/biggest.txt указан не самый большой каталог
+  - id: space_freed
+    title: Размер ~/disk меньше 8 МБ
+    pass_message: Место освобождено
+    fail_message: Размер ~/disk всё ещё не меньше 8 МБ
+  - id: media_intact
+    title: Файлы media сохранены
+    pass_message: Ценные файлы целы
+    fail_message: Файлы каталога media удалены или изменены
+reward:
+  base_xp: 100

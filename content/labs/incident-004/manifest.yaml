@@ -1,0 +1,57 @@
+schema_version: 1
+id: incident-004
+version: 1
+title: Неверный путь конфигурации
+mode: incident
+difficulty: middle
+estimated_minutes: 20
+description: 'Приложение падает: «config not found». Найдите, откуда оно читает конфигурацию, и исправьте путь —
+  не дублируя конфиг.'
+skills:
+- чтение скриптов
+- ln -s
+- sed
+- переменные окружения
+objectives:
+- Прочитать сообщение об ошибке и скрипт запуска
+- Найти фактическое расположение конфига
+- Исправить путь постоянно
+task: '**Инцидент.** `~/app/run.sh` завершается с ошибкой `FATAL: config not found`.
+
+
+  Рабочий конфиг приложения лежит в `/etc/myapp/`. Выясните, какой путь ищет скрипт, и исправьте проблему **постоянно**
+  (проверка запустит приложение в новой login-сессии).
+
+
+  Требования: оригинальный `/etc/myapp/app.conf` не удалять и не менять; приложение должно читать именно его, а
+  не копию.
+
+  '
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+  writable_dirs:
+  - /etc/myapp
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  checks:
+  - id: starts_ok
+    title: Приложение стартует с рабочим конфигом
+    pass_message: Приложение стартовало в режиме production
+    fail_message: 'Приложение не стартует: в логе нет «app started mode=production»'
+  - id: reads_real_config
+    title: Приложение читает оригинальный конфиг
+    pass_message: Приложение читает оригинальный /etc/myapp/app.conf
+    fail_message: Приложение читает не оригинальный конфиг (копия или жёстко заданное значение)
+  - id: config_intact
+    title: Оригинальный конфиг цел
+    pass_message: Конфиг не повреждён
+    fail_message: /etc/myapp/app.conf изменён или удалён
+reward:
+  base_xp: 150

@@ -1,0 +1,104 @@
+name: ci
+
+on:
+  push: { branches: [main] }
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env: { POSTGRES_USER: upskill, POSTGRES_PASSWORD: upskill, POSTGRES_DB: upskill }
+        ports: ["15432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U upskill" --health-interval 3s --health-timeout 3s --health-retries 20
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: --health-cmd "redis-cli ping" --health-interval 3s --health-timeout 3s --health-retries 20
+    env:
+      DATABASE_URL: postgresql+asyncpg://upskill:upskill@127.0.0.1:15432/upskill
+      TEST_DATABASE_URL: postgresql+asyncpg://upskill:upskill@127.0.0.1:15432/upskill_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.13", cache: pip }
+      - run: pip install -e packages/upskill_content -e "apps/api[dev]" -e "apps/sandbox-worker[dev]"
+      - name: Создать тестовую БД
+        run: PGPASSWORD=upskill psql -h 127.0.0.1 -p 15432 -U upskill -d upskill -c "CREATE DATABASE upskill_test"
+      - name: Образ песочницы и lock
+        run: python infra/scripts/build_images.py
+      - name: Ruff
+        run: |
+          (cd apps/api && ruff check .)
+          (cd apps/sandbox-worker && ruff check .)
+          ruff check packages infra --config ruff.toml
+      - name: mypy
+        run: |
+          (cd apps/api && mypy app)
+          (cd apps/sandbox-worker && mypy worker)
+      - name: Миграции (upgrade → downgrade → upgrade)
+        working-directory: apps/api
+        run: alembic upgrade head && alembic downgrade base && alembic upgrade head && alembic check
+      - name: Тесты API
+        working-directory: apps/api
+        run: pytest -q
+      - name: Тесты worker, песочницы и 20 лабораторий (реальный Docker)
+        working-directory: apps/sandbox-worker
+        run: pytest -q
+      - name: OpenAPI актуален
+        run: python infra/scripts/export_openapi.py && git diff --exit-code docs/api/openapi.json
+
+  web:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: apps/web } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: apps/web/package-lock.json }
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: [backend, web]
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env: { POSTGRES_USER: upskill, POSTGRES_PASSWORD: upskill, POSTGRES_DB: upskill }
+        ports: ["15432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U upskill" --health-interval 3s --health-timeout 3s --health-retries 20
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+    env:
+      DATABASE_URL: postgresql+asyncpg://upskill:upskill@127.0.0.1:15432/upskill
+      REDIS_URL: redis://127.0.0.1:6379/0
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.13", cache: pip }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: apps/web/package-lock.json }
+      - run: pip install -e packages/upskill_content -e apps/api -e apps/sandbox-worker
+      - run: python infra/scripts/build_images.py
+      - name: Миграции и каталог
+        working-directory: apps/api
+        run: alembic upgrade head && python -m app.seed
+      - name: Запуск API и worker
+        run: |
+          (cd apps/api && nohup uvicorn app.main:app --port 8000 > /tmp/api.log 2>&1 &)
+          (cd apps/sandbox-worker && nohup python -m worker.main > /tmp/worker.log 2>&1 &)
+          for i in $(seq 1 30); do curl -sf localhost:8000/health/ready && curl -sf localhost:8100/health/ready && break; sleep 1; done
+      - run: npm ci && npx playwright install --with-deps chromium
+        working-directory: apps/web
+      - run: npx playwright test
+        working-directory: apps/web
+      - if: failure()
+        run: tail -n 50 /tmp/api.log /tmp/worker.log

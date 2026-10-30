@@ -1,0 +1,69 @@
+schema_version: 1
+id: incident-005
+version: 1
+title: Потеря доступа к рабочим файлам после релиза
+mode: incident
+difficulty: middle
+estimated_minutes: 20
+description: 'Релиз-скрипт «закрутил гайки»: владелец больше не может редактировать файлы проекта. Восстановите
+  доступ, не открывая его всему миру.'
+skills:
+- chmod -R
+- символьные права (X)
+- ls -l
+- группы
+objectives:
+- Определить, какие права сломаны
+- Восстановить права владельца и группы
+- Не выдать доступ остальным
+task: '**Инцидент.** После релиза вы не можете редактировать файлы в `~/workspace`: `Permission denied` (попробуйте
+  `echo x >> ~/workspace/src/main.py`).
+
+
+  Восстановите нормальные права по политике:
+
+
+  - **владелец** — читает и пишет всё, заходит во все каталоги;
+
+  - скрипты в `scripts/` (`deploy.sh`, `test.sh`) — **исполняемые** для владельца;
+
+  - **группа `devs`** — только чтение (каталоги — чтение и вход);
+
+  - **остальные** — никакого доступа;
+
+  - содержимое файлов (в т.ч. `data/db.json`) менять не нужно.
+
+  '
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: owner_can_edit
+    title: Владелец может писать и заходить
+    pass_message: Владелец может редактировать файлы
+    fail_message: Владелец всё ещё не может писать во все файлы / заходить во все каталоги
+  - id: scripts_executable
+    title: Скрипты исполняемые
+    pass_message: Скрипты исполняемые
+    fail_message: deploy.sh и test.sh должны быть исполняемыми для владельца
+  - id: group_access
+    title: Группа devs читает
+    pass_message: Группа devs имеет чтение
+    fail_message: Группа devs должна читать файлы и входить в каталоги
+  - id: no_world_access
+    title: Остальным доступа нет
+    pass_message: Остальные не имеют доступа
+    fail_message: У «остальных» не должно быть никаких прав (никакого chmod 777)
+  - id: data_intact
+    title: Данные не изменены
+    pass_message: Данные не изменены
+    fail_message: Содержимое data/db.json изменено
+reward:
+  base_xp: 150

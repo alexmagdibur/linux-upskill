@@ -1,0 +1,53 @@
+schema_version: 1
+id: linux-012
+version: 1
+title: Переменные окружения
+mode: learn
+difficulty: beginner
+estimated_minutes: 15
+description: Разберитесь, как переменные окружения передаются дочерним процессам и как сделать PATH постоянным.
+skills:
+- export
+- env
+- PATH
+- ~/.profile
+objectives:
+- Экспортировать переменную в дочерний процесс
+- Задать переменную на одну команду
+- Добавить ~/bin в PATH навсегда
+task: '1. Выполните `export APP_ENV=production`, затем запустите **дочерний** shell, который напечатает эту переменную,
+  и сохраните его вывод в `~/env_child.txt` (подсказка: `bash -c ''echo $APP_ENV''`).
+
+  2. Задайте переменную `GREETING=hi` **только на время одной команды** и сохраните вывод `bash -c ''echo $GREETING''`
+  в `~/greeting.txt`.
+
+  3. Создайте исполняемый скрипт `~/bin/hello`, печатающий `hello`, и сделайте так, чтобы команда `hello` находилась
+  **в новой сессии**: добавьте `~/bin` в `PATH` в `~/.profile`.
+
+  '
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  checks:
+  - id: exported_var
+    title: 'env_child.txt: production'
+    pass_message: Переменная экспортирована
+    fail_message: В ~/env_child.txt должно быть production (нужен export)
+  - id: inline_var
+    title: 'greeting.txt: hi'
+    pass_message: Переменная на одну команду работает
+    fail_message: В ~/greeting.txt должно быть hi
+  - id: hello_in_path
+    title: hello доступен в новой сессии
+    pass_message: Команда hello находится в PATH
+    fail_message: 'В новой сессии команда hello не находится: добавьте ~/bin в PATH в ~/.profile'
+reward:
+  base_xp: 50

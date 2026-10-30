@@ -1,0 +1,57 @@
+schema_version: 1
+id: linux-005
+version: 1
+title: Поиск в логах через grep
+mode: practice
+difficulty: junior
+estimated_minutes: 15
+description: 'Разберите лог приложения: отфильтруйте ошибки, посчитайте предупреждения и найдите самый «шумный»
+  IP.'
+skills:
+- grep
+- sort
+- uniq
+- cut
+- pipes
+objectives:
+- Отфильтровать строки по уровню
+- Посчитать совпадения
+- Найти самый частый IP среди ошибок
+task: 'Лог приложения лежит в `/var/log/app/app.log`.
+
+
+  1. Все строки уровня `ERROR` сохраните в `~/errors.txt`.
+
+  2. Определите IP-адрес клиента (`client=…`), который чаще всего встречается **среди ERROR-строк**, и запишите
+  только адрес в `~/top_ip.txt`.
+
+  3. Количество строк уровня `WARN` запишите числом в `~/warn_count.txt`.
+
+  '
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+  writable_dirs:
+  - /var/log/app
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: errors_file
+    title: errors.txt содержит все ERROR-строки
+    pass_message: ERROR-строки выбраны верно
+    fail_message: В ~/errors.txt не все ERROR-строки или есть лишние
+  - id: top_ip
+    title: top_ip.txt содержит самый частый IP
+    pass_message: IP определён верно
+    fail_message: В ~/top_ip.txt не тот адрес
+  - id: warn_count
+    title: warn_count.txt содержит число WARN
+    pass_message: Число WARN верное
+    fail_message: В ~/warn_count.txt неверное число
+reward:
+  base_xp: 100

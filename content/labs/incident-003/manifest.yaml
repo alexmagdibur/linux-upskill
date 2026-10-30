@@ -1,0 +1,58 @@
+schema_version: 1
+id: incident-003
+version: 1
+title: Приложение слушает неправильный порт (loopback внутри sandbox)
+mode: incident
+difficulty: middle
+estimated_minutes: 20
+description: Healthcheck ждёт ответ на 127.0.0.1:8080, а приложение поднялось на другом порту. Найдите процесс,
+  исправьте конфигурацию и перезапустите.
+skills:
+- ss
+- pgrep
+- pkill
+- конфигурация сервисов
+- перезапуск
+objectives:
+- Найти, какой порт слушает приложение
+- Исправить конфигурацию
+- Корректно перезапустить сервис
+task: '**Инцидент.** Мониторинг сообщает: `127.0.0.1:8080` не отвечает. Приложение `~/app/server.py` запущено, но
+  живёт не там, где ожидается.
+
+
+  1. Выясните, какой порт слушает приложение (`ss -ltnp`).
+
+  2. Исправьте конфигурацию `~/app/config.ini` так, чтобы приложение слушало порт `8080`.
+
+  3. **Перезапустите** приложение — старый процесс должен быть остановлен (прежний порт больше не слушается).
+
+
+  Запускать приложение можно так: `python3 ~/app/server.py &`.
+
+  '
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: port_8080
+    title: Приложение отвечает на 8080
+    pass_message: Приложение отвечает на порту 8080
+    fail_message: На 127.0.0.1:8080 нет ответа «healthy»
+  - id: config_port
+    title: В конфиге port=8080
+    pass_message: Конфигурация исправлена
+    fail_message: В config.ini не указан port=8080
+  - id: old_port_closed
+    title: Старый порт 9090 закрыт
+    pass_message: Старый процесс остановлен
+    fail_message: Порт 9090 всё ещё слушается — старый процесс не остановлен
+reward:
+  base_xp: 150

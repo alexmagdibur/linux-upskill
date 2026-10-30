@@ -1,0 +1,60 @@
+schema_version: 1
+id: linux-006
+version: 1
+title: Pipes и перенаправление вывода
+mode: practice
+difficulty: junior
+estimated_minutes: 15
+description: 'Соединяйте команды конвейером и управляйте потоками stdout/stderr: |, >, >>, 2>.'
+skills:
+- '|'
+- '>'
+- '>>'
+- 2>
+- sort -u
+- cut
+objectives:
+- Построить конвейер из нескольких команд
+- Дописывать в файл, не затирая его
+- Перенаправить поток ошибок
+task: 'В `~/data/access.log` строки вида `IP МЕТОД ПУТЬ СТАТУС`.
+
+
+  1. Сохраните **уникальные IP**, отсортированные по возрастанию, в `~/ips.txt` (по одному на строку).
+
+  2. Запишите количество запросов со статусом `404` в `~/count404.txt`.
+
+  3. **Допишите** в конец `~/data/report.txt` строку `done` (существующая строка `start` должна сохраниться).
+
+  4. Выполните `ls /nonexistent` так, чтобы **сообщение об ошибке** попало в файл `~/err.txt`.
+
+  '
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: ips_unique
+    title: 'ips.txt: уникальные отсортированные IP'
+    pass_message: Список IP верный
+    fail_message: В ~/ips.txt не тот список уникальных IP
+  - id: count404
+    title: 'count404.txt: число запросов 404'
+    pass_message: Число 404 верное
+    fail_message: В ~/count404.txt неверное число
+  - id: appended
+    title: 'report.txt: start + done'
+    pass_message: Строка дописана, start сохранена
+    fail_message: 'В report.txt должно быть ровно: start и затем done'
+  - id: stderr_redirect
+    title: err.txt содержит сообщение об ошибке ls
+    pass_message: stderr перенаправлен
+    fail_message: В ~/err.txt нет сообщения об ошибке ls
+reward:
+  base_xp: 100

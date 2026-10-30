@@ -1,0 +1,12 @@
+# Prometheus (профиль compose `monitoring`). Токен совпадает с INTERNAL_TOKEN.
+global:
+  scrape_interval: 15s
+scrape_configs:
+  - job_name: upskill-api
+    metrics_path: /metrics
+    authorization: { type: Bearer, credentials: dev-internal-token-change-me }
+    static_configs: [{ targets: ["api:8000"] }]
+  - job_name: upskill-worker
+    metrics_path: /metrics
+    authorization: { type: Bearer, credentials: dev-internal-token-change-me }
+    static_configs: [{ targets: ["worker:8100"] }]

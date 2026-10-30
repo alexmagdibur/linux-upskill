@@ -1,0 +1,2 @@
+- '`ps aux | grep -v grep | grep worker` или `pgrep -f worker.sh` покажут PID.'
+- '`kill PID` посылает SIGTERM, который `stuck.sh` игнорирует. Нужен сигнал, который перехватить нельзя: `kill -9`.'

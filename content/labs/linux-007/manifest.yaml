@@ -1,0 +1,49 @@
+schema_version: 1
+id: linux-007
+version: 1
+title: Архивирование и tar
+mode: practice
+difficulty: junior
+estimated_minutes: 15
+description: 'Упакуйте каталог в сжатый архив и восстановите файлы из резервной копии: tar czf / xzf.'
+skills:
+- tar
+- gzip
+- czf
+- xzf
+- -C
+objectives:
+- Создать архив tar.gz
+- Распаковать архив в нужный каталог
+- Проверить содержимое архива
+task: '1. Упакуйте каталог `~/site` в архив **tar.gz**: `~/site.tar.gz` (внутри должны быть файлы сайта вместе с
+  подкаталогами).
+
+  2. В домашнем каталоге лежит резервная копия `~/backup.tar.gz`. Распакуйте её в каталог `~/restore`.
+
+  '
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: site_archive
+    title: site.tar.gz — валидный архив сайта
+    pass_message: Архив сайта создан верно
+    fail_message: ~/site.tar.gz отсутствует, не сжат gzip или не содержит файлы сайта
+  - id: restored
+    title: Файлы из backup.tar.gz лежат в ~/restore
+    pass_message: Резервная копия восстановлена
+    fail_message: В ~/restore нет a.txt и b.txt с ожидаемым содержимым
+  - id: site_untouched
+    title: Исходный каталог site цел
+    pass_message: Исходный каталог на месте
+    fail_message: Каталог ~/site повреждён
+reward:
+  base_xp: 100

@@ -1,0 +1,58 @@
+schema_version: 1
+id: linux-009
+version: 1
+title: Права доступа chmod
+mode: learn
+difficulty: beginner
+estimated_minutes: 10
+description: 'Научитесь читать и менять права доступа к файлам: символьная и числовая запись, chmod.'
+skills:
+- chmod
+- ls -l
+- rwx
+- восьмеричные права
+objectives:
+- Сделать скрипт исполняемым
+- Ограничить доступ к секретному файлу
+- Настроить права каталога
+task: 'В каталоге `~/perm` лежат файлы с неудачными правами (посмотрите `ls -l ~/perm`).
+
+
+  1. `script.sh` — сделайте исполняемым для владельца; запись для группы и остальных не нужна.
+
+  2. `secret.txt` — доступ **только владельцу** на чтение и запись (`600`).
+
+  3. `public.txt` — владелец читает и пишет, остальные только читают (`644`).
+
+  4. Каталог `shared` — `rwxr-xr-x` (`755`).
+
+  '
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: script_exec
+    title: script.sh исполняемый
+    pass_message: script.sh исполняемый
+    fail_message: script.sh должен быть исполняемым для владельца и недоступным для записи другим
+  - id: secret_mode
+    title: 'secret.txt: 600'
+    pass_message: secret.txt доступен только владельцу
+    fail_message: У secret.txt права должны быть 600
+  - id: public_mode
+    title: 'public.txt: 644'
+    pass_message: public.txt настроен верно
+    fail_message: У public.txt права должны быть 644
+  - id: shared_mode
+    title: 'shared: 755'
+    pass_message: Права каталога shared верные
+    fail_message: У каталога shared права должны быть 755
+reward:
+  base_xp: 50

@@ -1,0 +1,37 @@
+slug: linux-upskill
+title: 'Linux Upskill: от командной строки к диагностике'
+description: 'Практический курс: Learn → Practice → Incident. Реальные команды в изолированной Linux-песочнице и
+  автоматическая проверка результата.'
+modules:
+- slug: linux-basics
+  title: Linux Basics
+  description: Файловая система, файлы, потоки, поиск, pipes, архивы и текстовые фильтры.
+  labs:
+  - linux-001
+  - linux-002
+  - linux-003
+  - linux-004
+  - linux-005
+  - linux-006
+  - linux-007
+  - linux-008
+- slug: administration
+  title: Administration
+  description: Права доступа, группы, окружение, процессы, диск и автоматизация.
+  labs:
+  - linux-009
+  - linux-010
+  - linux-011
+  - linux-012
+  - linux-013
+  - linux-014
+  - linux-015
+- slug: incidents
+  title: Incident Simulation
+  description: Диагностика и устранение искусственно созданных неисправностей.
+  labs:
+  - incident-001
+  - incident-002
+  - incident-003
+  - incident-004
+  - incident-005

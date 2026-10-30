@@ -1,0 +1,60 @@
+schema_version: 1
+id: linux-011
+version: 1
+title: Пользователи и группы (без host privileges)
+mode: practice
+difficulty: junior
+estimated_minutes: 10
+description: 'Исследуйте учётные записи системы: id, getent, /etc/passwd и /etc/group. Создание пользователей в
+  песочнице недоступно.'
+skills:
+- id
+- getent
+- /etc/passwd
+- /etc/group
+objectives:
+- Определить свои группы и UID
+- Найти пользователя по UID
+- Найти GID группы
+task: 'Создавать пользователей без root нельзя — зато можно хорошо изучить существующих. Результаты записывайте
+  в каталог `~/report` (он уже создан).
+
+
+  1. `groups.txt` — **имена групп**, в которых вы состоите (через пробел или по одному на строку).
+
+  2. `uid.txt` — ваш числовой UID.
+
+  3. `user1001.txt` — имя пользователя с UID `1001`.
+
+  4. `gid_devs.txt` — числовой GID группы `devs`.
+
+  '
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: groups
+    title: 'groups.txt: ваши группы'
+    pass_message: Список групп верный
+    fail_message: В groups.txt должны быть имена всех ваших групп
+  - id: uid
+    title: 'uid.txt: ваш UID'
+    pass_message: UID верный
+    fail_message: В uid.txt неверное значение
+  - id: user1001
+    title: 'user1001.txt: имя пользователя 1001'
+    pass_message: Пользователь найден верно
+    fail_message: В user1001.txt неверное имя
+  - id: gid_devs
+    title: 'gid_devs.txt: GID группы devs'
+    pass_message: GID верный
+    fail_message: В gid_devs.txt неверное значение
+reward:
+  base_xp: 100

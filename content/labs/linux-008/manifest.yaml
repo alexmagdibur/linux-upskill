@@ -1,0 +1,52 @@
+schema_version: 1
+id: linux-008
+version: 1
+title: Текстовые фильтры awk и sed
+mode: practice
+difficulty: junior
+estimated_minutes: 20
+description: 'Обработайте CSV и конфиг без текстового редактора: awk для вычислений и выборки, sed для замены.'
+skills:
+- awk
+- sed
+- sed -i
+- разделитель полей
+objectives:
+- Просуммировать столбец по условию
+- Заменить значение в файле на месте
+- Вывести отдельный столбец
+task: 'В `~/data` лежат `employees.csv` (`name,dept,salary`, есть строка заголовка) и `config.ini`.
+
+
+  1. Посчитайте сумму зарплат сотрудников отдела `dev` и запишите число в `~/dev_total.txt`.
+
+  2. В `~/data/config.ini` замените `debug=true` на `debug=false` **в самом файле** (остальные строки не менять).
+
+  3. Сохраните имена сотрудников (первый столбец, **без** заголовка) в `~/names.txt`, по одному на строку.
+
+  '
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: dev_total
+    title: 'dev_total.txt: сумма зарплат dev'
+    pass_message: Сумма посчитана верно
+    fail_message: В ~/dev_total.txt неверная сумма
+  - id: config_fixed
+    title: 'config.ini: debug=false'
+    pass_message: Конфиг исправлен, остальное не тронуто
+    fail_message: config.ini должен отличаться от исходного только строкой debug=false
+  - id: names
+    title: 'names.txt: имена без заголовка'
+    pass_message: Список имён верный
+    fail_message: В ~/names.txt не тот список имён
+reward:
+  base_xp: 100

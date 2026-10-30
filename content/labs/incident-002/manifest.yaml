@@ -1,0 +1,56 @@
+schema_version: 1
+id: incident-002
+version: 1
+title: Заполненная квота логов в sandbox
+mode: incident
+difficulty: junior
+estimated_minutes: 15
+description: Каталог логов приложения заполнен до отказа, сервис не может писать «No space left on device». Освободите
+  место, сохранив текущий лог.
+skills:
+- df
+- du
+- ls -lS
+- ротация логов
+objectives:
+- Диагностировать нехватку места
+- Определить, что можно удалить безопасно
+- Сохранить текущий лог
+task: '**Инцидент.** Сервис `~/bin/app.sh` перестал писать в `/var/log/app/app.log`: `No space left on device`.
+
+
+  Найдите причину (`df -h /var/log/app`, `ls -lS /var/log/app`) и освободите место так, чтобы сервис снова мог писать.
+
+
+  Ограничения: **текущий** файл `app.log` удалять и затирать нельзя — в нём важные записи. Нужно оставить не менее
+  2 МБ свободного места.
+
+  '
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+  writable_dirs:
+  - /var/log/app
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  checks:
+  - id: log_writable
+    title: Сервис снова пишет в лог
+    pass_message: Сервис пишет в лог
+    fail_message: Сервис по-прежнему не может записать строку в app.log
+  - id: current_log_kept
+    title: Текущий лог сохранён
+    pass_message: Текущий лог сохранён
+    fail_message: Текущий app.log удалён или затёрт
+  - id: space_freed
+    title: Свободно более 2 МБ
+    pass_message: Места достаточно
+    fail_message: Свободного места меньше 2 МБ
+reward:
+  base_xp: 150

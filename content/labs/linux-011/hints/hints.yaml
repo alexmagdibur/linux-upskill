@@ -1,0 +1,2 @@
+- '`id` и `id -Gn` покажут ваши UID и группы.'
+- 'Данные учётных записей: `getent passwd`, `getent group` или файлы `/etc/passwd` и `/etc/group`.'

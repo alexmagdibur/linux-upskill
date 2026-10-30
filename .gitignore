@@ -1,0 +1,14 @@
+.env
+.venv/
+.run/
+__pycache__/
+*.pyc
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+node_modules/
+apps/web/dist/
+apps/web/playwright-report/
+apps/web/test-results/
+# ID образа песочницы зависит от машины сборки: генерируется `make images`
+content/images.lock.json

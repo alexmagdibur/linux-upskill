@@ -1,0 +1,42 @@
+schema_version: 1
+id: linux-001
+version: 1
+title: "Навигация по файловой системе"
+mode: learn
+difficulty: beginner
+estimated_minutes: 10
+description: "Научитесь ориентироваться в дереве каталогов: pwd, ls, cd, абсолютные и относительные пути."
+skills: [pwd, ls, cd, абсолютные пути]
+objectives:
+  - "Найти каталог с нужным файлом"
+  - "Записать его абсолютный путь"
+  - "Создать каталог в домашней директории"
+task: |
+  В вашем домашнем каталоге лежит учебный проект `~/lab`.
+
+  1. Изучите структуру проекта командами `ls` и `cd`.
+  2. Найдите каталог, в котором находится файл `config.ini`, и запишите его **абсолютный путь** в файл `~/lab/answer.txt`.
+  3. Создайте пустой каталог `~/lab/notes`.
+
+  Подсказка по формату: абсолютный путь начинается с `/`, например `/home/student/lab/docs`.
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+    - id: answer_path
+      title: "В answer.txt записан путь к каталогу с config.ini"
+      pass_message: "Путь указан верно"
+      fail_message: "В ~/lab/answer.txt нет абсолютного пути к каталогу с config.ini"
+    - id: notes_dir
+      title: "Создан каталог ~/lab/notes"
+      pass_message: "Каталог notes создан"
+      fail_message: "Каталог ~/lab/notes не найден"
+reward:
+  base_xp: 50

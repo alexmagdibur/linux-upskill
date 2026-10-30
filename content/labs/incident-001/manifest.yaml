@@ -1,0 +1,61 @@
+schema_version: 1
+id: incident-001
+version: 1
+title: Permission denied при старте приложения
+mode: incident
+difficulty: junior
+estimated_minutes: 15
+description: 'После деплоя приложение не стартует: «Permission denied». Найдите причину и исправьте права, не раздавая
+  лишнего.'
+skills:
+- ls -l
+- chmod
+- диагностика прав
+- принцип наименьших привилегий
+objectives:
+- Воспроизвести ошибку запуска
+- Найти все причины отказа в доступе
+- Исправить права без chmod 777
+task: '**Инцидент.** После релиза сервис `~/app/start.sh` не запускается: `bash: ./start.sh: Permission denied`.
+
+  Даже когда скрипт запустится, приложению нужно писать лог в `~/app/logs/app.log`.
+
+
+  Восстановите работу: после вашего исправления `./start.sh` должен запускаться, а приложение — записывать в лог
+  `started OK`.
+
+
+  Ограничения: **не используйте** `chmod 777` и не давайте запись «всем» — только минимально необходимые права;
+  содержимое скрипта менять не нужно.
+
+  '
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  exercise_script: checks/exercise.sh
+  checks:
+  - id: starts
+    title: Приложение стартует и пишет в лог
+    pass_message: Приложение запущено и пишет лог
+    fail_message: Лог ~/app/logs/app.log не содержит «started OK» — приложение не работает
+  - id: start_executable
+    title: start.sh исполняемый
+    pass_message: start.sh исполняемый
+    fail_message: start.sh не исполняемый
+  - id: script_unchanged
+    title: Скрипт не изменён
+    pass_message: Скрипт не менялся
+    fail_message: Содержимое start.sh изменено — чините права, а не скрипт
+  - id: no_world_write
+    title: Нет прав записи для всех
+    pass_message: Лишних прав не выдано
+    fail_message: 'Права слишком широкие: запись «всем» запрещена'
+reward:
+  base_xp: 150

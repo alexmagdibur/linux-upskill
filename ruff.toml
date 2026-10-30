@@ -1,0 +1,7 @@
+# Общий конфиг ruff для packages/ и infra/ (apps/* имеют собственные настройки в pyproject.toml)
+line-length = 130
+target-version = "py312"
+[lint]
+select = ["E", "F", "I", "B", "UP"]
+[lint.per-file-ignores]
+"infra/scripts/labgen/*.py" = ["E501"]

@@ -1,0 +1,53 @@
+schema_version: 1
+id: linux-013
+version: 1
+title: Процессы и сигналы
+mode: practice
+difficulty: junior
+estimated_minutes: 15
+description: Найдите процесс по имени, узнайте его PID и корректно завершите «зависший» процесс, игнорирующий SIGTERM.
+skills:
+- ps
+- pgrep
+- kill
+- pkill
+- SIGTERM
+- SIGKILL
+objectives:
+- Найти PID процесса
+- Завершить процесс, игнорирующий SIGTERM
+- Не затронуть соседние процессы
+task: 'В песочнице работают два фоновых процесса: `worker.sh` (нужный сервис) и `stuck.sh` (завис и игнорирует обычный
+  `SIGTERM`).
+
+
+  1. Найдите PID процесса `worker.sh` и запишите его в `~/found_pid.txt`.
+
+  2. Завершите `stuck.sh`. Процесс `worker.sh` должен продолжить работу!
+
+  '
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: worker_alive
+    title: worker.sh продолжает работать
+    pass_message: worker.sh работает
+    fail_message: Процесс worker.sh завершён — он должен продолжать работу
+  - id: pid_found
+    title: 'found_pid.txt: PID worker.sh'
+    pass_message: PID указан верно
+    fail_message: В ~/found_pid.txt не PID процесса worker.sh
+  - id: stuck_stopped
+    title: stuck.sh завершён
+    pass_message: stuck.sh завершён
+    fail_message: Процесс stuck.sh всё ещё работает
+reward:
+  base_xp: 100

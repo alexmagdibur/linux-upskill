@@ -1,0 +1,59 @@
+schema_version: 1
+id: linux-002
+version: 1
+title: Создание и удаление файлов
+mode: learn
+difficulty: beginner
+estimated_minutes: 10
+description: 'Создавайте каталоги и файлы, копируйте, переименовывайте и удаляйте: mkdir, touch, cp, mv, rm.'
+skills:
+- mkdir
+- touch
+- cp
+- mv
+- rm
+objectives:
+- Создать каталог и пустой файл
+- Скопировать и переименовать файлы
+- Удалить файлы по маске
+task: 'В каталоге `~/workspace` лежат рабочие файлы.
+
+
+  1. Создайте каталог `~/workspace/project` и в нём **пустой** файл `todo.txt`.
+
+  2. Скопируйте `~/workspace/keep.txt` в `~/workspace/project/keep_backup.txt` (оригинал должен остаться на месте).
+
+  3. Удалите все файлы `*.log` в `~/workspace`.
+
+  4. Переименуйте `~/workspace/old_notes.txt` в `notes.txt`.
+
+  '
+runtime:
+  type: container
+  image: ubuntu-basic
+  timeout_seconds: 1800
+setup:
+  script: setup/prepare.sh
+validation:
+  type: script
+  script: checks/validate.sh
+  timeout_seconds: 15
+  checks:
+  - id: project_todo
+    title: Создан project/todo.txt (пустой)
+    pass_message: Каталог и пустой todo.txt созданы
+    fail_message: Нет каталога ~/workspace/project или пустого файла todo.txt
+  - id: backup_copy
+    title: Сделана копия keep.txt
+    pass_message: Копия создана, оригинал на месте
+    fail_message: Копия keep_backup.txt отсутствует или оригинал keep.txt потерян
+  - id: logs_removed
+    title: Удалены *.log
+    pass_message: Логи удалены
+    fail_message: В ~/workspace остались файлы *.log
+  - id: renamed
+    title: old_notes.txt переименован в notes.txt
+    pass_message: Файл переименован
+    fail_message: Файл notes.txt не найден или остался old_notes.txt
+reward:
+  base_xp: 50
